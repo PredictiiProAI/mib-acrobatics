@@ -5,6 +5,7 @@ import { SignOutButton } from "@/components/sign-out-button";
 import { requireRole } from "@/lib/auth";
 import { PUBLISHER_ROLES, ROLE_LABEL } from "@/lib/roles";
 import { navFor } from "./nav";
+import { NavLinks } from "./nav-links";
 
 export default async function DashboardLayout({ children }: LayoutProps<"/dashboard">) {
   const user = await requireRole(PUBLISHER_ROLES, "/dashboard");
@@ -16,20 +17,7 @@ export default async function DashboardLayout({ children }: LayoutProps<"/dashbo
           <p className="truncate text-sm font-semibold">{user.fullName ?? user.email}</p>
           <p className="text-xs text-neon-green">{ROLE_LABEL[user.role]}</p>
         </div>
-        <nav className="flex gap-1 overflow-x-auto md:flex-col">
-          {navFor(user.role).map((item) =>
-            item.soon ? (
-              <span key={item.label} className="flex items-center justify-between whitespace-nowrap rounded-xl px-3 py-2 text-sm text-white/35">
-                {item.label}
-                <span className="ml-2 rounded-full bg-white/5 px-2 py-0.5 text-[10px] uppercase">curând</span>
-              </span>
-            ) : (
-              <Link key={item.label} href={item.href} className="whitespace-nowrap rounded-xl bg-neon-orange/10 px-3 py-2 text-sm font-semibold text-neon-orange">
-                {item.label}
-              </Link>
-            ),
-          )}
-        </nav>
+        <NavLinks items={navFor(user.role)} />
         <div className="mt-auto flex items-center justify-between">
           <Link href="/feed" className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-white/70 hover:bg-white/5 hover:text-white">
             <Rss className="size-4" /> AcroFeed

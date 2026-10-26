@@ -1,19 +1,20 @@
 import type { Metadata } from "next";
-import { getSessionUser } from "@/lib/auth";
-import { ROLE_LABEL } from "@/lib/roles";
+import { FEED_PAGE_SIZE, FeedList } from "@/components/feed/feed-list";
+import { requireUser } from "@/lib/auth";
+import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "AcroFeed" };
 
 export default async function FeedPage() {
-  const user = await getSessionUser();
-  return (
-    <div className="glass rounded-3xl p-8 text-center">
-      <p className="text-xs uppercase tracking-[0.3em] text-neon-green">AcroFeed</p>
-      <h1 className="mt-2 font-display text-3xl font-black">Salut, {user?.fullName ?? "sportivule"}!</h1>
-      <p className="mt-2 text-white/60">
-        Ești conectat ca <span className="text-neon-orange">{user ? ROLE_LABEL[user.role] : ""}</span>. Feed-ul cu
-        videoclipuri, like-uri și comentarii vine în pasul următor.
-      </p>
-    </div>
-  );
+  const user = await requireUser("/feed");
+  const supabase = await createClient();
+  const { data: posts, error } = await supabase
+    .from("feed_posts")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: false })
+    .limit(FEED_PAGE_SIZE);
+  if (error) console.error("feed", error.message);
+
+  return <FeedList initialPosts={posts ?? []} viewer={{ id: user.id, role: user.role, name: user.fullName ?? user.email }} />;
 }

@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { CloudUpload, Rss } from "lucide-react";
+import { ButtonLink } from "@/components/ui";
 import { requireRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { PUBLISHER_ROLES, ROLE_LABEL, isStaff } from "@/lib/roles";
@@ -43,6 +45,14 @@ export default async function DashboardPage() {
             <p className="mt-2 font-display text-4xl font-black text-neon-orange">{s.value}</p>
           </div>
         ))}
+      </div>
+      <div className="flex flex-wrap gap-3">
+        <ButtonLink href="/dashboard/upload">
+          <CloudUpload className="size-4" /> Încarcă media
+        </ButtonLink>
+        <ButtonLink href="/feed" variant="ghost">
+          <Rss className="size-4" /> Deschide AcroFeed
+        </ButtonLink>
       </div>
     </div>
   );

@@ -39,6 +39,17 @@ Layouts enforce roles server-side (`requireRole` in `src/lib/auth.ts`); RLS enfo
 - Uploads go to `mib_media/<auth.uid()>/<file>`; only `media`/`admin`/`superadmin` may upload. Bucket limit is
   50 MB (Supabase Free plan cap) — raise it in the migration and the dashboard on a paid plan.
 - `src/lib/supabase/database.types.ts` is hand-written; update it with each migration.
+- If you change the bucket limit or MIME list, update `src/lib/media.ts` too (client-side validation).
+
+## Modules
+
+- **Upload Zone** (`/dashboard/upload`): drag-and-drop or pick several photos/videos, add a caption per file,
+  choose public/members-only. Files upload straight to Storage with a progress bar, then `createPost` saves the row.
+- **Posts** (`/dashboard/posts`): `media` sees and manages own posts; `admin` sees all posts and can delete any.
+  Deleting a post also removes its file from Storage.
+- **Comment moderation** (`/dashboard/comments`, staff only): latest 200 comments, delete any.
+- **AcroFeed** (`/feed`): infinite scroll (keyset pagination), videos auto-play muted while on screen, heart and
+  double-tap to like, comments in a bottom sheet with live updates via Realtime.
 
 ## Local development with Supabase CLI
 

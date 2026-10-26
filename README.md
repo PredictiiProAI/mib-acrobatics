@@ -1,36 +1,45 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# MIB Acrobatics
 
-## Getting Started
+Next.js (App Router) + Supabase platform for the MIB Acrobatics club: public landing page, AcroFeed social feed,
+coach messenger and the Admin/Media Command Center.
 
-First, run the development server:
+## Setup
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+1. Supabase → SQL Editor → run `supabase/migrations/0001_init.sql` (idempotent, safe to re-run). It creates the
+   tables, RLS policies, role helpers, the `feed_posts` view, Realtime publication entries and the public
+   `mib_media` Storage bucket with its policies.
+2. Supabase → Authentication → URL Configuration: set **Site URL** to the production origin and add
+   `<origin>/auth/callback` to the redirect URLs.
+3. Copy `.env.example` to `.env.local` and fill in `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
+4. `npm install && npm run dev`.
+5. After the coach (Marius) and the media account (Claudiu) sign up, assign roles in the SQL Editor:
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+   ```sql
+   update public.users set role = 'admin' where email = 'marius@example.com';
+   update public.users set role = 'media' where email = 'claudiu@example.com';
+   ```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Roles and routing
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Role         | After login  | Access                                                        |
+| ------------ | ------------ | ------------------------------------------------------------- |
+| `superadmin` | `/dashboard` | everything, can grant any role                                |
+| `admin`      | `/dashboard` | upload, moderation (any post/comment), users, all DMs         |
+| `media`      | `/dashboard` | upload zone + own posts only                                  |
+| `user`       | `/feed`      | feed, likes, comments, DMs with the coach only                |
 
-## Learn More
+`src/proxy.ts` refreshes the session and sends signed-out visitors of `/feed`, `/dashboard`, `/messages` to `/login`.
+Layouts enforce roles server-side (`requireRole` in `src/lib/auth.ts`); RLS enforces them again in the database.
 
-To learn more about Next.js, take a look at the following resources:
+## Database notes
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `public.users.email` is not readable by clients; staff use `rpc('admin_list_users')`. Select explicit columns
+  (`id, role, full_name, created_at`) instead of `*`.
+- Roles change only through `rpc('admin_set_role', { target, new_role })`.
+- Uploads go to `mib_media/<auth.uid()>/<file>`; only `media`/`admin`/`superadmin` may upload. Bucket limit is
+  50 MB (Supabase Free plan cap) — raise it in the migration and the dashboard on a paid plan.
+- `src/lib/supabase/database.types.ts` is hand-written; update it with each migration.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Local development with Supabase CLI
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+`npx supabase start` applies `supabase/migrations` to a local stack (emails land in Mailpit on port 54324).

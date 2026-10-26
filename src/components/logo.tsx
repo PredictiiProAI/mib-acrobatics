@@ -1,15 +1,16 @@
+import Image from "next/image";
 import Link from "next/link";
+import logo from "../../public/mib-logo.png";
 
-export function Logo({ href = "/" }: { href?: string }) {
+export function Logo({ href = "/", size = "md" }: { href?: string; size?: "md" | "lg" }) {
   return (
-    <Link href={href} className="group inline-flex items-center gap-2 font-display text-lg font-black tracking-wider">
-      <span className="grid size-9 place-items-center rounded-xl bg-neon-orange/15 text-neon-orange glow-orange transition group-hover:scale-105">
-        M
-      </span>
-      <span>
-        MIB<span className="text-neon-green">.</span>
-        <span className="ml-1 text-xs font-semibold tracking-[0.3em] text-white/60">ACROBATICS</span>
-      </span>
+    <Link href={href} className="group inline-flex items-center" aria-label="MIB Acrobatics">
+      <Image
+        src={logo}
+        alt="MIB Acrobatics"
+        priority
+        className={`w-auto drop-shadow-[0_0_14px_rgb(255_106_0/0.35)] transition group-hover:scale-[1.03] ${size === "lg" ? "h-20" : "h-11"}`}
+      />
     </Link>
   );
 }

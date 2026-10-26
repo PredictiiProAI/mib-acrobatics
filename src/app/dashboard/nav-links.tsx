@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { DashNavItem } from "./nav";
 
-export function NavLinks({ items }: { items: DashNavItem[] }) {
+export function NavLinks({ items, badges = {} }: { items: DashNavItem[]; badges?: Record<string, number> }) {
   const pathname = usePathname();
   return (
     <nav className="flex gap-1 overflow-x-auto md:flex-col">
@@ -22,11 +22,16 @@ export function NavLinks({ items }: { items: DashNavItem[] }) {
           <Link
             key={item.label}
             href={item.href}
-            className={`whitespace-nowrap rounded-xl px-3 py-2 text-sm transition ${
+            className={`flex items-center justify-between whitespace-nowrap rounded-xl px-3 py-2 text-sm transition ${
               active ? "bg-neon-orange/10 font-semibold text-neon-orange" : "text-white/70 hover:bg-white/5 hover:text-white"
             }`}
           >
             {item.label}
+            {(badges[item.href] ?? 0) > 0 && (
+              <span className="ml-2 inline-grid min-w-5 place-items-center rounded-full bg-neon-green px-1 text-[10px] font-black text-black">
+                {badges[item.href]}
+              </span>
+            )}
           </Link>
         );
       })}

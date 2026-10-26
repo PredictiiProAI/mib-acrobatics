@@ -50,6 +50,11 @@ Layouts enforce roles server-side (`requireRole` in `src/lib/auth.ts`); RLS enfo
 - **Comment moderation** (`/dashboard/comments`, staff only): latest 200 comments, delete any.
 - **AcroFeed** (`/feed`): infinite scroll (keyset pagination), videos auto-play muted while on screen, heart and
   double-tap to like, comments in a bottom sheet with live updates via Realtime.
+- **Messenger** (`/messages` for members, `/dashboard/messages` inbox for staff): 1-on-1 chat with the coach
+  (first `admin`, else a `superadmin`), live delivery and read receipts via Realtime, unread badges in the header
+  and sidebar. Staff can open a conversation with any non-staff member from the inbox or from Utilizatori.
+- **Utilizatori** (`/dashboard/users`, staff only): search/filter all accounts, see activity, change roles through
+  `admin_set_role` (admin: `user` <-> `media`; superadmin: any role; nobody can change their own role).
 
 ## Local development with Supabase CLI
 

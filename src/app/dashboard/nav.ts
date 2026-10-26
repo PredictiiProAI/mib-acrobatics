@@ -12,8 +12,8 @@ export const DASH_NAV: DashNavItem[] = [
   { label: "Postările mele", href: "/dashboard/posts", roles: ["media"] },
   { label: "Moderare postări", href: "/dashboard/posts", roles: STAFF },
   { label: "Moderare comentarii", href: "/dashboard/comments", roles: STAFF },
-  { label: "Utilizatori", href: "/dashboard/users", roles: STAFF, soon: true },
-  { label: "Mesaje", href: "/dashboard/messages", roles: STAFF, soon: true },
+  { label: "Utilizatori", href: "/dashboard/users", roles: STAFF },
+  { label: "Mesaje", href: "/dashboard/messages", roles: STAFF },
 ];
 
 export const navFor = (role: AppRole) => DASH_NAV.filter((i) => i.roles.includes(role));

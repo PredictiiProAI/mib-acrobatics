@@ -52,7 +52,7 @@ export function FeedList({ initialPosts, viewer }: { initialPosts: FeedPost[]; v
 
   if (!posts.length) {
     return (
-      <div className="glass rounded-3xl p-10 text-center">
+      <div className="glass mx-auto w-full max-w-xl rounded-3xl p-10 text-center">
         <p className="font-display text-xl font-bold">Încă nu există postări</p>
         <p className="mt-2 text-sm text-white/60">Primele videoclipuri și fotografii de la antrenamente apar aici în curând.</p>
       </div>

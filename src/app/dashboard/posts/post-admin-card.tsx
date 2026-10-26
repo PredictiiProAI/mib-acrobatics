@@ -3,6 +3,7 @@
 import { Eye, EyeOff, Heart, Loader2, MessageCircle, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { useState, useTransition } from "react";
+import { useConfirm } from "@/components/confirm-dialog";
 import { deletePost, setPostVisibility } from "@/lib/actions/posts";
 import type { FeedPost } from "@/lib/posts";
 import { timeAgo } from "@/lib/time";
@@ -10,6 +11,7 @@ import { timeAgo } from "@/lib/time";
 export function PostAdminCard({ post, isMine }: { post: FeedPost; isMine: boolean }) {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [confirm, confirmDialog] = useConfirm();
 
   const run = (action: () => Promise<{ ok: boolean; error?: string }>) =>
     startTransition(async () => {
@@ -64,13 +66,17 @@ export function PostAdminCard({ post, isMine }: { post: FeedPost; isMine: boolea
           <button
             type="button"
             disabled={pending}
-            onClick={() => confirm("Ștergi definitiv această postare și fișierul ei?") && run(() => deletePost(post.id))}
+            onClick={async () => {
+              const ok = await confirm({ title: "Ștergi această postare?", description: "Postarea și fișierul ei media vor fi șterse definitiv.", confirmLabel: "Șterge definitiv" });
+              if (ok) run(() => deletePost(post.id));
+            }}
             className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-red-500/30 px-3 py-2 text-xs font-semibold text-red-300 hover:bg-red-500/10"
           >
             {pending ? <Loader2 className="size-4 animate-spin" /> : <Trash2 className="size-4" />} Șterge
           </button>
         </div>
       </div>
+      {confirmDialog}
     </li>
   );
 }

@@ -11,7 +11,7 @@ export default async function MessagesPage() {
   const coachName = coach?.full_name ?? "Antrenor";
 
   return (
-    <section className="glass flex h-[calc(100svh-7rem)] flex-col overflow-hidden rounded-3xl">
+    <section className="glass flex h-[calc(100svh-11rem)] md:h-[calc(100svh-6.5rem)] flex-col overflow-hidden rounded-3xl">
       <header className="flex items-center gap-3 border-b border-white/5 px-4 py-3">
         <span className="relative grid size-10 place-items-center rounded-full bg-gradient-to-br from-neon-orange to-neon-green font-black text-black">
           {coachName[0]?.toUpperCase()}

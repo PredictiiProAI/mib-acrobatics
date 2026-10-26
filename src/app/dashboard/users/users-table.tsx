@@ -3,6 +3,8 @@
 import { Loader2, MessageSquare, Search } from "lucide-react";
 import Link from "next/link";
 import { useState, useTransition } from "react";
+import { useConfirm } from "@/components/confirm-dialog";
+import { ROLE_BADGE_STYLE } from "@/components/role-badge";
 import { setUserRole } from "@/lib/actions/users";
 import { isStaff, ROLE_LABEL } from "@/lib/roles";
 import type { AppRole } from "@/lib/supabase/database.types";
@@ -10,12 +12,6 @@ import type { AppRole } from "@/lib/supabase/database.types";
 type Row = { id: string; email: string; role: AppRole; full_name: string | null; created_at: string; posts: number; comments: number };
 
 const ALL_ROLES: AppRole[] = ["superadmin", "admin", "media", "user"];
-const ROLE_STYLE: Record<AppRole, string> = {
-  superadmin: "bg-fuchsia-500/15 text-fuchsia-300",
-  admin: "bg-neon-orange/15 text-neon-orange",
-  media: "bg-sky-500/15 text-sky-300",
-  user: "bg-neon-green/10 text-neon-green",
-};
 const dateFmt = new Intl.DateTimeFormat("ro-RO", { day: "numeric", month: "short", year: "numeric" });
 
 /** Mirrors public.admin_set_role so the UI only offers changes the database will accept. */
@@ -29,18 +25,25 @@ function assignableRoles(me: { id: string; role: AppRole }, target: Row): AppRol
 function RoleCell({ me, user }: { me: { id: string; role: AppRole }; user: Row }) {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [confirm, confirmDialog] = useConfirm();
   const options = assignableRoles(me, user);
-  if (!options.length) return <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${ROLE_STYLE[user.role]}`}>{ROLE_LABEL[user.role]}</span>;
+  if (!options.length) return <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${ROLE_BADGE_STYLE[user.role]}`}>{ROLE_LABEL[user.role]}</span>;
   return (
     <div className="flex items-center gap-2">
       <select
         aria-label={`Rol pentru ${user.full_name ?? user.email}`}
         value={user.role}
         disabled={pending}
-        onChange={(e) => {
+        onChange={async (e) => {
           const role = e.target.value as AppRole;
           if (role === "admin" || role === "superadmin") {
-            if (!confirm(`Dai rolul ${ROLE_LABEL[role]} lui ${user.full_name ?? user.email}? Va avea acces complet.`)) return;
+            const ok = await confirm({
+              tone: "warning",
+              title: `Dai rolul ${ROLE_LABEL[role]}?`,
+              description: `${user.full_name ?? user.email} va avea acces complet: moderare, utilizatori și toate conversațiile.`,
+              confirmLabel: `Da, fă-l ${ROLE_LABEL[role]}`,
+            });
+            if (!ok) return;
           }
           startTransition(async () => {
             setError(null);
@@ -48,7 +51,7 @@ function RoleCell({ me, user }: { me: { id: string; role: AppRole }; user: Row }
             if (!r.ok) setError(r.error);
           });
         }}
-        className={`cursor-pointer rounded-full border-0 px-2.5 py-1 text-xs font-semibold outline-none ring-1 ring-white/10 focus:ring-neon-orange/60 ${ROLE_STYLE[user.role]}`}
+        className={`cursor-pointer rounded-full border-0 px-2.5 py-1 text-xs font-semibold outline-none ring-1 ring-white/10 focus:ring-neon-orange/60 ${ROLE_BADGE_STYLE[user.role]}`}
       >
         {options.map((r) => (
           <option key={r} value={r} className="bg-graphite text-white">
@@ -58,6 +61,7 @@ function RoleCell({ me, user }: { me: { id: string; role: AppRole }; user: Row }
       </select>
       {pending && <Loader2 className="size-4 animate-spin text-white/50" />}
       {error && <span className="text-xs text-red-300">{error}</span>}
+      {confirmDialog}
     </div>
   );
 }

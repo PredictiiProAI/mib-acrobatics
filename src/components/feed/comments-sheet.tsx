@@ -2,6 +2,8 @@
 
 import { Loader2, Send, Trash2, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import { useConfirm } from "@/components/confirm-dialog";
 import { deleteComment } from "@/lib/actions/posts";
 import { isStaff, ROLE_LABEL } from "@/lib/roles";
 import type { AppRole } from "@/lib/supabase/database.types";
@@ -36,6 +38,7 @@ export function CommentsSheet({
   const [error, setError] = useState<string | null>(null);
   const listRef = useRef<HTMLUListElement>(null);
   const [supabase] = useState(createClient);
+  const [confirm, confirmDialog] = useConfirm();
 
   useEffect(() => {
     let active = true;
@@ -98,7 +101,7 @@ export function CommentsSheet({
   }
 
   async function remove(id: string) {
-    if (!confirm("Ștergi acest comentariu?")) return;
+    if (!(await confirm({ title: "Ștergi acest comentariu?", description: "Comentariul va fi eliminat definitiv.", confirmLabel: "Șterge" }))) return;
     const result = await deleteComment(id);
     if (!result.ok) return setError(result.error);
     setComments((list) => list?.filter((c) => c.id !== id) ?? list);
@@ -106,7 +109,7 @@ export function CommentsSheet({
 
   const canDelete = (c: CommentRow) => c.user_id === viewer.id || isStaff(viewer.role);
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-end justify-center md:items-center" role="dialog" aria-modal="true" aria-label="Comentarii">
       <button type="button" aria-label="Închide" onClick={onClose} className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
       <div className="glass relative flex max-h-[80svh] w-full max-w-lg animate-[sheet-up_.25s_ease-out] flex-col rounded-t-3xl md:rounded-3xl">
@@ -196,6 +199,8 @@ export function CommentsSheet({
           </button>
         </form>
       </div>
-    </div>
+      {confirmDialog}
+    </div>,
+    document.body,
   );
 }

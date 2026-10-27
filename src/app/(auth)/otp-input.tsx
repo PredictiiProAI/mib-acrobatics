@@ -4,23 +4,31 @@ import { useRef, useState } from "react";
 
 const LENGTH = 6;
 
-/** Six single-digit boxes (paste + auto-advance) backed by one hidden `name` input; calls onComplete when full. */
+/** Six single-digit boxes (paste, auto-advance, Backspace/Delete, arrows) backed by one hidden `name` input; calls onComplete when full. */
 export function OtpInput({ name = "token", onComplete, disabled }: { name?: string; onComplete?: () => void; disabled?: boolean }) {
   const [digits, setDigits] = useState<string[]>(Array(LENGTH).fill(""));
   const refs = useRef<(HTMLInputElement | null)[]>([]);
+  const focus = (i: number) => refs.current[Math.max(0, Math.min(LENGTH - 1, i))]?.focus();
 
-  const update = (next: string[]) => {
+  const commit = (next: string[]) => {
     setDigits(next);
     if (next.every(Boolean)) requestAnimationFrame(() => onComplete?.());
   };
 
-  const fill = (start: number, text: string) => {
+  const setAt = (i: number, value: string) => {
+    const next = [...digits];
+    next[i] = value;
+    commit(next);
+  };
+
+  // Writes several digits starting at `start` (paste / SMS autofill).
+  const fillFrom = (start: number, text: string) => {
     const chars = text.replace(/\D/g, "").slice(0, LENGTH - start).split("");
     if (!chars.length) return;
     const next = [...digits];
-    chars.forEach((c, i) => (next[start + i] = c));
-    update(next);
-    refs.current[Math.min(start + chars.length, LENGTH - 1)]?.focus();
+    chars.forEach((c, k) => (next[start + k] = c));
+    commit(next);
+    focus(start + chars.length);
   };
 
   return (
@@ -38,20 +46,43 @@ export function OtpInput({ name = "token", onComplete, disabled }: { name?: stri
           inputMode="numeric"
           autoComplete={i === 0 ? "one-time-code" : "off"}
           aria-label={`Cifra ${i + 1}`}
-          maxLength={LENGTH}
-          onChange={(e) => fill(i, e.target.value)}
+          onFocus={(e) => e.target.select()}
+          onChange={(e) => {
+            const typed = e.target.value.replace(/\D/g, "");
+            if (!typed) return setAt(i, "");
+            // A filled box receives "old+new" (or "new+old"); keep the newly typed digit.
+            if (typed.length === 2 && d && typed.includes(d)) {
+              setAt(i, typed[0] === d ? typed[1] : typed[0]);
+              return focus(i + 1);
+            }
+            if (typed.length > 1) return fillFrom(i, typed);
+            setAt(i, typed);
+            focus(i + 1);
+          }}
           onPaste={(e) => {
             e.preventDefault();
-            fill(0, e.clipboardData.getData("text"));
+            fillFrom(0, e.clipboardData.getData("text"));
           }}
           onKeyDown={(e) => {
-            if (e.key === "Backspace" && !digits[i] && i > 0) {
-              const next = [...digits];
-              next[i - 1] = "";
-              setDigits(next);
-              refs.current[i - 1]?.focus();
-            } else if (e.key === "ArrowLeft" && i > 0) refs.current[i - 1]?.focus();
-            else if (e.key === "ArrowRight" && i < LENGTH - 1) refs.current[i + 1]?.focus();
+            if (e.key === "Backspace") {
+              e.preventDefault();
+              if (d) setAt(i, "");
+              else if (i > 0) {
+                const next = [...digits];
+                next[i - 1] = "";
+                setDigits(next);
+                focus(i - 1);
+              }
+            } else if (e.key === "Delete") {
+              e.preventDefault();
+              setAt(i, "");
+            } else if (e.key === "ArrowLeft") {
+              e.preventDefault();
+              focus(i - 1);
+            } else if (e.key === "ArrowRight") {
+              e.preventDefault();
+              focus(i + 1);
+            }
           }}
           className={`size-12 rounded-xl border bg-black/60 text-center font-display text-2xl font-black outline-none transition sm:size-14 ${
             d ? "border-neon-violet text-neon-violet shadow-neon-sm" : "border-white/15 text-white"

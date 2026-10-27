@@ -24,9 +24,10 @@ coach messenger and the Admin/Media Command Center.
 - Sign-up, unconfirmed logins and "Am uitat parola" use 6-digit email codes (`verifyOtp`), not links.
   In the hosted project set Authentication → Emails → **Confirm signup** and **Reset password** to the HTML in
   `supabase/templates/` (they print `{{ .Token }}`), and keep "Confirm email" enabled.
-- Every new account emails the head coach via Resend. Vercel env: `RESEND_API_KEY` (required),
-  `ADMIN_ALERT_EMAIL` (default `marius.butrin@gmail.com`), `ALERT_FROM_EMAIL` (default
-  `MIB Acrobatics <onboarding@resend.dev>`, which only delivers to the Resend account's own email until a domain is verified).
+- Every new account emails the head coach ("Un cont nou a fost creat pe platforma MIB Acrobatics", with the user's email).
+  Vercel env, SMTP (same server as the Supabase Auth emails): `SMTP_HOST`, `SMTP_PORT` (587; 465 = TLS), `SMTP_USER`,
+  `SMTP_PASS`, optional `SMTP_SECURE`. Alternative: `RESEND_API_KEY`. Optional: `ADMIN_ALERT_EMAIL`
+  (default `marius.butrin@gmail.com`), `ALERT_FROM_EMAIL` (default `MIB Acrobatics <noreply@smart.siguranta-digitala.ro>`).
 
 ## Roles and routing
 

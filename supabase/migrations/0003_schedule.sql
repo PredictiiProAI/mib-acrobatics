@@ -77,8 +77,8 @@ from (values
   ('Adolescenți', '13–17 ani', 1, '18:30', '20:00', 'intermediate', 'fuchsia', 30),
   ('Adolescenți', '13–17 ani', 3, '18:30', '20:00', 'intermediate', 'fuchsia', 30),
   ('Adolescenți', '13–17 ani', 5, '18:00', '19:30', 'intermediate', 'fuchsia', 30),
-  ('Adulți', '18+', 2, '19:00', '20:30', 'all', 'emerald', 40),
-  ('Adulți', '18+', 4, '19:00', '20:30', 'all', 'emerald', 40),
+  ('Adulți', '18+', 2, '19:00', '20:30', 'all', 'violet', 40),
+  ('Adulți', '18+', 4, '19:00', '20:30', 'all', 'violet', 40),
   ('Modul Avansați & Biomecanică', 'nivel avansat', 5, '19:30', '21:00', 'advanced', 'rose', 50),
   ('Modul Avansați & Biomecanică', 'nivel avansat', 6, '12:00', '14:00', 'advanced', 'rose', 50)
 ) as v(group_name, age_range, day_of_week, start_time, end_time, level, badge_color, sort_order)

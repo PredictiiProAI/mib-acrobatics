@@ -43,8 +43,8 @@ export function PillarCards() {
             data-testid="pillar-card"
             className={`group relative overflow-hidden rounded-3xl border p-7 text-left transition duration-300 ${
               open
-                ? "-translate-y-1 border-neon-violet/60 bg-gradient-to-b from-neon-violet/20 to-carbon shadow-[0_20px_60px_-25px_rgb(168_85_247/0.8)]"
-                : "border-white/10 bg-gradient-to-b from-graphite/80 to-carbon/80 hover:border-neon-violet/30"
+                ? "-translate-y-1 border-neon-violet/60 bg-gradient-to-b from-neon-violet/20 to-carbon shadow-[0_20px_60px_-25px_rgb(192_132_252/0.8)]"
+                : "border-white/10 bg-gradient-to-b from-graphite/80 to-carbon/80 hover:border-neon-violet/30 hover:shadow-neon"
             }`}
           >
             <div className={`pointer-events-none absolute -right-10 -top-10 size-40 rounded-full blur-3xl transition ${open ? "bg-neon-violet/35" : "bg-neon-violet/10"}`} />

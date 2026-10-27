@@ -1,7 +1,5 @@
-import { ArrowRight } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { ButtonLink } from "@/components/ui";
-import type { SessionUser } from "@/lib/auth";
 
 export const SITE_NAV = [
   { href: "/", label: "Acasă" },
@@ -11,10 +9,10 @@ export const SITE_NAV = [
   { href: "/#acrofeed", label: "AcroFeed" },
 ];
 
-/** Public header for the presentation pages (`/`, `/despre`). */
-export function SiteHeader({ user, current }: { user: SessionUser | null; current?: string }) {
+/** Public header for visitors who are not logged in (logged-in users get the app header everywhere). */
+export function SiteHeader({ current }: { current?: string }) {
   const link = (active: boolean) =>
-    `whitespace-nowrap rounded-xl px-4 py-2 text-sm font-semibold transition ${active ? "bg-neon-violet/15 text-neon-violet" : "text-white/70 hover:bg-white/5 hover:text-white"}`;
+    `whitespace-nowrap rounded-xl px-4 py-2 text-sm font-semibold transition ${active ? "bg-neon-violet/15 text-neon-violet shadow-neon-sm ring-1 ring-neon-violet/60" : "text-white/70 hover:bg-white/5 hover:text-white"}`;
   return (
     <header className="relative z-20 mx-auto w-full max-w-6xl px-5 py-5">
       <div className="flex items-center justify-between gap-4">
@@ -26,20 +24,14 @@ export function SiteHeader({ user, current }: { user: SessionUser | null; curren
             </a>
           ))}
         </nav>
-        {user ? (
-          <ButtonLink href="/feed">
-            Deschide AcroFeed <ArrowRight className="size-4" />
+        <div className="flex gap-2">
+          <ButtonLink href="/login" variant="ghost">
+            Login
           </ButtonLink>
-        ) : (
-          <div className="flex gap-2">
-            <ButtonLink href="/login" variant="ghost">
-              Login
-            </ButtonLink>
-            <ButtonLink href="/signup" className="hidden sm:inline-flex">
-              Creează Cont
-            </ButtonLink>
-          </div>
-        )}
+          <ButtonLink href="/signup" className="hidden sm:inline-flex">
+            Creează Cont
+          </ButtonLink>
+        </div>
       </div>
       <nav className="-mx-5 mt-4 flex gap-1 overflow-x-auto px-5 lg:hidden" aria-label="Secțiuni (mobil)">
         {SITE_NAV.map((n) => (

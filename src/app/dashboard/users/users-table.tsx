@@ -134,7 +134,7 @@ export function UsersTable({ me, users }: { me: { id: string; role: AppRole }; u
                   {!isStaff(u.role) && u.id !== me.id && (
                     <Link
                       href={`/dashboard/messages/${u.id}`}
-                      className="inline-flex items-center gap-1.5 rounded-xl border border-white/10 px-3 py-1.5 text-xs font-semibold text-white/80 hover:border-neon-violet/50 hover:text-neon-violet"
+                      className="inline-flex items-center gap-1.5 rounded-xl border border-white/10 px-3 py-1.5 text-xs font-semibold text-white/80 hover:border-neon-violet/50 hover:shadow-neon hover:text-neon-violet"
                     >
                       <MessageSquare className="size-3.5" /> Mesaj
                     </Link>

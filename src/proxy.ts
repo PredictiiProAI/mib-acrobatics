@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { SUPABASE_KEY, SUPABASE_URL } from "@/lib/supabase/env";
 
-const PROTECTED = ["/feed", "/dashboard", "/messages"];
+const PROTECTED = ["/feed", "/dashboard", "/messages", "/schedule"];
 const AUTH_PAGES = ["/login", "/signup"];
 
 const matches = (path: string, prefixes: string[]) => prefixes.some((p) => path === p || path.startsWith(`${p}/`));

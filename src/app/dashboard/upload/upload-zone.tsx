@@ -132,7 +132,7 @@ export function UploadZone({ userId }: { userId: string }) {
           addFiles(e.dataTransfer.files);
         }}
         className={`glass group flex cursor-pointer flex-col items-center justify-center gap-4 rounded-3xl border-2 border-dashed p-10 text-center transition sm:p-14 ${
-          dragging ? "border-neon-purple bg-neon-purple/5" : "border-white/15 hover:border-neon-violet/60"
+          dragging ? "border-neon-purple bg-neon-purple/5" : "border-white/15 hover:border-neon-violet/60 hover:shadow-neon"
         }`}
       >
         <span

@@ -23,7 +23,7 @@ export function NavLinks({ items, badges = {} }: { items: DashNavItem[]; badges?
             key={item.label}
             href={item.href}
             className={`flex items-center justify-between whitespace-nowrap rounded-xl px-3 py-2 text-sm transition ${
-              active ? "bg-neon-violet/10 font-semibold text-neon-violet" : "text-white/70 hover:bg-white/5 hover:text-white"
+              active ? "bg-neon-violet/15 font-semibold text-neon-violet shadow-neon-sm ring-1 ring-neon-violet/60" : "text-white/70 hover:bg-white/5 hover:text-white"
             }`}
           >
             {item.label}

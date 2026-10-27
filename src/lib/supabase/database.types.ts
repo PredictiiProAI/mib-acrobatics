@@ -2,6 +2,19 @@
 export type AppRole = "superadmin" | "admin" | "media" | "user";
 export type MediaType = "video" | "image";
 export type ReactionKey = "like" | "love" | "fire" | "clap" | "acro";
+export type ScheduleLevel = "all" | "beginner" | "intermediate" | "advanced";
+export type BadgeColor = "violet" | "fuchsia" | "sky" | "emerald" | "amber" | "rose";
+type ScheduleInsert = {
+  group_name: string;
+  age_range?: string | null;
+  day_of_week: number;
+  start_time: string;
+  end_time: string;
+  level?: ScheduleLevel;
+  badge_color?: BadgeColor;
+  notes?: string | null;
+  sort_order?: number;
+};
 
 type Rel = { foreignKeyName: string; columns: string[]; isOneToOne: boolean; referencedRelation: string; referencedColumns: string[] };
 
@@ -64,6 +77,25 @@ export type Database = {
           { foreignKeyName: "comment_reactions_comment_id_fkey"; columns: ["comment_id"]; isOneToOne: false; referencedRelation: "comments"; referencedColumns: ["id"] },
           { foreignKeyName: "comment_reactions_user_id_fkey"; columns: ["user_id"]; isOneToOne: false; referencedRelation: "users"; referencedColumns: ["id"] },
         ];
+      };
+      schedule: {
+        Row: {
+          id: string;
+          group_name: string;
+          age_range: string | null;
+          day_of_week: number;
+          start_time: string;
+          end_time: string;
+          level: ScheduleLevel;
+          badge_color: BadgeColor;
+          notes: string | null;
+          sort_order: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: ScheduleInsert;
+        Update: Partial<ScheduleInsert>;
+        Relationships: [];
       };
       direct_messages: {
         Row: { id: string; sender_id: string; receiver_id: string; content: string; created_at: string; read_at: string | null };

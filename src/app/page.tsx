@@ -3,7 +3,6 @@ import {
   ArrowRight,
   CalendarDays,
   Check,
-  Clock,
   Flame,
   Hand,
   MessageSquare,
@@ -18,12 +17,16 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import Image from "next/image";
+import { AppHeader } from "@/components/app-header";
+import { ScheduleGrid } from "@/components/schedule-grid";
 import { SiteFooter, SiteHeader } from "@/components/site-header";
 import { PostTile } from "@/components/post-tile";
 import { ButtonLink } from "@/components/ui";
 import { getSessionUser } from "@/lib/auth";
-import { DISCIPLINES, PARTNER_SCHOOLS, SCHEDULE, WHY_MIB, type DisciplineKey } from "@/lib/club";
+import { DISCIPLINES, PARTNER_SCHOOLS, WHY_MIB, type DisciplineKey } from "@/lib/club";
 import { getLatestPublicPosts } from "@/lib/posts";
+import { groupSchedule, todayIsoDay } from "@/lib/schedule";
+import { getSchedule } from "@/lib/schedule.server";
 import { isStaff } from "@/lib/roles";
 import logoMark from "../../public/mib-logo.png";
 
@@ -57,16 +60,18 @@ function SectionTitle({ eyebrow, children, text }: { eyebrow: string; children: 
 }
 
 export default async function LandingPage() {
-  const [user, posts] = await Promise.all([getSessionUser(), getLatestPublicPosts(4)]);
+  const [user, posts, schedule] = await Promise.all([getSessionUser(), getLatestPublicPosts(4), getSchedule()]);
   const messages = user ? (isStaff(user.role) ? "/dashboard/messages" : "/messages") : "/signup";
 
   return (
-    <main className="flex-1">
+    <>
+      {user && <AppHeader user={user} />}
+      <main className={`flex-1 ${user ? "pb-20 lg:pb-0" : ""}`}>
       <section className="relative isolate flex min-h-[92svh] flex-col overflow-hidden">
         <video className="absolute inset-0 -z-20 size-full object-cover" src={HERO_VIDEO} autoPlay muted loop playsInline preload="auto" aria-hidden />
         <div className="absolute inset-0 -z-10 bg-gradient-to-b from-black/70 via-black/55 to-ink" />
 
-        <SiteHeader user={user} current="/" />
+        {!user && <SiteHeader current="/" />}
 
         <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col justify-center px-5 pb-20">
           <p className="mb-4 inline-flex w-fit items-center gap-2 rounded-full border border-neon-purple/40 bg-neon-purple/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.25em] text-neon-purple">
@@ -130,7 +135,7 @@ export default async function LandingPage() {
         <div className="relative">
           <div className="absolute -inset-6 -z-10 rounded-[2.5rem] bg-gradient-to-br from-neon-violet/25 via-transparent to-neon-purple/20 blur-2xl" />
           <div className="glass grid place-items-center rounded-[2rem] p-10 sm:p-14">
-            <Image src={logoMark} alt="MIB Acrobatics" className="aspect-square h-auto w-full max-w-xs rounded-3xl shadow-[0_0_60px_-10px_rgb(168_85_247/0.7)] ring-1 ring-white/10" />
+            <Image src={logoMark} alt="MIB Acrobatics" className="aspect-square h-auto w-full max-w-xs rounded-3xl shadow-[0_0_60px_-10px_rgb(192_132_252/0.7)] ring-1 ring-white/10" />
             <div className="mt-8 grid w-full grid-cols-3 gap-3 text-center">
               {[
                 { icon: Activity, label: "Forță" },
@@ -153,7 +158,7 @@ export default async function LandingPage() {
         </SectionTitle>
         <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {PILLARS.map(({ icon: Icon, title, text }) => (
-            <div key={title} className="glass rounded-2xl p-6 transition hover:-translate-y-1 hover:border-neon-violet/40">
+            <div key={title} className="glass rounded-2xl p-6 transition hover:-translate-y-1 hover:border-neon-violet/40 hover:shadow-neon">
               <Icon className="size-7 text-neon-purple" />
               <h3 className="mt-4 font-display text-lg font-extrabold">{title}</h3>
               <p className="mt-2 text-sm text-white/60">{text}</p>
@@ -170,7 +175,7 @@ export default async function LandingPage() {
           {DISCIPLINES.map((d) => {
             const Icon = DISCIPLINE_ICON[d.key];
             return (
-              <article key={d.key} className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-graphite/80 to-carbon/80 p-6 transition hover:-translate-y-1 hover:border-neon-violet/40">
+              <article key={d.key} className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-graphite/80 to-carbon/80 p-6 transition hover:-translate-y-1 hover:border-neon-violet/40 hover:shadow-neon">
                 <div className="pointer-events-none absolute -right-8 -top-8 size-28 rounded-full bg-neon-violet/10 blur-2xl transition group-hover:bg-neon-violet/25" />
                 <span className="grid size-12 place-items-center rounded-2xl bg-neon-violet/10 text-neon-violet ring-1 ring-neon-violet/25">
                   <Icon className="size-6" />
@@ -188,27 +193,7 @@ export default async function LandingPage() {
         <SectionTitle eyebrow="Antrenamente" text="Grupe pe vârste și niveluri. Pentru o oră de probă sau schimbări de program, scrie-i antrenorului din aplicație.">
           Program <span className="text-neon-purple">săptămânal</span>
         </SectionTitle>
-        <div className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {SCHEDULE.map((g) => (
-            <div key={g.group} className="glass rounded-2xl p-6">
-              <div className="flex items-baseline justify-between gap-3">
-                <h3 className="font-display text-lg font-extrabold">{g.group}</h3>
-                <span className="rounded-full bg-neon-violet/15 px-2.5 py-1 text-xs font-bold text-neon-violet">{g.age}</span>
-              </div>
-              <ul className="mt-4 divide-y divide-white/5">
-                {g.sessions.map((s) => (
-                  <li key={s.day + s.time} className="flex items-center justify-between py-2.5 text-sm">
-                    <span className="inline-flex items-center gap-2 font-semibold text-white/85">
-                      <CalendarDays className="size-4 text-white/40" /> {s.day}
-                    </span>
-                    <span className="inline-flex items-center gap-1.5 text-white/60">
-                      <Clock className="size-3.5" /> {s.time}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+        <ScheduleGrid groups={groupSchedule(schedule)} today={todayIsoDay()} className="mt-10">
           <div className="flex flex-col justify-between rounded-2xl border border-neon-violet/40 bg-gradient-to-br from-neon-violet/20 to-transparent p-6">
             <div>
               <h3 className="font-display text-lg font-extrabold">Prima oră de probă</h3>
@@ -218,7 +203,7 @@ export default async function LandingPage() {
               <MessageSquare className="size-4" /> Scrie antrenorului
             </ButtonLink>
           </div>
-        </div>
+        </ScheduleGrid>
       </section>
 
       <section id="acrofeed" className="mx-auto max-w-6xl scroll-mt-8 px-5 py-20">
@@ -273,5 +258,6 @@ export default async function LandingPage() {
 
       <SiteFooter />
     </main>
+    </>
   );
 }

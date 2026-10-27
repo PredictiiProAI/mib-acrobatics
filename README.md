@@ -5,7 +5,7 @@ coach messenger and the Admin/Media Command Center.
 
 ## Setup
 
-1. Supabase → SQL Editor → run `supabase/migrations/0001_init.sql`, then `0002_reactions.sql` (both idempotent, safe to re-run). It creates the
+1. Supabase → SQL Editor → run `supabase/migrations/0001_init.sql`, then `0002_reactions.sql` and `0003_schedule.sql` (all idempotent, safe to re-run). It creates the
    tables, RLS policies, role helpers, the `feed_posts` view, Realtime publication entries and the public
    `mib_media` Storage bucket with its policies.
 2. Supabase → Authentication → URL Configuration: set **Site URL** to the production origin and add
@@ -50,6 +50,8 @@ Layouts enforce roles server-side (`requireRole` in `src/lib/auth.ts`); RLS enfo
 - **Comment moderation** (`/dashboard/comments`, staff only): latest 200 comments, delete any.
 - **AcroFeed** (`/feed`): infinite scroll (keyset pagination), videos auto-play muted while on screen, heart and
   double-tap to react, comments panel (draggable bottom drawer on mobile, side panel on desktop) with live updates.
+- **Program & Grupe** (`/dashboard/schedule`, staff only; `0003_schedule.sql`): weekly calendar to add/edit/delete classes.
+  Rows with the same `group_name` form one group card on `/` and on the read-only in-app `/schedule` page.
 - **Reactions** (`0002_reactions.sql`): 👍 ❤️ 🔥 👏 🤸 on posts (`likes.reaction`) and comments (`comment_reactions`),
   one per user per item. Tap toggles ❤️; hover (mouse) or long-press (touch) opens the reaction bar.
 - **Messenger** (`/messages` for members, `/dashboard/messages` inbox for staff): 1-on-1 chat with the coach

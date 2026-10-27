@@ -79,7 +79,7 @@ export function ReactionTrigger({
           role="toolbar"
           aria-label="Alege o reacție"
           data-testid="reaction-bar"
-          className={`absolute z-20 flex ${below ? "top-full mt-2" : "bottom-full mb-2"} animate-[pop-in_.16s_ease-out] items-center gap-0.5 rounded-full border border-white/10 bg-carbon/95 p-1.5 shadow-[0_10px_40px_-8px_rgb(0_0_0/0.8),0_0_24px_-6px_rgb(168_85_247/0.5)] backdrop-blur-xl ${
+          className={`absolute z-20 flex ${below ? "top-full mt-2" : "bottom-full mb-2"} animate-[pop-in_.16s_ease-out] items-center gap-0.5 rounded-full border border-white/10 bg-carbon/95 p-1.5 shadow-[0_10px_40px_-8px_rgb(0_0_0/0.8),0_0_24px_-6px_rgb(192_132_252/0.5)] backdrop-blur-xl ${
             align === "center" ? "left-1/2 -translate-x-1/2" : "left-0"
           }`}
         >

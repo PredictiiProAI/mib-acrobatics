@@ -80,7 +80,7 @@ export function PostCard({ post, viewer, priority, onDeleted }: { post: FeedPost
 
   return (
     <article
-      className={`mx-auto w-full max-w-xl overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-graphite/90 to-carbon/90 shadow-[0_20px_60px_-30px_rgb(168_85_247/0.5)] transition hover:border-neon-violet/25 ${deleting ? "pointer-events-none opacity-50" : ""}`}
+      className={`mx-auto w-full max-w-xl overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-graphite/90 to-carbon/90 shadow-[0_20px_60px_-30px_rgb(192_132_252/0.5)] transition hover:border-neon-violet/25 hover:shadow-neon ${deleting ? "pointer-events-none opacity-50" : ""}`}
       data-testid="post-card"
     >
       <header className="flex items-center gap-3 px-5 py-4">
@@ -115,7 +115,7 @@ export function PostCard({ post, viewer, priority, onDeleted }: { post: FeedPost
           {burst > 0 && (
             <Heart
               key={burst}
-              className="pointer-events-none absolute left-1/2 top-1/2 size-24 -translate-x-1/2 -translate-y-1/2 animate-[heart-pop_.8s_ease-out_forwards] fill-neon-violet text-neon-violet drop-shadow-[0_0_24px_rgb(168_85_247/0.8)]"
+              className="pointer-events-none absolute left-1/2 top-1/2 size-24 -translate-x-1/2 -translate-y-1/2 animate-[heart-pop_.8s_ease-out_forwards] fill-neon-violet text-neon-violet drop-shadow-[0_0_24px_rgb(192_132_252/0.8)]"
             />
           )}
         </div>

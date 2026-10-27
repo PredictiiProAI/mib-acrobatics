@@ -1,6 +1,7 @@
 // Hand-written to match supabase/migrations. Update when the schema changes.
 export type AppRole = "superadmin" | "admin" | "media" | "user";
 export type MediaType = "video" | "image";
+export type ReactionKey = "like" | "love" | "fire" | "clap" | "acro";
 
 type Rel = { foreignKeyName: string; columns: string[]; isOneToOne: boolean; referencedRelation: string; referencedColumns: string[] };
 
@@ -38,9 +39,9 @@ export type Database = {
         ];
       };
       likes: {
-        Row: { id: string; post_id: string; user_id: string; created_at: string };
-        Insert: { post_id: string; user_id: string };
-        Update: never;
+        Row: { id: string; post_id: string; user_id: string; created_at: string; reaction: ReactionKey };
+        Insert: { post_id: string; user_id: string; reaction?: ReactionKey };
+        Update: { reaction?: ReactionKey };
         Relationships: [
           { foreignKeyName: "likes_post_id_fkey"; columns: ["post_id"]; isOneToOne: false; referencedRelation: "posts"; referencedColumns: ["id"] },
           { foreignKeyName: "likes_user_id_fkey"; columns: ["user_id"]; isOneToOne: false; referencedRelation: "users"; referencedColumns: ["id"] },
@@ -53,6 +54,15 @@ export type Database = {
         Relationships: [
           { foreignKeyName: "comments_post_id_fkey"; columns: ["post_id"]; isOneToOne: false; referencedRelation: "posts"; referencedColumns: ["id"] },
           { foreignKeyName: "comments_user_id_fkey"; columns: ["user_id"]; isOneToOne: false; referencedRelation: "users"; referencedColumns: ["id"] },
+        ];
+      };
+      comment_reactions: {
+        Row: { id: string; comment_id: string; user_id: string; reaction: ReactionKey; created_at: string };
+        Insert: { comment_id: string; user_id: string; reaction: ReactionKey };
+        Update: { reaction?: ReactionKey };
+        Relationships: [
+          { foreignKeyName: "comment_reactions_comment_id_fkey"; columns: ["comment_id"]; isOneToOne: false; referencedRelation: "comments"; referencedColumns: ["id"] },
+          { foreignKeyName: "comment_reactions_user_id_fkey"; columns: ["user_id"]; isOneToOne: false; referencedRelation: "users"; referencedColumns: ["id"] },
         ];
       };
       direct_messages: {
@@ -80,6 +90,8 @@ export type Database = {
           like_count: number;
           comment_count: number;
           liked_by_me: boolean;
+          reactions: Partial<Record<ReactionKey, number>>;
+          my_reaction: ReactionKey | null;
         };
         Relationships: Rel[];
       };

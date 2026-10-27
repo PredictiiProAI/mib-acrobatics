@@ -5,7 +5,7 @@ coach messenger and the Admin/Media Command Center.
 
 ## Setup
 
-1. Supabase → SQL Editor → run `supabase/migrations/0001_init.sql` (idempotent, safe to re-run). It creates the
+1. Supabase → SQL Editor → run `supabase/migrations/0001_init.sql`, then `0002_reactions.sql` (both idempotent, safe to re-run). It creates the
    tables, RLS policies, role helpers, the `feed_posts` view, Realtime publication entries and the public
    `mib_media` Storage bucket with its policies.
 2. Supabase → Authentication → URL Configuration: set **Site URL** to the production origin and add
@@ -49,7 +49,9 @@ Layouts enforce roles server-side (`requireRole` in `src/lib/auth.ts`); RLS enfo
   Deleting a post also removes its file from Storage.
 - **Comment moderation** (`/dashboard/comments`, staff only): latest 200 comments, delete any.
 - **AcroFeed** (`/feed`): infinite scroll (keyset pagination), videos auto-play muted while on screen, heart and
-  double-tap to like, comments in a bottom sheet with live updates via Realtime.
+  double-tap to react, comments panel (draggable bottom drawer on mobile, side panel on desktop) with live updates.
+- **Reactions** (`0002_reactions.sql`): 👍 ❤️ 🔥 👏 🤸 on posts (`likes.reaction`) and comments (`comment_reactions`),
+  one per user per item. Tap toggles ❤️; hover (mouse) or long-press (touch) opens the reaction bar.
 - **Messenger** (`/messages` for members, `/dashboard/messages` inbox for staff): 1-on-1 chat with the coach
   (first `admin`, else a `superadmin`), live delivery and read receipts via Realtime, unread badges in the header
   and sidebar. Staff can open a conversation with any non-staff member from the inbox or from Utilizatori.

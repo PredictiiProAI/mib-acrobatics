@@ -9,16 +9,18 @@ import { deletePost } from "@/lib/actions/posts";
 import type { FeedPost } from "@/lib/posts";
 import { isStaff } from "@/lib/roles";
 import { createClient } from "@/lib/supabase/client";
+import { applyReaction, DEFAULT_REACTION, reactionInfo, totalReactions, type ReactionKey } from "@/lib/reactions";
 import { timeAgo } from "@/lib/time";
 import { AutoplayVideo } from "./autoplay-video";
 import { CommentsSheet } from "./comments-sheet";
+import { ReactionSummary, ReactionTrigger } from "./reactions";
 import type { Viewer } from "./types";
 
 const fullDate = new Intl.DateTimeFormat("ro-RO", { dateStyle: "long", timeStyle: "short" });
 
 export function PostCard({ post, viewer, priority, onDeleted }: { post: FeedPost; viewer: Viewer; priority?: boolean; onDeleted: (id: string) => void }) {
-  const [liked, setLiked] = useState(post.liked_by_me);
-  const [likes, setLikes] = useState(post.like_count);
+  const [mine, setMine] = useState<ReactionKey | null>(post.my_reaction ?? (post.liked_by_me ? DEFAULT_REACTION : null));
+  const [counts, setCounts] = useState(post.reactions ?? {});
   const [comments, setComments] = useState(post.comment_count);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [burst, setBurst] = useState(0);
@@ -27,26 +29,32 @@ export function PostCard({ post, viewer, priority, onDeleted }: { post: FeedPost
   const [error, setError] = useState<string | null>(null);
   const [confirm, confirmDialog] = useConfirm();
 
-  async function setLike(next: boolean) {
-    if (likeBusy || next === liked) return;
+  async function react(next: ReactionKey | null) {
+    const prev = mine;
+    if (likeBusy || next === prev) return;
     setLikeBusy(true);
-    setLiked(next);
-    setLikes((n) => n + (next ? 1 : -1));
-    const supabase = createClient();
-    const { error } = next
-      ? await supabase.from("likes").insert({ post_id: post.id, user_id: viewer.id })
-      : await supabase.from("likes").delete().eq("post_id", post.id).eq("user_id", viewer.id);
-    if (error && error.code !== "23505") {
-      setLiked(!next);
-      setLikes((n) => n + (next ? -1 : 1));
+    setMine(next);
+    setCounts((c) => applyReaction(c, prev, next));
+    const likes = createClient().from("likes");
+    const { error } = !next
+      ? await likes.delete().eq("post_id", post.id).eq("user_id", viewer.id)
+      : prev
+        ? await likes.update({ reaction: next }).eq("post_id", post.id).eq("user_id", viewer.id)
+        : await likes.insert({ post_id: post.id, user_id: viewer.id, reaction: next });
+    if (error) {
+      setMine(prev);
+      setCounts((c) => applyReaction(c, next, prev));
     }
     setLikeBusy(false);
   }
 
   const doubleTapLike = () => {
     setBurst((b) => b + 1);
-    setLike(true);
+    if (!mine) react(DEFAULT_REACTION);
   };
+
+  const total = totalReactions(counts);
+  const mineInfo = mine ? reactionInfo(mine) : null;
 
   const closeSheet = useCallback(() => setSheetOpen(false), []);
 
@@ -115,21 +123,26 @@ export function PostCard({ post, viewer, priority, onDeleted }: { post: FeedPost
 
       {post.caption && <p className="whitespace-pre-wrap break-words px-5 pt-4 text-[15px] leading-relaxed text-white/90">{post.caption}</p>}
       {error && <p className="px-5 pt-3 text-xs text-red-300">{error}</p>}
+      <ReactionSummary counts={counts} mine={mine} className="px-5 pt-3" />
 
       <footer className="mt-4 flex items-center gap-2 border-t border-white/5 px-3 py-3">
-        <button
-          type="button"
-          onClick={() => setLike(!liked)}
-          aria-pressed={liked}
-          aria-label={liked ? "Retrage like-ul" : "Like"}
-          className={`group inline-flex flex-1 items-center justify-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-bold transition ${
-            liked ? "bg-neon-orange/15 text-neon-orange ring-1 ring-neon-orange/40" : "bg-white/[0.04] text-white/80 hover:bg-white/[0.08] hover:text-white"
-          }`}
-        >
-          <Heart className={`size-5 transition active:scale-125 ${liked ? "fill-neon-orange drop-shadow-[0_0_10px_rgb(255_106_0/0.7)]" : "group-hover:text-neon-orange"}`} />
-          <span data-testid="like-count">{likes}</span>
-          <span className="font-medium text-current/70">{likes === 1 ? "apreciere" : "aprecieri"}</span>
-        </button>
+        <div className="flex-1">
+          <ReactionTrigger
+            mine={mine}
+            onReact={react}
+            className={`group inline-flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-bold transition ${
+              mine ? "bg-neon-orange/15 text-neon-orange ring-1 ring-neon-orange/40" : "bg-white/[0.04] text-white/80 hover:bg-white/[0.08] hover:text-white"
+            }`}
+          >
+            {mineInfo ? (
+              <span className="animate-[pop-in_.2s_ease-out] text-lg leading-none">{mineInfo.emoji}</span>
+            ) : (
+              <Heart className="size-5 transition group-hover:text-neon-orange" />
+            )}
+            <span data-testid="like-count">{total}</span>
+            <span className="font-medium">{mineInfo ? mineInfo.label : total === 1 ? "reacție" : "reacții"}</span>
+          </ReactionTrigger>
+        </div>
         <button
           type="button"
           onClick={() => setSheetOpen(true)}

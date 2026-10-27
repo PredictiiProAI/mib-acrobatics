@@ -56,7 +56,7 @@ export function HeaderNav({
                 href={href}
                 aria-current={active(href) ? "page" : undefined}
                 className={`relative inline-flex items-center gap-1.5 rounded-xl px-2.5 py-2 text-sm font-semibold transition ${
-                  active(href) ? "bg-neon-violet/15 text-neon-violet shadow-neon-sm ring-1 ring-neon-violet/60" : "text-white/70 hover:bg-white/5 hover:text-white hover:text-shadow-neon"
+                  active(href) ? "bg-neon-violet/15 text-neon-violet shadow-neon-sm ring-1 ring-neon-violet/60" : "text-white/70 hover:bg-white/5 hover:text-white"
                 }`}
               >
                 <Icon className="size-4" />
@@ -95,7 +95,7 @@ export function HeaderNav({
                 aria-current={active(href) ? "page" : undefined}
                 className={`relative flex flex-col items-center gap-1 py-2.5 text-[10px] font-semibold ${active(href) ? "text-neon-violet" : "text-white/60"}`}
               >
-                {active(href) && <span className="absolute inset-x-3 top-0 h-0.5 rounded-full bg-neon-violet shadow-[0_0_10px_rgb(192_132_252)]" />}
+                {active(href) && <span className="absolute inset-x-3 top-0 h-0.5 rounded-full bg-neon-violet shadow-[0_0_10px_rgb(168_85_247)]" />}
                 <span className="relative">
                   <Icon className="size-5" />
                   {!!badge && (

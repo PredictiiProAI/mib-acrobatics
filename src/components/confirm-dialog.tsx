@@ -59,7 +59,7 @@ function ConfirmDialog({ title, description, confirmLabel = "Confirmă", cancelL
   return createPortal(
     <div className="fixed inset-0 z-[100] flex items-end justify-center p-4 sm:items-center" role="alertdialog" aria-modal="true" aria-labelledby="confirm-title" data-testid="confirm-dialog">
       <button type="button" aria-label={cancelLabel} tabIndex={-1} onClick={() => onClose(false)} className="absolute inset-0 animate-[fade-in_.15s_ease-out] bg-black/75 backdrop-blur-sm" />
-      <div className="relative w-full max-w-md animate-[sheet-up_.2s_ease-out] overflow-hidden rounded-3xl border border-white/10 bg-carbon/95 p-6 shadow-[0_0_60px_-15px_rgb(192_132_252/0.45)] backdrop-blur-xl">
+      <div className="relative w-full max-w-md animate-[sheet-up_.2s_ease-out] overflow-hidden rounded-3xl border border-white/10 bg-carbon/95 p-6 shadow-[0_0_60px_-15px_rgb(168_85_247/0.45)] backdrop-blur-xl">
         <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-neon-violet to-transparent" />
         <div className="flex gap-4">
           <span className={`grid size-12 shrink-0 place-items-center rounded-2xl ${danger ? "bg-red-500/10 text-red-400" : "bg-neon-violet/10 text-neon-violet"}`}>

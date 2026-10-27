@@ -135,7 +135,7 @@ export default async function LandingPage() {
         <div className="relative">
           <div className="absolute -inset-6 -z-10 rounded-[2.5rem] bg-gradient-to-br from-neon-violet/25 via-transparent to-neon-purple/20 blur-2xl" />
           <div className="glass grid place-items-center rounded-[2rem] p-10 sm:p-14">
-            <Image src={logoMark} alt="MIB Acrobatics" className="aspect-square h-auto w-full max-w-xs rounded-3xl shadow-[0_0_60px_-10px_rgb(192_132_252/0.7)] ring-1 ring-white/10" />
+            <Image src={logoMark} alt="MIB Acrobatics" className="aspect-square h-auto w-full max-w-xs rounded-3xl shadow-[0_0_60px_-10px_rgb(168_85_247/0.7)] ring-1 ring-white/10" />
             <div className="mt-8 grid w-full grid-cols-3 gap-3 text-center">
               {[
                 { icon: Activity, label: "Forță" },

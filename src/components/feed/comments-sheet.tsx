@@ -195,7 +195,7 @@ export function CommentsSheet({
         style={style}
         data-testid="comments-panel"
         data-expanded={expanded}
-        className={`relative flex h-[var(--sheet-h)] w-full max-w-2xl animate-[sheet-up_.25s_ease-out] flex-col overflow-hidden rounded-t-[2rem] border border-b-0 border-white/10 bg-carbon/95 shadow-[0_-20px_60px_-20px_rgb(192_132_252/0.35)] backdrop-blur-2xl md:h-full md:w-[30rem] md:max-w-none md:animate-[slide-in_.25s_ease-out] md:rounded-l-[2rem] md:rounded-tr-none md:border-b md:border-r-0 lg:w-[34rem] ${
+        className={`relative flex h-[var(--sheet-h)] w-full max-w-2xl animate-[sheet-up_.25s_ease-out] flex-col overflow-hidden rounded-t-[2rem] border border-b-0 border-white/10 bg-carbon/95 shadow-[0_-20px_60px_-20px_rgb(168_85_247/0.35)] backdrop-blur-2xl md:h-full md:w-[30rem] md:max-w-none md:animate-[slide-in_.25s_ease-out] md:rounded-l-[2rem] md:rounded-tr-none md:border-b md:border-r-0 lg:w-[34rem] ${
           drag === null ? "transition-[height,transform] duration-300 ease-out" : ""
         }`}
       >

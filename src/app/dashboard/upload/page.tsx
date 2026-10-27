@@ -11,7 +11,7 @@ export default async function UploadPage() {
   return (
     <div className="space-y-8">
       <div>
-        <p className="text-xs uppercase tracking-[0.3em] text-neon-green">Upload Zone</p>
+        <p className="text-xs uppercase tracking-[0.3em] text-neon-purple">Upload Zone</p>
         <h1 className="mt-2 font-display text-3xl font-black sm:text-4xl">Încarcă media</h1>
         <p className="mt-2 text-white/60">
           Fotografii (JPG, PNG, WEBP, GIF, HEIC) și videoclipuri (MP4, MOV, WEBM), maxim {formatBytes(MAX_UPLOAD_BYTES)} per fișier.

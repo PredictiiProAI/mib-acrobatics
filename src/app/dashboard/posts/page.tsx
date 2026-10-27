@@ -23,7 +23,7 @@ export default async function PostsPage() {
     <div className="space-y-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-xs uppercase tracking-[0.3em] text-neon-green">{staff ? "Moderare" : "Conținutul tău"}</p>
+          <p className="text-xs uppercase tracking-[0.3em] text-neon-purple">{staff ? "Moderare" : "Conținutul tău"}</p>
           <h1 className="mt-2 font-display text-3xl font-black sm:text-4xl">{staff ? "Toate postările" : "Postările mele"}</h1>
           <p className="mt-2 text-white/60">
             {staff
@@ -38,7 +38,7 @@ export default async function PostsPage() {
 
       {!posts?.length ? (
         <div className="glass rounded-3xl p-10 text-center text-white/60">
-          Nu există încă postări. Începe din <span className="text-neon-orange">Upload Zone</span>.
+          Nu există încă postări. Începe din <span className="text-neon-violet">Upload Zone</span>.
         </div>
       ) : (
         <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">

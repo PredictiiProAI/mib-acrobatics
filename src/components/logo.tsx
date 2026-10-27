@@ -9,7 +9,7 @@ export function Logo({ href = "/", size = "md" }: { href?: string; size?: "md" |
         src={logo}
         alt="MIB Acrobatics"
         priority
-        className={`w-auto drop-shadow-[0_0_14px_rgb(255_106_0/0.35)] transition group-hover:scale-[1.03] ${size === "lg" ? "h-20" : "h-11"}`}
+        className={`w-auto drop-shadow-[0_0_14px_rgb(168_85_247/0.35)] transition group-hover:scale-[1.03] ${size === "lg" ? "h-20" : "h-11"}`}
       />
     </Link>
   );

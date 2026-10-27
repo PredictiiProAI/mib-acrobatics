@@ -36,7 +36,7 @@ export function AuthForm({ mode, next }: { mode: "login" | "signup"; next?: stri
         </p>
       )}
       {state?.message && (
-        <p role="status" className="rounded-xl border border-neon-green/30 bg-neon-green/10 px-4 py-2 text-sm text-neon-green">
+        <p role="status" className="rounded-xl border border-neon-purple/30 bg-neon-purple/10 px-4 py-2 text-sm text-neon-purple">
           {state.message}
         </p>
       )}
@@ -49,7 +49,7 @@ export function AuthForm({ mode, next }: { mode: "login" | "signup"; next?: stri
         {isLogin ? "Nu ai cont? " : "Ai deja cont? "}
         <Link
           href={{ pathname: isLogin ? "/signup" : "/login", query: next ? { next } : undefined }}
-          className="font-semibold text-neon-orange hover:underline"
+          className="font-semibold text-neon-violet hover:underline"
         >
           {isLogin ? "Creează cont" : "Login"}
         </Link>

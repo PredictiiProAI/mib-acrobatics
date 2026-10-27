@@ -9,7 +9,7 @@ export default async function MessagesLayout({ children }: LayoutProps<"/message
   return (
     <>
       <AppHeader user={user} />
-      <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col px-4 pb-24 pt-4 md:pb-4">{children}</main>
+      <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col px-4 pb-24 pt-4 lg:pb-4">{children}</main>
     </>
   );
 }

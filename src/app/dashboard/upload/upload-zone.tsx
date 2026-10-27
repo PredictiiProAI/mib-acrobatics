@@ -132,12 +132,12 @@ export function UploadZone({ userId }: { userId: string }) {
           addFiles(e.dataTransfer.files);
         }}
         className={`glass group flex cursor-pointer flex-col items-center justify-center gap-4 rounded-3xl border-2 border-dashed p-10 text-center transition sm:p-14 ${
-          dragging ? "border-neon-green bg-neon-green/5" : "border-white/15 hover:border-neon-orange/60"
+          dragging ? "border-neon-purple bg-neon-purple/5" : "border-white/15 hover:border-neon-violet/60"
         }`}
       >
         <span
           className={`flex size-16 items-center justify-center rounded-2xl transition ${
-            dragging ? "bg-neon-green/15 text-neon-green" : "bg-neon-orange/10 text-neon-orange group-hover:scale-110"
+            dragging ? "bg-neon-purple/15 text-neon-purple" : "bg-neon-violet/10 text-neon-violet group-hover:scale-110"
           }`}
         >
           <CloudUpload className="size-8" />
@@ -198,19 +198,19 @@ export function UploadZone({ userId }: { userId: string }) {
                   )}
                   {(item.status === "uploading" || item.status === "saving") && (
                     <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/60 backdrop-blur-sm">
-                      <Loader2 className="size-8 animate-spin text-neon-orange" />
+                      <Loader2 className="size-8 animate-spin text-neon-violet" />
                       <p className="text-sm font-semibold">
                         {item.status === "saving" ? "Se publică…" : `${Math.round(item.progress * 100)}%`}
                       </p>
                       <div className="h-1.5 w-2/3 overflow-hidden rounded-full bg-white/10">
-                        <div className="h-full bg-neon-orange transition-[width]" style={{ width: `${item.progress * 100}%` }} />
+                        <div className="h-full bg-neon-violet transition-[width]" style={{ width: `${item.progress * 100}%` }} />
                       </div>
                     </div>
                   )}
                   {item.status === "done" && (
                     <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/60 backdrop-blur-sm">
-                      <CheckCircle2 className="size-10 text-neon-green" />
-                      <p className="text-sm font-semibold text-neon-green">Publicat</p>
+                      <CheckCircle2 className="size-10 text-neon-purple" />
+                      <p className="text-sm font-semibold text-neon-purple">Publicat</p>
                     </div>
                   )}
                 </div>
@@ -222,7 +222,7 @@ export function UploadZone({ userId }: { userId: string }) {
                     maxLength={2200}
                     rows={2}
                     placeholder="Descriere (opțional)…"
-                    className="w-full resize-none rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm outline-none placeholder:text-white/30 focus:border-neon-orange/70 disabled:opacity-60"
+                    className="w-full resize-none rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm outline-none placeholder:text-white/30 focus:border-neon-violet/70 disabled:opacity-60"
                   />
                   {item.error && <p className="text-xs text-red-300">{item.error}</p>}
                 </div>
@@ -237,7 +237,7 @@ export function UploadZone({ userId }: { userId: string }) {
                 checked={isPublic}
                 onChange={(e) => setIsPublic(e.target.checked)}
                 disabled={busy}
-                className="size-4 accent-[var(--color-neon-green)]"
+                className="size-4 accent-[var(--color-neon-purple)]"
               />
               <span>
                 Public <span className="text-white/50">— apare și pe pagina principală, nu doar în AcroFeed</span>
@@ -245,7 +245,7 @@ export function UploadZone({ userId }: { userId: string }) {
             </label>
             <div className="flex items-center gap-3">
               {doneCount > 0 && !busy && (
-                <Link href="/dashboard/posts" className="text-sm text-neon-green hover:underline">
+                <Link href="/dashboard/posts" className="text-sm text-neon-purple hover:underline">
                   Vezi postările ({doneCount})
                 </Link>
               )}

@@ -20,7 +20,7 @@ export default async function CommentsModerationPage() {
   return (
     <div className="space-y-8">
       <div>
-        <p className="text-xs uppercase tracking-[0.3em] text-neon-green">Moderare</p>
+        <p className="text-xs uppercase tracking-[0.3em] text-neon-purple">Moderare</p>
         <h1 className="mt-2 font-display text-3xl font-black sm:text-4xl">Comentarii recente</h1>
         <p className="mt-2 text-white/60">Ultimele 200 de comentarii din AcroFeed. Poți șterge oricare dintre ele.</p>
       </div>
@@ -32,7 +32,7 @@ export default async function CommentsModerationPage() {
             <li key={c.id} className="flex items-start gap-4 p-4">
               <div className="min-w-0 flex-1">
                 <p className="text-sm">
-                  <span className="font-semibold text-neon-orange">{c.author?.full_name ?? "Utilizator"}</span>
+                  <span className="font-semibold text-neon-violet">{c.author?.full_name ?? "Utilizator"}</span>
                   <span className="ml-2 text-xs text-white/40">{timeAgo(c.created_at)}</span>
                 </p>
                 <p className="mt-1 whitespace-pre-wrap break-words text-sm text-white/85">{c.content}</p>

@@ -30,7 +30,7 @@ export function PostAdminCard({ post, isMine }: { post: FeedPost; isMine: boolea
         )}
         <span
           className={`absolute left-3 top-3 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold backdrop-blur ${
-            post.is_public ? "bg-neon-green/20 text-neon-green" : "bg-black/60 text-white/70"
+            post.is_public ? "bg-neon-purple/20 text-neon-purple" : "bg-black/60 text-white/70"
           }`}
         >
           {post.is_public ? <Eye className="size-3.5" /> : <EyeOff className="size-3.5" />}

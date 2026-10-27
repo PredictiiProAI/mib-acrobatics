@@ -29,12 +29,12 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-8">
       <div>
-        <p className="text-xs uppercase tracking-[0.3em] text-neon-green">Command Center</p>
+        <p className="text-xs uppercase tracking-[0.3em] text-neon-purple">Command Center</p>
         <h1 className="mt-2 font-display text-3xl font-black sm:text-4xl">
           Salut, <span className="text-gradient">{user.fullName ?? user.email}</span>
         </h1>
         <p className="mt-2 text-white/60">
-          Rol: <span className="text-neon-orange">{ROLE_LABEL[user.role]}</span>
+          Rol: <span className="text-neon-violet">{ROLE_LABEL[user.role]}</span>
           {staff ? " — ai acces complet: upload, moderare, utilizatori și mesaje." : " — poți încărca media și gestiona postările tale."}
         </p>
       </div>
@@ -42,7 +42,7 @@ export default async function DashboardPage() {
         {stats.map((s) => (
           <div key={s.label} className="glass rounded-2xl p-6">
             <p className="text-sm text-white/50">{s.label}</p>
-            <p className="mt-2 font-display text-4xl font-black text-neon-orange">{s.value}</p>
+            <p className="mt-2 font-display text-4xl font-black text-neon-violet">{s.value}</p>
           </div>
         ))}
       </div>

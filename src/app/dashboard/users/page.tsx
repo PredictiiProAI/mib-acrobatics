@@ -23,7 +23,7 @@ export default async function UsersPage() {
   return (
     <div className="space-y-8">
       <div>
-        <p className="text-xs uppercase tracking-[0.3em] text-neon-green">Comunitate</p>
+        <p className="text-xs uppercase tracking-[0.3em] text-neon-purple">Comunitate</p>
         <h1 className="mt-2 font-display text-3xl font-black sm:text-4xl">Utilizatori</h1>
         <p className="mt-2 text-white/60">
           {me.role === "superadmin"

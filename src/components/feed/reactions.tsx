@@ -79,7 +79,7 @@ export function ReactionTrigger({
           role="toolbar"
           aria-label="Alege o reacție"
           data-testid="reaction-bar"
-          className={`absolute z-20 flex ${below ? "top-full mt-2" : "bottom-full mb-2"} animate-[pop-in_.16s_ease-out] items-center gap-0.5 rounded-full border border-white/10 bg-carbon/95 p-1.5 shadow-[0_10px_40px_-8px_rgb(0_0_0/0.8),0_0_24px_-6px_rgb(255_106_0/0.5)] backdrop-blur-xl ${
+          className={`absolute z-20 flex ${below ? "top-full mt-2" : "bottom-full mb-2"} animate-[pop-in_.16s_ease-out] items-center gap-0.5 rounded-full border border-white/10 bg-carbon/95 p-1.5 shadow-[0_10px_40px_-8px_rgb(0_0_0/0.8),0_0_24px_-6px_rgb(168_85_247/0.5)] backdrop-blur-xl ${
             align === "center" ? "left-1/2 -translate-x-1/2" : "left-0"
           }`}
         >
@@ -93,7 +93,7 @@ export function ReactionTrigger({
               onClick={() => pick(r.key)}
               style={{ animationDelay: `${i * 25}ms` }}
               className={`grid size-10 animate-[pop-in_.2s_ease-out_both] place-items-center rounded-full text-2xl transition duration-150 hover:-translate-y-1.5 hover:scale-125 ${
-                mine === r.key ? "bg-neon-orange/20 ring-1 ring-neon-orange/50" : "hover:bg-white/5"
+                mine === r.key ? "bg-neon-violet/20 ring-1 ring-neon-violet/50" : "hover:bg-white/5"
               }`}
             >
               {r.emoji}
@@ -149,7 +149,7 @@ export function ReactionSummary({ counts, mine, className = "" }: { counts: Reac
           title={r.label}
           data-testid="reaction-pill"
           className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold ${
-            mine === r.key ? "bg-neon-orange/15 text-neon-orange ring-1 ring-neon-orange/40" : "bg-white/[0.06] text-white/75 ring-1 ring-white/10"
+            mine === r.key ? "bg-neon-violet/15 text-neon-violet ring-1 ring-neon-violet/40" : "bg-white/[0.06] text-white/75 ring-1 ring-white/10"
           }`}
         >
           <span className="text-sm leading-none">{r.emoji}</span>

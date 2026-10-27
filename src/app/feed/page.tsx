@@ -19,9 +19,9 @@ export default async function FeedPage() {
 
   return (
     <div className="space-y-6">
-      <section className="relative mx-auto w-full max-w-xl overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-neon-orange/15 via-carbon to-neon-green/10 p-6">
-        <div className="pointer-events-none absolute -right-10 -top-16 size-48 rounded-full bg-neon-orange/20 blur-3xl" />
-        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-neon-green">AcroFeed</p>
+      <section className="relative mx-auto w-full max-w-xl overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-neon-violet/15 via-carbon to-neon-purple/10 p-6">
+        <div className="pointer-events-none absolute -right-10 -top-16 size-48 rounded-full bg-neon-violet/20 blur-3xl" />
+        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-neon-purple">AcroFeed</p>
         <h1 className="mt-2 font-display text-2xl font-black sm:text-3xl">Salut, {firstName}!</h1>
         <p className="mt-1 text-sm text-white/60">Cele mai noi momente de la antrenamente. Apasă inima sau dă dublu-click ca să apreciezi.</p>
       </section>

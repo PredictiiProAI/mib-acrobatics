@@ -4,8 +4,8 @@
   --color-ink: #050506;
   --color-carbon: #0d0e11;
   --color-graphite: #16181d;
-  --color-neon-orange: #ff6a00;
-  --color-neon-green: #39ff14;
+  --color-neon-violet: #a855f7;
+  --color-neon-purple: #8b5cf6;
   --font-sans: var(--font-geist-sans);
   --font-display: var(--font-exo);
 }
@@ -28,8 +28,8 @@ body::before {
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(60rem 40rem at 10% -10%, rgb(255 106 0 / 0.14), transparent 60%),
-    radial-gradient(50rem 35rem at 110% 10%, rgb(57 255 20 / 0.09), transparent 60%),
+    radial-gradient(60rem 40rem at 10% -10%, rgb(168 85 247 / 0.14), transparent 60%),
+    radial-gradient(50rem 35rem at 110% 10%, rgb(139 92 246 / 0.09), transparent 60%),
     var(--color-ink);
 }
 
@@ -42,18 +42,18 @@ body::before {
 }
 
 @utility text-gradient {
-  background: linear-gradient(90deg, var(--color-neon-orange), #ffb347 45%, var(--color-neon-green));
+  background: linear-gradient(90deg, var(--color-neon-violet), #d8b4fe 45%, var(--color-neon-purple));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 
 @utility glow-orange {
-  box-shadow: 0 0 0 1px rgb(255 106 0 / 0.6), 0 0 24px -2px rgb(255 106 0 / 0.55);
+  box-shadow: 0 0 0 1px rgb(168 85 247 / 0.6), 0 0 24px -2px rgb(168 85 247 / 0.55);
 }
 
 @utility glow-green {
-  box-shadow: 0 0 0 1px rgb(57 255 20 / 0.5), 0 0 24px -4px rgb(57 255 20 / 0.45);
+  box-shadow: 0 0 0 1px rgb(139 92 246 / 0.5), 0 0 24px -4px rgb(139 92 246 / 0.45);
 }
 
 @keyframes sheet-up {

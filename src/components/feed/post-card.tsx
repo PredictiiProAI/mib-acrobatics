@@ -80,11 +80,11 @@ export function PostCard({ post, viewer, priority, onDeleted }: { post: FeedPost
 
   return (
     <article
-      className={`mx-auto w-full max-w-xl overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-graphite/90 to-carbon/90 shadow-[0_20px_60px_-30px_rgb(255_106_0/0.5)] transition hover:border-neon-orange/25 ${deleting ? "pointer-events-none opacity-50" : ""}`}
+      className={`mx-auto w-full max-w-xl overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-graphite/90 to-carbon/90 shadow-[0_20px_60px_-30px_rgb(168_85_247/0.5)] transition hover:border-neon-violet/25 ${deleting ? "pointer-events-none opacity-50" : ""}`}
       data-testid="post-card"
     >
       <header className="flex items-center gap-3 px-5 py-4">
-        <span className="grid size-11 shrink-0 place-items-center rounded-full bg-gradient-to-br from-neon-orange to-neon-green p-[2px]">
+        <span className="grid size-11 shrink-0 place-items-center rounded-full bg-gradient-to-br from-neon-violet to-neon-purple p-[2px]">
           <span className="grid size-full place-items-center rounded-full bg-carbon font-display text-base font-black text-white">{author[0]?.toUpperCase()}</span>
         </span>
         <div className="min-w-0 flex-1">
@@ -115,7 +115,7 @@ export function PostCard({ post, viewer, priority, onDeleted }: { post: FeedPost
           {burst > 0 && (
             <Heart
               key={burst}
-              className="pointer-events-none absolute left-1/2 top-1/2 size-24 -translate-x-1/2 -translate-y-1/2 animate-[heart-pop_.8s_ease-out_forwards] fill-neon-orange text-neon-orange drop-shadow-[0_0_24px_rgb(255_106_0/0.8)]"
+              className="pointer-events-none absolute left-1/2 top-1/2 size-24 -translate-x-1/2 -translate-y-1/2 animate-[heart-pop_.8s_ease-out_forwards] fill-neon-violet text-neon-violet drop-shadow-[0_0_24px_rgb(168_85_247/0.8)]"
             />
           )}
         </div>
@@ -131,13 +131,13 @@ export function PostCard({ post, viewer, priority, onDeleted }: { post: FeedPost
             mine={mine}
             onReact={react}
             className={`group inline-flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-bold transition ${
-              mine ? "bg-neon-orange/15 text-neon-orange ring-1 ring-neon-orange/40" : "bg-white/[0.04] text-white/80 hover:bg-white/[0.08] hover:text-white"
+              mine ? "bg-neon-violet/15 text-neon-violet ring-1 ring-neon-violet/40" : "bg-white/[0.04] text-white/80 hover:bg-white/[0.08] hover:text-white"
             }`}
           >
             {mineInfo ? (
               <span className="animate-[pop-in_.2s_ease-out] text-lg leading-none">{mineInfo.emoji}</span>
             ) : (
-              <Heart className="size-5 transition group-hover:text-neon-orange" />
+              <Heart className="size-5 transition group-hover:text-neon-violet" />
             )}
             <span data-testid="like-count">{total}</span>
             <span className="font-medium">{mineInfo ? mineInfo.label : total === 1 ? "reacție" : "reacții"}</span>
@@ -149,7 +149,7 @@ export function PostCard({ post, viewer, priority, onDeleted }: { post: FeedPost
           aria-label="Comentarii"
           className="group inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-white/[0.04] px-4 py-2.5 text-sm font-bold text-white/80 transition hover:bg-white/[0.08] hover:text-white"
         >
-          <MessageCircle className="size-5 group-hover:text-neon-green" />
+          <MessageCircle className="size-5 group-hover:text-neon-purple" />
           <span data-testid="comment-count">{comments}</span>
           <span className="font-medium">{comments === 1 ? "comentariu" : "comentarii"}</span>
         </button>

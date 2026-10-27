@@ -23,12 +23,12 @@ export function NavLinks({ items, badges = {} }: { items: DashNavItem[]; badges?
             key={item.label}
             href={item.href}
             className={`flex items-center justify-between whitespace-nowrap rounded-xl px-3 py-2 text-sm transition ${
-              active ? "bg-neon-orange/10 font-semibold text-neon-orange" : "text-white/70 hover:bg-white/5 hover:text-white"
+              active ? "bg-neon-violet/10 font-semibold text-neon-violet" : "text-white/70 hover:bg-white/5 hover:text-white"
             }`}
           >
             {item.label}
             {(badges[item.href] ?? 0) > 0 && (
-              <span className="ml-2 inline-grid min-w-5 place-items-center rounded-full bg-neon-green px-1 text-[10px] font-black text-black">
+              <span className="ml-2 inline-grid min-w-5 place-items-center rounded-full bg-neon-purple px-1 text-[10px] font-black text-black">
                 {badges[item.href]}
               </span>
             )}

@@ -32,7 +32,7 @@ export function InboxList({ conversations }: { conversations: Conversation[] }) 
   return (
     <aside className={`glass min-h-0 flex-col overflow-hidden rounded-3xl md:flex md:w-80 ${inThread ? "hidden" : "flex"}`}>
       <div className="border-b border-white/5 p-3">
-        <label className="flex items-center gap-2 rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm focus-within:border-neon-orange/70">
+        <label className="flex items-center gap-2 rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm focus-within:border-neon-violet/70">
           <Search className="size-4 text-white/40" />
           <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Caută conversații…" className="w-full bg-transparent outline-none placeholder:text-white/30" />
         </label>
@@ -49,9 +49,9 @@ export function InboxList({ conversations }: { conversations: Conversation[] }) 
             <li key={c.userId}>
               <Link
                 href={`/dashboard/messages/${c.userId}`}
-                className={`flex items-center gap-3 border-l-2 px-4 py-3 transition ${active ? "border-neon-orange bg-neon-orange/10" : "border-transparent hover:bg-white/5"}`}
+                className={`flex items-center gap-3 border-l-2 px-4 py-3 transition ${active ? "border-neon-violet bg-neon-violet/10" : "border-transparent hover:bg-white/5"}`}
               >
-                <span className="grid size-10 shrink-0 place-items-center rounded-full bg-gradient-to-br from-neon-orange to-neon-green font-black text-black">
+                <span className="grid size-10 shrink-0 place-items-center rounded-full bg-gradient-to-br from-neon-violet to-neon-purple font-black text-black">
                   {c.name[0]?.toUpperCase()}
                 </span>
                 <span className="min-w-0 flex-1">
@@ -67,10 +67,10 @@ export function InboxList({ conversations }: { conversations: Conversation[] }) 
                       {c.lastMessage}
                     </span>
                     {c.unread > 0 && (
-                      <span className="ml-auto grid min-w-5 shrink-0 place-items-center rounded-full bg-neon-green px-1 text-[10px] font-black text-black">{c.unread}</span>
+                      <span className="ml-auto grid min-w-5 shrink-0 place-items-center rounded-full bg-neon-purple px-1 text-[10px] font-black text-black">{c.unread}</span>
                     )}
                   </span>
-                  {c.role !== "user" && <span className="text-[10px] uppercase text-neon-green">{ROLE_LABEL[c.role]}</span>}
+                  {c.role !== "user" && <span className="text-[10px] uppercase text-neon-purple">{ROLE_LABEL[c.role]}</span>}
                 </span>
               </Link>
             </li>

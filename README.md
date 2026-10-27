@@ -5,7 +5,7 @@ coach messenger and the Admin/Media Command Center.
 
 ## Setup
 
-1. Supabase → SQL Editor → run `supabase/migrations/0001_init.sql`, then `0002_reactions.sql` and `0003_schedule.sql` (all idempotent, safe to re-run). It creates the
+1. Supabase → SQL Editor → run `supabase/migrations/0001_init.sql`, then `0002_reactions.sql`, `0003_schedule.sql` and `0004_email_exists.sql` (all idempotent, safe to re-run). It creates the
    tables, RLS policies, role helpers, the `feed_posts` view, Realtime publication entries and the public
    `mib_media` Storage bucket with its policies.
 2. Supabase → Authentication → URL Configuration: set **Site URL** to the production origin and add

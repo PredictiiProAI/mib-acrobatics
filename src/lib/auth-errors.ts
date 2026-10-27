@@ -18,9 +18,16 @@ const MESSAGES: Record<string, string> = {
   validation_failed: "Datele introduse nu sunt valide.",
 };
 
-export function authErrorRo(error: { code?: string; status?: number } | null | undefined, fallback = "A apărut o eroare. Încearcă din nou.") {
+type AuthErrorLike = { code?: string; status?: number; message?: string };
+
+const SMTP_HINT = " Eroare la trimiterea emailului: verifică setările SMTP din Supabase (Authentication → Emails → SMTP) și Logs → Auth pentru mesajul exact.";
+
+/** Romanian message for known codes; anything else (e.g. SMTP failures) shows Supabase's raw message so it can be debugged. */
+export function authErrorRo(error: AuthErrorLike | null | undefined, fallback = "A apărut o eroare. Încearcă din nou.") {
   if (!error) return fallback;
   if (error.code && MESSAGES[error.code]) return MESSAGES[error.code];
   if (error.status === 429) return MESSAGES.over_request_rate_limit;
-  return fallback;
+  const detail = [error.code, error.status, error.message].filter(Boolean).join(" · ");
+  const smtp = /sending .*email|smtp/i.test(error.message ?? "") ? SMTP_HINT : "";
+  return detail ? `${fallback} Detalii: ${detail}.${smtp}` : fallback;
 }

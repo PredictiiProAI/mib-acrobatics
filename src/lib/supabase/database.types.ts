@@ -137,6 +137,7 @@ export type Database = {
         Returns: { id: string; email: string; role: AppRole; full_name: string | null; created_at: string }[];
       };
       admin_set_role: { Args: { target: string; new_role: AppRole }; Returns: undefined };
+      email_registered: { Args: { p_email: string }; Returns: boolean };
     };
     Enums: { app_role: AppRole; media_type: MediaType };
     CompositeTypes: { [_ in never]: never };

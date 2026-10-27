@@ -86,10 +86,14 @@ export async function requestPasswordReset(_prev: AuthState, formData: FormData)
   const email = field(formData, "email").toLowerCase();
   if (!email) return { error: "Completează emailul." };
   const supabase = await createClient();
+  const { data: registered, error: lookupError } = await supabase.rpc("email_registered", { p_email: email });
+  if (!lookupError && registered === false) return { error: "Acest email nu este înregistrat.", email };
   const { error } = await supabase.auth.resetPasswordForEmail(email);
-  if (error && error.code !== "user_not_found") return { error: authErrorRo(error), email };
-  // Same answer whether or not the account exists, so the form can't be used to discover emails.
-  return { step: "reset", email, message: "Dacă există un cont cu acest email, ți-am trimis un cod de 6 cifre." };
+  if (error) {
+    console.error("resetPasswordForEmail", error.code, error.status, error.message);
+    return { error: error.code === "user_not_found" ? "Acest email nu este înregistrat." : authErrorRo(error, "Emailul cu codul nu a putut fi trimis."), email };
+  }
+  return { step: "reset", email, message: "Ți-am trimis un cod de 6 cifre pe email." };
 }
 
 /** Step 2: verify the recovery code, set the new password and log in. */

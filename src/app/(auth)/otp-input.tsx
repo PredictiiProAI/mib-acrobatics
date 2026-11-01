@@ -85,8 +85,8 @@ export function OtpInput({ name = "token", onComplete, disabled }: { name?: stri
             }
           }}
           className={`size-12 rounded-xl border bg-black/60 text-center font-display text-2xl font-black outline-none transition sm:size-14 ${
-            d ? "border-neon-orange text-neon-orange shadow-neon-sm" : "border-white/15 text-white"
-          } focus:border-neon-orange focus:shadow-neon`}
+            d ? "border-neon-violet text-neon-violet shadow-neon-sm" : "border-white/15 text-white"
+          } focus:border-neon-violet focus:shadow-neon`}
         />
       ))}
     </div>

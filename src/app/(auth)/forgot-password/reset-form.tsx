@@ -42,7 +42,7 @@ export function ResetForm() {
   return (
     <form action={action} className="space-y-4">
       <div className="space-y-2">
-        <span className="grid size-12 place-items-center rounded-2xl bg-neon-orange/15 text-neon-orange shadow-neon-sm">
+        <span className="grid size-12 place-items-center rounded-2xl bg-neon-violet/15 text-neon-violet shadow-neon-sm">
           <KeyRound className="size-6" />
         </span>
         <h1 className="font-display text-2xl font-black">Am uitat parola</h1>
@@ -55,7 +55,7 @@ export function ResetForm() {
       </Button>
       <p className="text-center text-sm text-white/50">
         Ți-ai amintit?{" "}
-        <Link href="/login" className="font-semibold text-neon-orange hover:underline">
+        <Link href="/login" className="font-semibold text-neon-violet hover:underline">
           Intră în cont
         </Link>
       </p>

@@ -12,7 +12,7 @@ export const SITE_NAV = [
 /** Public header for visitors who are not logged in (logged-in users get the app header everywhere). */
 export function SiteHeader({ current }: { current?: string }) {
   const link = (active: boolean) =>
-    `whitespace-nowrap rounded-xl px-4 py-2 text-sm font-semibold transition ${active ? "bg-neon-orange/15 text-neon-orange shadow-neon-sm ring-1 ring-neon-orange/60" : "text-white/70 hover:bg-white/5 hover:text-white"}`;
+    `whitespace-nowrap rounded-xl px-4 py-2 text-sm font-semibold transition ${active ? "bg-neon-violet/15 text-neon-violet shadow-neon-sm ring-1 ring-neon-violet/60" : "text-white/70 hover:bg-white/5 hover:text-white"}`;
   return (
     <header className="relative z-20 mx-auto w-full max-w-6xl px-5 py-5">
       <div className="flex items-center justify-between gap-4">

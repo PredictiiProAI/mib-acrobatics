@@ -19,12 +19,12 @@ export default async function ProfilePage() {
   return (
     <div className="space-y-6">
       <header>
-        <p className="text-xs font-bold uppercase tracking-[0.3em] text-neon-green">Cont</p>
+        <p className="text-xs font-bold uppercase tracking-[0.3em] text-neon-lime">Cont</p>
         <h1 className="mt-1 font-display text-3xl font-black text-white">Profilul meu</h1>
       </header>
 
       <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
-        <section className="flex flex-col items-center gap-4 rounded-3xl border border-neon-orange/40 bg-carbon/80 p-6 text-center">
+        <section className="flex flex-col items-center gap-4 rounded-3xl border border-neon-violet/40 bg-carbon/80 p-6 text-center">
           <AvatarUploader userId={user.id} name={name} url={user.avatarUrl} />
           <div className="min-w-0">
             <p className="truncate text-lg font-bold text-white" data-testid="profile-name">{name}</p>
@@ -33,13 +33,13 @@ export default async function ProfilePage() {
           <div className="flex flex-wrap justify-center gap-2">
             <RoleBadge role={user.role} />
             {profile?.level && (
-              <span className="rounded-full bg-neon-green/10 px-2.5 py-0.5 text-xs font-bold text-neon-green ring-1 ring-neon-green/40">{LEVEL_LABEL[profile.level]}</span>
+              <span className="rounded-full bg-neon-lime/10 px-2.5 py-0.5 text-xs font-bold text-neon-lime ring-1 ring-neon-lime/40">{LEVEL_LABEL[profile.level]}</span>
             )}
           </div>
           {profile?.discipline && <p className="text-sm text-white/70">{profile.discipline}</p>}
         </section>
 
-        <section className="rounded-3xl border border-neon-orange/40 bg-carbon/80 p-6">
+        <section className="rounded-3xl border border-neon-violet/40 bg-carbon/80 p-6">
           <h2 className="font-display text-lg font-bold text-white">Date personale & sportive</h2>
           <ProfileForm
             initial={{
@@ -54,11 +54,11 @@ export default async function ProfilePage() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <section className="rounded-3xl border border-neon-orange/40 bg-carbon/80 p-6">
+        <section className="rounded-3xl border border-neon-violet/40 bg-carbon/80 p-6">
           <h2 className="font-display text-lg font-bold text-white">Notificări</h2>
           <NotificationToggles feed={settings?.notify_feed ?? true} schedule={settings?.notify_schedule ?? true} />
         </section>
-        <section className="rounded-3xl border border-neon-orange/40 bg-carbon/80 p-6">
+        <section className="rounded-3xl border border-neon-violet/40 bg-carbon/80 p-6">
           <h2 className="font-display text-lg font-bold text-white">Securitate</h2>
           <p className="mt-1 text-sm text-white/60">Schimbă parola contului tău.</p>
           <PasswordForm />

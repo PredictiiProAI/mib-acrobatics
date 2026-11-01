@@ -18,7 +18,7 @@ export function Notice({ state }: { state: AuthState }) {
         </p>
       )}
       {state?.message && !state.error && (
-        <p role="status" className="rounded-xl border border-neon-orange/40 bg-neon-orange/10 px-4 py-2 text-sm text-neon-orange">
+        <p role="status" className="rounded-xl border border-neon-violet/40 bg-neon-violet/10 px-4 py-2 text-sm text-neon-violet">
           {state.message}
         </p>
       )}
@@ -49,7 +49,7 @@ export function ResendButton({ email, kind }: { email: string; kind: "signup" | 
             if (r.ok) setLeft(RESEND_COOLDOWN);
           })
         }
-        className="font-semibold text-neon-orange hover:underline disabled:cursor-not-allowed disabled:text-white/40 disabled:no-underline"
+        className="font-semibold text-neon-violet hover:underline disabled:cursor-not-allowed disabled:text-white/40 disabled:no-underline"
       >
         {left > 0 ? `Retrimite în ${left}s` : "Retrimite codul"}
       </button>
@@ -65,7 +65,7 @@ function VerifyStep({ start, next, onBack }: { start: AuthState; next?: string; 
   return (
     <form ref={form} action={action} className="space-y-5" data-testid="verify-step">
       <div className="space-y-2 text-center">
-        <span className="mx-auto grid size-14 place-items-center rounded-2xl bg-neon-orange/15 text-neon-orange shadow-neon-sm">
+        <span className="mx-auto grid size-14 place-items-center rounded-2xl bg-neon-violet/15 text-neon-violet shadow-neon-sm">
           <MailCheck className="size-7" />
         </span>
         <h1 className="font-display text-2xl font-black">Verifică emailul</h1>
@@ -115,7 +115,7 @@ export function AuthForm({ mode, next }: { mode: "login" | "signup"; next?: stri
       />
       {isLogin && (
         <div className="-mt-1 text-right">
-          <Link href="/forgot-password" className="text-xs font-semibold text-white/50 hover:text-neon-orange">
+          <Link href="/forgot-password" className="text-xs font-semibold text-white/50 hover:text-neon-violet">
             Am uitat parola
           </Link>
         </div>
@@ -129,7 +129,7 @@ export function AuthForm({ mode, next }: { mode: "login" | "signup"; next?: stri
 
       <p className="text-center text-sm text-white/50">
         {isLogin ? "Nu ai cont? " : "Ai deja cont? "}
-        <Link href={{ pathname: isLogin ? "/signup" : "/login", query: next ? { next } : undefined }} className="font-semibold text-neon-orange hover:underline">
+        <Link href={{ pathname: isLogin ? "/signup" : "/login", query: next ? { next } : undefined }} className="font-semibold text-neon-violet hover:underline">
           {isLogin ? "Creează cont" : "Intră în cont"}
         </Link>
       </p>

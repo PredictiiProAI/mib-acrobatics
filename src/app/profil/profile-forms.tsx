@@ -14,7 +14,7 @@ function Status({ state }: { state: FormState }) {
   return state.error ? (
     <p role="alert" className="text-sm font-medium text-red-400">{state.error}</p>
   ) : (
-    <p role="status" className="inline-flex items-center gap-1.5 text-sm font-semibold text-neon-green">
+    <p role="status" className="inline-flex items-center gap-1.5 text-sm font-semibold text-neon-lime">
       <Check className="size-4" />
       {state.message}
     </p>
@@ -76,7 +76,7 @@ export function AvatarUploader({ userId, name, url }: { userId: string; name: st
           onClick={() => input.current?.click()}
           disabled={busy}
           aria-label="Schimbă poza de profil"
-          className="absolute bottom-1 right-1 grid size-10 place-items-center rounded-full border-2 border-black bg-neon-orange text-black transition hover:brightness-110 disabled:opacity-60"
+          className="absolute bottom-1 right-1 grid size-10 place-items-center rounded-full border-2 border-black bg-neon-violet text-white transition hover:brightness-110 disabled:opacity-60"
           data-testid="avatar-edit"
         >
           {busy ? <Loader2 className="size-4 animate-spin" /> : <Camera className="size-4" />}
@@ -145,7 +145,7 @@ export function ProfileForm({ initial }: { initial: ProfileValues }) {
               aria-checked={level === l}
               onClick={() => setLevel(level === l ? "" : l)}
               className={`rounded-xl border px-3 py-2.5 text-sm font-semibold transition ${
-                level === l ? "border-neon-green bg-neon-green/10 text-neon-green" : "border-white/10 text-white/70 hover:border-neon-orange/60 hover:text-white"
+                level === l ? "border-neon-lime bg-neon-lime/10 text-neon-lime" : "border-white/10 text-white/70 hover:border-neon-violet/60 hover:text-white"
               }`}
             >
               {LEVEL_LABEL[l]}
@@ -195,7 +195,7 @@ function Toggle({ label, initial, setting }: { label: string; initial: boolean; 
             }
           });
         }}
-        className={`relative h-7 w-12 shrink-0 rounded-full transition ${on ? "bg-neon-green shadow-[0_0_12px_rgb(57_255_20/0.35)]" : "bg-white/15"}`}
+        className={`relative h-7 w-12 shrink-0 rounded-full transition ${on ? "bg-neon-lime shadow-[0_0_12px_rgb(118_255_3/0.35)]" : "bg-white/15"}`}
       >
         <span className={`absolute top-1 size-5 rounded-full transition-all ${on ? "left-6 bg-black" : "left-1 bg-white"}`} />
       </button>

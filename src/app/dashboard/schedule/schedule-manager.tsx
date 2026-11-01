@@ -43,7 +43,7 @@ const toInput = (r: ScheduleRow): ScheduleInput => ({
   sort_order: r.sort_order,
 });
 
-const field = "w-full rounded-xl border border-white/10 bg-black/50 px-3.5 py-2.5 text-sm outline-none placeholder:text-white/30 focus:border-neon-orange/70 focus:shadow-neon-sm";
+const field = "w-full rounded-xl border border-white/10 bg-black/50 px-3.5 py-2.5 text-sm outline-none placeholder:text-white/30 focus:border-neon-violet/70 focus:shadow-neon-sm";
 
 export function ScheduleManager({ rows }: { rows: ScheduleRow[] }) {
   const [editing, setEditing] = useState<ScheduleInput | null>(null);
@@ -80,14 +80,14 @@ export function ScheduleManager({ rows }: { rows: ScheduleRow[] }) {
         <button
           type="button"
           onClick={() => newForGroup()}
-          className="inline-flex items-center gap-2 rounded-xl bg-neon-orange px-5 py-2.5 text-sm font-bold text-black shadow-neon transition hover:shadow-neon-lg"
+          className="inline-flex items-center gap-2 rounded-xl bg-neon-violet px-5 py-2.5 text-sm font-bold text-white shadow-neon transition hover:shadow-neon-lg"
         >
           <Plus className="size-4" /> Adaugă oră
         </button>
         <span className="text-sm text-white/50">
           {rows.length} ore · {groups.length} grupe
         </span>
-        {pending && <Loader2 className="size-4 animate-spin text-neon-orange" />}
+        {pending && <Loader2 className="size-4 animate-spin text-neon-violet" />}
         {error && <span className="text-sm text-red-300">{error}</span>}
       </div>
 
@@ -102,7 +102,7 @@ export function ScheduleManager({ rows }: { rows: ScheduleRow[] }) {
                   type="button"
                   onClick={() => newForGroup(undefined, i + 1)}
                   aria-label={`Adaugă oră ${DAYS[i]}`}
-                  className="rounded-lg p-1 text-white/40 transition hover:bg-neon-orange/15 hover:text-neon-orange"
+                  className="rounded-lg p-1 text-white/40 transition hover:bg-neon-violet/15 hover:text-neon-violet"
                 >
                   <Plus className="size-4" />
                 </button>
@@ -110,7 +110,7 @@ export function ScheduleManager({ rows }: { rows: ScheduleRow[] }) {
               <ul className="flex-1 space-y-2">
                 {list.length === 0 && <li className="px-1 py-4 text-center text-xs text-white/30">Liber</li>}
                 {list.map((r) => (
-                  <li key={r.id} className="group relative rounded-xl border border-white/10 bg-black/40 p-2.5 transition hover:border-neon-orange/50 hover:shadow-neon-sm" data-testid="calendar-entry">
+                  <li key={r.id} className="group relative rounded-xl border border-white/10 bg-black/40 p-2.5 transition hover:border-neon-violet/50 hover:shadow-neon-sm" data-testid="calendar-entry">
                     <button type="button" onClick={() => setEditing(toInput(r))} className="block w-full text-left" aria-label={`Editează ${r.group_name} ${DAYS[i]}`}>
                       <span className="flex items-center gap-1.5 text-[11px] font-semibold text-white/60">
                         <Clock className="size-3" /> {hhmm(r.start_time)}–{hhmm(r.end_time)}
@@ -157,7 +157,7 @@ export function ScheduleManager({ rows }: { rows: ScheduleRow[] }) {
                     key={s.id}
                     type="button"
                     onClick={() => setEditing(toInput(s))}
-                    className="inline-flex items-center gap-1 rounded-lg bg-white/5 px-2 py-1 text-xs text-white/75 hover:bg-neon-orange/15 hover:text-white"
+                    className="inline-flex items-center gap-1 rounded-lg bg-white/5 px-2 py-1 text-xs text-white/75 hover:bg-neon-violet/15 hover:text-white"
                   >
                     <Pencil className="size-3" /> {dayLabel(s.day_of_week).slice(0, 3)} {hhmm(s.start_time)}
                   </button>
@@ -165,7 +165,7 @@ export function ScheduleManager({ rows }: { rows: ScheduleRow[] }) {
                 <button
                   type="button"
                   onClick={() => newForGroup(g)}
-                  className="inline-flex items-center gap-1 rounded-lg border border-dashed border-neon-orange/40 px-2 py-1 text-xs font-semibold text-neon-orange hover:bg-neon-orange/10"
+                  className="inline-flex items-center gap-1 rounded-lg border border-dashed border-neon-violet/40 px-2 py-1 text-xs font-semibold text-neon-violet hover:bg-neon-violet/10"
                 >
                   <Plus className="size-3" /> Oră nouă
                 </button>
@@ -227,7 +227,7 @@ function EntryForm({
           e.preventDefault();
           submit();
         }}
-        className="relative max-h-[92svh] w-full max-w-lg animate-[sheet-up_.2s_ease-out] overflow-y-auto rounded-3xl border border-neon-orange/40 bg-carbon/95 p-6 shadow-neon backdrop-blur-xl"
+        className="relative max-h-[92svh] w-full max-w-lg animate-[sheet-up_.2s_ease-out] overflow-y-auto rounded-3xl border border-neon-violet/40 bg-carbon/95 p-6 shadow-neon backdrop-blur-xl"
       >
         <div className="flex items-center justify-between">
           <h2 className="font-display text-xl font-extrabold">{form.id ? "Editează ora" : "Adaugă oră"}</h2>
@@ -312,7 +312,7 @@ function EntryForm({
           <button
             type="submit"
             disabled={pending}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-neon-orange px-5 py-2.5 text-sm font-bold text-black shadow-neon transition hover:shadow-neon-lg disabled:opacity-60"
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-neon-violet px-5 py-2.5 text-sm font-bold text-white shadow-neon transition hover:shadow-neon-lg disabled:opacity-60"
           >
             {pending && <Loader2 className="size-4 animate-spin" />} Salvează
           </button>

@@ -192,7 +192,7 @@ export function ChatThread({
                   data-testid={out ? "msg-out" : "msg-in"}
                   className={`max-w-[80%] rounded-2xl px-4 py-2 text-sm shadow-lg ${
                     out
-                      ? "rounded-br-md bg-neon-orange text-black shadow-neon-orange/10"
+                      ? "rounded-br-md bg-neon-violet text-black shadow-neon-violet/10"
                       : "rounded-bl-md border border-white/10 bg-white/[0.06] text-white"
                   } ${m.pending ? "opacity-60" : ""}`}
                 >
@@ -229,13 +229,13 @@ export function ChatThread({
           maxLength={4000}
           placeholder={`Scrie-i lui ${peerName}…`}
           aria-label="Mesaj"
-          className="max-h-32 flex-1 resize-none rounded-xl border border-white/10 bg-black/40 px-4 py-2.5 text-sm outline-none placeholder:text-white/30 focus:border-neon-orange/70"
+          className="max-h-32 flex-1 resize-none rounded-xl border border-white/10 bg-black/40 px-4 py-2.5 text-sm outline-none placeholder:text-white/30 focus:border-neon-violet/70"
         />
         <button
           type="submit"
           disabled={!text.trim()}
           aria-label="Trimite"
-          className="rounded-xl bg-neon-orange p-2.5 text-black transition hover:brightness-110 disabled:opacity-40"
+          className="rounded-xl bg-neon-violet p-2.5 text-black transition hover:brightness-110 disabled:opacity-40"
         >
           <Send className="size-5" />
         </button>

@@ -53,6 +53,7 @@ export function UploadZone({ userId }: { userId: string }) {
   const [isPublic, setIsPublic] = useState(true);
   const [dragging, setDragging] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [published, setPublished] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const itemsRef = useRef(items);
 
@@ -74,6 +75,7 @@ export function UploadZone({ userId }: { userId: string }) {
         accepted.push({ id: crypto.randomUUID(), file, type, preview: URL.createObjectURL(file), caption: "", status: "ready", progress: 0 });
     }
     setRejected(errors);
+    setPublished(0);
     setItems((list) => [...list.filter((i) => i.status !== "done"), ...accepted]);
   }, []);
 
@@ -95,6 +97,7 @@ export function UploadZone({ userId }: { userId: string }) {
       setBusy(false);
       return;
     }
+    const doneIds: string[] = [];
     for (const item of pending) {
       const path = `${userId}/${Date.now()}-${crypto.randomUUID()}.${extensionFor(item.file.type)}`;
       update(item.id, { status: "uploading", progress: 0, error: undefined });
@@ -104,15 +107,23 @@ export function UploadZone({ userId }: { userId: string }) {
         const result = await createPost({ storagePath: path, mime: item.file.type, caption: item.caption, isPublic });
         if (!result.ok) throw new Error(result.error);
         update(item.id, { status: "done" });
+        doneIds.push(item.id);
       } catch (e) {
         update(item.id, { status: "error", error: e instanceof Error ? e.message : "Eroare necunoscută." });
       }
     }
     setBusy(false);
+    if (!doneIds.length) return;
+    setPublished((n) => n + doneIds.length);
+    // Show the "Publicat" state briefly, then clear the published files and captions.
+    setTimeout(() => {
+      itemsRef.current.filter((i) => doneIds.includes(i.id)).forEach((i) => URL.revokeObjectURL(i.preview));
+      setItems((list) => list.filter((i) => !doneIds.includes(i.id)));
+      if (pending.length === doneIds.length) setIsPublic(true);
+    }, 1200);
   }
 
   const pendingCount = items.filter((i) => i.status === "ready" || i.status === "error").length;
-  const doneCount = items.filter((i) => i.status === "done").length;
 
   return (
     <div className="space-y-6">
@@ -167,6 +178,22 @@ export function UploadZone({ userId }: { userId: string }) {
               <TriangleAlert className="size-4 shrink-0" /> {r}
             </p>
           ))}
+        </div>
+      )}
+
+      {published > 0 && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-neon-lime/30 bg-neon-lime/10 p-4 text-sm" data-testid="upload-success">
+          <p className="flex items-center gap-2 font-semibold text-neon-lime">
+            <CheckCircle2 className="size-5" /> {published === 1 ? "Postarea a fost publicată." : `${published} postări au fost publicate.`}
+          </p>
+          <div className="flex gap-4">
+            <Link href="/feed" className="font-semibold text-white hover:underline">
+              Vezi în AcroFeed
+            </Link>
+            <Link href="/dashboard/posts" className="text-white/70 hover:underline">
+              Postările mele
+            </Link>
+          </div>
         </div>
       )}
 
@@ -244,11 +271,6 @@ export function UploadZone({ userId }: { userId: string }) {
               </span>
             </label>
             <div className="flex items-center gap-3">
-              {doneCount > 0 && !busy && (
-                <Link href="/dashboard/posts" className="text-sm text-neon-lime hover:underline">
-                  Vezi postările ({doneCount})
-                </Link>
-              )}
               <Button onClick={publishAll} disabled={busy || pendingCount === 0}>
                 {busy ? <Loader2 className="size-4 animate-spin" /> : <CloudUpload className="size-4" />}
                 {busy ? "Se încarcă…" : `Publică ${pendingCount || ""}`.trim()}

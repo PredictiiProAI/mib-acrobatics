@@ -9,8 +9,20 @@ import type { Viewer } from "./types";
 
 export const FEED_PAGE_SIZE = 6;
 
+/** Prepends posts newer than what the list already has (server re-render, realtime, tab refocus). */
+function mergeNewest(list: FeedPost[], fresh: FeedPost[]) {
+  const ids = new Set(list.map((p) => p.id));
+  const added = fresh.filter((p) => !ids.has(p.id));
+  return added.length ? [...added, ...list] : list;
+}
+
 export function FeedList({ initialPosts, viewer }: { initialPosts: FeedPost[]; viewer: Viewer }) {
   const [posts, setPosts] = useState(initialPosts);
+  const [seenInitial, setSeenInitial] = useState(initialPosts);
+  if (seenInitial !== initialPosts) {
+    setSeenInitial(initialPosts);
+    setPosts((list) => mergeNewest(list, initialPosts));
+  }
   const [hasMore, setHasMore] = useState(initialPosts.length === FEED_PAGE_SIZE);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
@@ -47,6 +59,37 @@ export function FeedList({ initialPosts, viewer }: { initialPosts: FeedPost[]; v
     observer.observe(el);
     return () => observer.disconnect();
   }, [loadMore, hasMore, error]);
+
+  const fetchNewest = useCallback(async () => {
+    const { data, error } = await createClient()
+      .from("feed_posts")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: false })
+      .limit(FEED_PAGE_SIZE);
+    if (error) console.error("feed refresh", error.message);
+    else setPosts((list) => mergeNewest(list, data));
+  }, []);
+
+  useEffect(() => {
+    const supabase = createClient();
+    const channel = supabase
+      .channel("feed-posts")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "posts" }, () => fetchNewest())
+      .on("postgres_changes", { event: "DELETE", schema: "public", table: "posts" }, ({ old }) => {
+        const id = (old as { id?: string }).id;
+        if (id) setPosts((list) => list.filter((p) => p.id !== id));
+      })
+      .subscribe();
+    const onVisible = () => document.visibilityState === "visible" && fetchNewest();
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", onVisible);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", onVisible);
+      supabase.removeChannel(channel);
+    };
+  }, [fetchNewest]);
 
   const removePost = useCallback((id: string) => setPosts((list) => list.filter((p) => p.id !== id)), []);
 

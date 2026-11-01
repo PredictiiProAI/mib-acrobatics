@@ -47,9 +47,15 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
   const password = String(formData.get("password") ?? "");
   if (!fullName || !email) return { error: "Completează numele și emailul.", email };
   if (password.length < 8) return { error: "Parola trebuie să aibă cel puțin 8 caractere.", email };
+  if (formData.get("gdpr") !== "on")
+    return { error: "Trebuie să accepți Termenii și Condițiile și Politica de Confidențialitate pentru a crea contul.", email };
 
   const supabase = await createClient();
-  const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { full_name: fullName } } });
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: { data: { full_name: fullName, gdpr_accepted: true, gdpr_accepted_at: new Date().toISOString() } },
+  });
   if (error) return { error: authErrorRo(error, "Nu am putut crea contul. Încearcă din nou."), email };
   // Supabase returns a user with no identities when the email is already registered.
   if (data.user && data.user.identities?.length === 0) return { error: authErrorRo({ code: "user_already_exists" }), email };

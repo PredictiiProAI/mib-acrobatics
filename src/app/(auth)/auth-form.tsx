@@ -92,11 +92,22 @@ export function AuthForm({ mode, next }: { mode: "login" | "signup"; next?: stri
   const [state, action, pending] = useActionState<AuthState, FormData>(mode === "login" ? signIn : signUp, undefined);
   const [dismissed, setDismissed] = useState<AuthState>(undefined);
   const isLogin = mode === "login";
+  const [gdpr, setGdpr] = useState(false);
+  const [gdprError, setGdprError] = useState(false);
 
   if (state?.step === "verify" && state !== dismissed) return <VerifyStep start={state} next={next} onBack={() => setDismissed(state)} />;
 
   return (
-    <form action={action} className="space-y-4">
+    <form
+      action={action}
+      className="space-y-4"
+      onSubmit={(e) => {
+        if (!isLogin && !gdpr) {
+          e.preventDefault();
+          setGdprError(true);
+        }
+      }}
+    >
       <div className="space-y-1">
         <h1 className="font-display text-2xl font-black">{isLogin ? "Bine ai revenit" : "Creează cont"}</h1>
         <p className="text-sm text-white/50">{isLogin ? "Intră în comunitatea MIB Acrobatics." : "Alătură-te AcroMib și vorbește direct cu antrenorul."}</p>
@@ -121,9 +132,46 @@ export function AuthForm({ mode, next }: { mode: "login" | "signup"; next?: stri
         </div>
       )}
 
+      {!isLogin && (
+        <div>
+          <label className="flex cursor-pointer items-start gap-3 text-sm leading-snug text-white/75">
+            <input
+              type="checkbox"
+              name="gdpr"
+              required
+              checked={gdpr}
+              onChange={(e) => {
+                setGdpr(e.target.checked);
+                if (e.target.checked) setGdprError(false);
+              }}
+              aria-invalid={gdprError}
+              aria-describedby={gdprError ? "gdpr-error" : undefined}
+              data-testid="gdpr-checkbox"
+              className="mt-0.5 size-5 shrink-0 cursor-pointer accent-[#ff6a00]"
+            />
+            <span>
+              Am citit și sunt de acord cu{" "}
+              <Link href="/termeni" target="_blank" className="font-semibold text-neon-orange underline-offset-2 hover:underline">
+                Termenii și Condițiile
+              </Link>{" "}
+              și{" "}
+              <Link href="/confidentialitate" target="_blank" className="font-semibold text-neon-orange underline-offset-2 hover:underline">
+                Politica de Confidențialitate
+              </Link>
+              .
+            </span>
+          </label>
+          {gdprError && (
+            <p id="gdpr-error" role="alert" className="mt-2 text-sm font-semibold text-red-400" data-testid="gdpr-error">
+              Bifează acordul pentru a putea crea contul.
+            </p>
+          )}
+        </div>
+      )}
+
       <Notice state={state === dismissed ? undefined : state} />
 
-      <Button type="submit" disabled={pending} className="w-full">
+      <Button type="submit" disabled={pending || (!isLogin && !gdpr)} className="w-full" data-testid="auth-submit">
         {pending ? <Loader2 className="size-4 animate-spin" /> : isLogin ? "Intră în cont" : "Creează cont"}
       </Button>
 

@@ -1,5 +1,6 @@
 -- MIB Acrobatics — repair post likes/reactions permissions.
--- Re-asserts everything the heart button needs (0001 + 0002), in case a step was skipped on the live DB.
+-- Re-asserts the likes table, grants and RLS the heart button needs (0001 + 0002), in case a step was skipped
+-- on the live DB. The feed_posts view itself is defined in 0005_profile.sql (run that one too if it is missing).
 -- Idempotent: safe to run more than once.
 
 -- Reaction column (from 0002_reactions.sql)
@@ -52,29 +53,6 @@ drop policy if exists likes_delete_own on public.likes;
 create policy likes_delete_own on public.likes
   for delete to authenticated
   using (user_id = (select auth.uid()));
-
--- Feed view with counts + the viewer's reaction (same as 0002)
-create or replace view public.feed_posts
-with (security_invoker = true)
-as
-select
-  p.id, p.author_id, p.media_url, p.media_type, p.caption, p.created_at, p.is_public,
-  u.full_name as author_name,
-  u.role as author_role,
-  (select count(*) from public.likes l where l.post_id = p.id)::int as like_count,
-  (select count(*) from public.comments c where c.post_id = p.id)::int as comment_count,
-  exists (select 1 from public.likes l where l.post_id = p.id and l.user_id = auth.uid()) as liked_by_me,
-  coalesce(
-    (select jsonb_object_agg(r.reaction, r.n)
-       from (select l.reaction, count(*)::int as n from public.likes l where l.post_id = p.id group by l.reaction) r),
-    '{}'::jsonb
-  ) as reactions,
-  (select l.reaction from public.likes l where l.post_id = p.id and l.user_id = auth.uid()) as my_reaction
-from public.posts p
-join public.users u on u.id = p.author_id;
-
-revoke all on public.feed_posts from anon, authenticated;
-grant select on public.feed_posts to anon, authenticated;
 
 -- Realtime
 do $$

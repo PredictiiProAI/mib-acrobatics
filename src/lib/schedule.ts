@@ -17,12 +17,12 @@ export const LEVEL_LABEL: Record<ScheduleLevel, string> = {
 
 export const BADGE_COLORS: BadgeColor[] = ["violet", "fuchsia", "sky", "emerald", "amber", "rose"];
 export const BADGE_STYLE: Record<BadgeColor, { label: string; badge: string; dot: string }> = {
-  violet: { label: "Violet", badge: "bg-neon-violet/15 text-neon-violet ring-neon-violet/40", dot: "bg-neon-violet" },
-  fuchsia: { label: "Violet intens", badge: "bg-neon-violet/30 text-white ring-neon-violet/70", dot: "bg-neon-violet" },
-  sky: { label: "Alb", badge: "bg-white/10 text-white ring-white/40", dot: "bg-white" },
-  emerald: { label: "Lime", badge: "bg-neon-lime/15 text-neon-lime ring-neon-lime/40", dot: "bg-neon-lime" },
-  amber: { label: "Lime intens", badge: "bg-neon-lime/25 text-white ring-neon-lime/70", dot: "bg-neon-lime" },
-  rose: { label: "Violet & lime", badge: "bg-neon-violet/15 text-neon-lime ring-neon-lime/40", dot: "bg-neon-lime" },
+  violet: { label: "Violet", badge: "bg-violet-500/15 text-violet-300 ring-violet-400/40", dot: "bg-violet-400" },
+  fuchsia: { label: "Fucsia", badge: "bg-fuchsia-500/15 text-fuchsia-300 ring-fuchsia-400/40", dot: "bg-fuchsia-400" },
+  sky: { label: "Albastru", badge: "bg-sky-500/15 text-sky-300 ring-sky-400/40", dot: "bg-sky-400" },
+  emerald: { label: "Verde", badge: "bg-emerald-500/15 text-emerald-300 ring-emerald-400/40", dot: "bg-emerald-400" },
+  amber: { label: "Chihlimbar", badge: "bg-amber-500/15 text-amber-300 ring-amber-400/40", dot: "bg-amber-400" },
+  rose: { label: "Roz", badge: "bg-rose-500/15 text-rose-300 ring-rose-400/40", dot: "bg-rose-400" },
 };
 
 /** "17:00:00" -> "17:00" */

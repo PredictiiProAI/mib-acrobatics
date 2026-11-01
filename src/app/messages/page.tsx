@@ -14,12 +14,12 @@ export default async function MessagesPage({ searchParams }: PageProps<"/message
   return (
     <section className="glass flex h-[calc(100svh-11rem)] lg:h-[calc(100svh-6.5rem)] flex-col overflow-hidden rounded-3xl">
       <header className="flex items-center gap-3 border-b border-white/5 px-4 py-3">
-        <span className="relative grid size-10 place-items-center rounded-full bg-gradient-to-br from-neon-violet to-neon-lime font-black text-black">
+        <span className="relative grid size-10 place-items-center rounded-full bg-gradient-to-br from-neon-orange to-neon-green font-black text-black">
           {coachName[0]?.toUpperCase()}
         </span>
         <div>
           <p className="font-semibold">{coachName}</p>
-          <p className="text-xs text-neon-lime">Antrenor MIB Acrobatics</p>
+          <p className="text-xs text-neon-green">Antrenor MIB Acrobatics</p>
         </div>
       </header>
       {coach ? (

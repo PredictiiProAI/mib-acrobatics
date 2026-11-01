@@ -5,9 +5,9 @@ const base =
   "inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition disabled:opacity-50 disabled:pointer-events-none";
 
 const variants = {
-  primary: "bg-neon-violet text-white font-bold shadow-neon hover:shadow-neon-lg hover:brightness-110",
-  accent: "bg-neon-lime text-black font-bold shadow-[0_0_15px_rgb(118_255_3/0.3)] hover:shadow-[0_0_24px_rgb(118_255_3/0.4)] hover:brightness-110",
-  ghost: "glass text-white hover:border-neon-violet/50 hover:shadow-neon-sm",
+  primary: "bg-neon-orange text-black font-bold hover:brightness-110 glow-orange",
+  accent: "bg-neon-green text-black font-bold hover:brightness-110 glow-green",
+  ghost: "glass text-white hover:border-neon-orange/50 hover:shadow-neon-sm",
 };
 
 type Variant = keyof typeof variants;
@@ -27,7 +27,7 @@ export function ButtonLink({
 export function Input({ className = "", ...props }: ComponentProps<"input">) {
   return (
     <input
-      className={`w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm outline-none placeholder:text-white/30 focus:border-neon-violet/70 focus:ring-2 focus:ring-neon-violet/20 ${className}`}
+      className={`w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm outline-none placeholder:text-white/30 focus:border-neon-orange/70 focus:ring-2 focus:ring-neon-orange/20 ${className}`}
       {...props}
     />
   );

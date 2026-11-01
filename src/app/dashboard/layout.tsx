@@ -17,7 +17,7 @@ export default async function DashboardLayout({ children }: LayoutProps<"/dashbo
         <Logo href="/" />
         <div className="rounded-2xl border border-white/5 bg-black/30 p-3">
           <p className="truncate text-sm font-semibold">{publicName(user)}</p>
-          <p className="text-xs text-neon-lime">{ROLE_LABEL[user.role]}</p>
+          <p className="text-xs text-neon-green">{ROLE_LABEL[user.role]}</p>
         </div>
         <NavLinks items={navFor(user.role)} badges={{ "/dashboard/messages": unread }} />
         <div className="mt-auto flex items-center justify-between gap-1">

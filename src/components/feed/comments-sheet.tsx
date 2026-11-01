@@ -196,17 +196,17 @@ export function CommentsSheet({
         style={style}
         data-testid="comments-panel"
         data-expanded={expanded}
-        className={`relative flex h-[var(--sheet-h)] w-full max-w-2xl animate-[sheet-up_.25s_ease-out] flex-col overflow-hidden rounded-t-[2rem] border border-b-0 border-white/10 bg-carbon/95 shadow-[0_-20px_60px_-20px_rgb(139_0_255/0.35)] backdrop-blur-2xl md:h-full md:w-[30rem] md:max-w-none md:animate-[slide-in_.25s_ease-out] md:rounded-l-[2rem] md:rounded-tr-none md:border-b md:border-r-0 lg:w-[34rem] ${
+        className={`relative flex h-[var(--sheet-h)] w-full max-w-2xl animate-[sheet-up_.25s_ease-out] flex-col overflow-hidden rounded-t-[2rem] border border-b-0 border-white/10 bg-carbon/95 shadow-[0_-20px_60px_-20px_rgb(255_106_0/0.35)] backdrop-blur-2xl md:h-full md:w-[30rem] md:max-w-none md:animate-[slide-in_.25s_ease-out] md:rounded-l-[2rem] md:rounded-tr-none md:border-b md:border-r-0 lg:w-[34rem] ${
           drag === null ? "transition-[height,transform] duration-300 ease-out" : ""
         }`}
       >
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-neon-violet/70 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-neon-orange/70 to-transparent" />
         <div onPointerDown={onDragStart} onPointerMove={onDragMove} onPointerUp={onDragEnd} onPointerCancel={onDragEnd} className="touch-none select-none md:touch-auto">
           <div className="flex justify-center pb-1 pt-3 md:hidden" data-testid="drawer-handle">
             <span className="h-1.5 w-12 rounded-full bg-white/25" />
           </div>
           <header className="flex items-center gap-3 border-b border-white/5 px-5 pb-4 pt-2 md:px-6 md:pt-6">
-            <span className="grid size-10 place-items-center rounded-2xl bg-neon-violet/10 text-neon-violet">
+            <span className="grid size-10 place-items-center rounded-2xl bg-neon-orange/10 text-neon-orange">
               <MessageCircle className="size-5" />
             </span>
             <div className="min-w-0 flex-1">
@@ -230,7 +230,7 @@ export function CommentsSheet({
         <ul ref={listRef} className="flex-1 space-y-1 overflow-y-auto overscroll-contain px-3 py-4 md:px-4">
           {comments === null && (
             <li className="flex justify-center py-12">
-              <Loader2 className="size-7 animate-spin text-neon-violet" />
+              <Loader2 className="size-7 animate-spin text-neon-orange" />
             </li>
           )}
           {comments?.length === 0 && (
@@ -263,7 +263,7 @@ export function CommentsSheet({
                       mine={mine}
                       onReact={(next) => reactToComment(c, next)}
                       className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold transition ${
-                        mine ? "text-neon-violet" : "text-white/50 hover:bg-white/5 hover:text-white"
+                        mine ? "text-neon-orange" : "text-white/50 hover:bg-white/5 hover:text-white"
                       }`}
                     >
                       {mineInfo ? (
@@ -314,13 +314,13 @@ export function CommentsSheet({
             maxLength={2000}
             autoFocus
             placeholder="Scrie un comentariu…"
-            className="max-h-40 min-h-12 flex-1 resize-none rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-[15px] outline-none placeholder:text-white/30 focus:border-neon-violet/70"
+            className="max-h-40 min-h-12 flex-1 resize-none rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-[15px] outline-none placeholder:text-white/30 focus:border-neon-orange/70"
           />
           <button
             type="submit"
             disabled={!text.trim() || sending}
             aria-label="Trimite"
-            className="rounded-2xl bg-neon-violet p-3 text-black transition hover:brightness-110 disabled:opacity-40"
+            className="rounded-2xl bg-neon-orange p-3 text-black transition hover:brightness-110 disabled:opacity-40"
           >
             {sending ? <Loader2 className="size-5 animate-spin" /> : <Send className="size-5" />}
           </button>

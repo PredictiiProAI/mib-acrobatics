@@ -43,12 +43,12 @@ export function PillarCards() {
             data-testid="pillar-card"
             className={`group relative overflow-hidden rounded-3xl border p-7 text-left transition duration-300 ${
               open
-                ? "-translate-y-1 border-neon-violet/60 bg-gradient-to-b from-neon-violet/20 to-carbon shadow-[0_20px_60px_-25px_rgb(139_0_255/0.8)]"
-                : "border-white/10 bg-gradient-to-b from-graphite/80 to-carbon/80 hover:border-neon-violet/30 hover:shadow-neon"
+                ? "-translate-y-1 border-neon-orange/60 bg-gradient-to-b from-neon-orange/20 to-carbon shadow-[0_20px_60px_-25px_rgb(255_106_0/0.8)]"
+                : "border-white/10 bg-gradient-to-b from-graphite/80 to-carbon/80 hover:border-neon-orange/30 hover:shadow-neon"
             }`}
           >
-            <div className={`pointer-events-none absolute -right-10 -top-10 size-40 rounded-full blur-3xl transition ${open ? "bg-neon-violet/35" : "bg-neon-violet/10"}`} />
-            <span className={`grid size-14 place-items-center rounded-2xl ring-1 transition ${open ? "bg-neon-violet text-black ring-neon-violet" : "bg-neon-violet/10 text-neon-violet ring-neon-violet/25"}`}>
+            <div className={`pointer-events-none absolute -right-10 -top-10 size-40 rounded-full blur-3xl transition ${open ? "bg-neon-orange/35" : "bg-neon-orange/10"}`} />
+            <span className={`grid size-14 place-items-center rounded-2xl ring-1 transition ${open ? "bg-neon-orange text-black ring-neon-orange" : "bg-neon-orange/10 text-neon-orange ring-neon-orange/25"}`}>
               <Icon className="size-7" />
             </span>
             <h3 className="mt-6 font-display text-2xl font-black">{title}</h3>
@@ -57,7 +57,7 @@ export function PillarCards() {
               <li className="space-y-2.5 overflow-hidden">
                 {benefits.map((b) => (
                   <p key={b} className="flex items-start gap-2.5 text-sm text-white/80">
-                    <span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-neon-violet/20 text-neon-violet">
+                    <span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-neon-orange/20 text-neon-orange">
                       <Check className="size-3.5" />
                     </span>
                     {b}

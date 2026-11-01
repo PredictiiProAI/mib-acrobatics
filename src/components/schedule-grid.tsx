@@ -10,7 +10,7 @@ export function ScheduleGrid({ groups, today, className = "", children }: { grou
         <div className="glass flex items-center justify-center rounded-2xl p-8 text-center text-sm text-white/50">Programul va fi publicat în curând.</div>
       )}
       {groups.map((g) => (
-        <div key={g.name} className="glass rounded-2xl p-6 transition hover:-translate-y-1 hover:border-neon-violet/50 hover:shadow-neon" data-testid="schedule-group">
+        <div key={g.name} className="glass rounded-2xl p-6 transition hover:-translate-y-1 hover:border-neon-orange/50 hover:shadow-neon" data-testid="schedule-group">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <h3 className="font-display text-lg font-extrabold">{g.name}</h3>
@@ -23,9 +23,9 @@ export function ScheduleGrid({ groups, today, className = "", children }: { grou
               const isToday = today === s.day_of_week;
               return (
                 <li key={s.id} className="flex items-center justify-between gap-3 py-2.5 text-sm">
-                  <span className={`inline-flex items-center gap-2 font-semibold ${isToday ? "text-neon-violet" : "text-white/85"}`}>
+                  <span className={`inline-flex items-center gap-2 font-semibold ${isToday ? "text-neon-orange" : "text-white/85"}`}>
                     <CalendarDays className="size-4 text-white/40" /> {dayLabel(s.day_of_week)}
-                    {isToday && <span className="rounded-full bg-neon-violet px-1.5 py-0.5 text-[9px] font-black uppercase text-white shadow-neon-sm">azi</span>}
+                    {isToday && <span className="rounded-full bg-neon-orange px-1.5 py-0.5 text-[9px] font-black uppercase text-black shadow-neon-sm">azi</span>}
                   </span>
                   <span className="text-right text-white/60">
                     <span className="inline-flex items-center gap-1.5">

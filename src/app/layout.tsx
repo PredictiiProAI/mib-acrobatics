@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   description: "Clubul MIB Acrobatics — antrenamente, comunitate și AcroFeed.",
 };
 
-export const viewport: Viewport = { themeColor: "#000000", colorScheme: "dark" };
+export const viewport: Viewport = { themeColor: "#050506", colorScheme: "dark" };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (

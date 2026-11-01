@@ -13,7 +13,7 @@ type Item = { href: string; label: string; icon: LucideIcon; badge?: number };
 
 function Badge({ n }: { n: number }) {
   return (
-    <span data-testid="unread-badge" className="grid min-w-5 place-items-center rounded-full bg-neon-lime px-1 text-[10px] font-black leading-5 text-black">
+    <span data-testid="unread-badge" className="grid min-w-5 place-items-center rounded-full bg-neon-green px-1 text-[10px] font-black leading-5 text-black">
       {n > 99 ? "99+" : n}
     </span>
   );
@@ -48,7 +48,7 @@ export function HeaderNav({
   return (
     <>
       <header className="sticky top-0 z-30 border-b border-white/5 bg-ink/70 backdrop-blur-xl">
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-neon-violet/50 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-neon-orange/50 to-transparent" />
         <div className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4">
           <Logo href="/" />
 
@@ -59,7 +59,7 @@ export function HeaderNav({
                 href={href}
                 aria-current={active(href) ? "page" : undefined}
                 className={`relative inline-flex items-center gap-1.5 rounded-xl px-2.5 py-2 text-sm font-semibold transition ${
-                  active(href) ? "bg-neon-violet/15 text-neon-violet shadow-neon-sm ring-1 ring-neon-violet/60" : "text-white/70 hover:bg-white/5 hover:text-white"
+                  active(href) ? "bg-neon-orange/15 text-neon-orange shadow-neon-sm ring-1 ring-neon-orange/60" : "text-white/70 hover:bg-white/5 hover:text-white"
                 }`}
               >
                 <Icon className="size-4" />
@@ -74,7 +74,7 @@ export function HeaderNav({
               href="/profil"
               aria-label="Profilul meu"
               aria-current={active("/profil") ? "page" : undefined}
-              className={`flex items-center gap-2.5 rounded-2xl border py-1 pl-1 pr-3 transition hover:border-neon-violet/70 ${active("/profil") ? "border-neon-violet bg-neon-violet/15" : "border-white/10 bg-white/[0.03]"}`}
+              className={`flex items-center gap-2.5 rounded-2xl border py-1 pl-1 pr-3 transition hover:border-neon-orange/70 ${active("/profil") ? "border-neon-orange bg-neon-orange/15" : "border-white/10 bg-white/[0.03]"}`}
               data-testid="header-user"
             >
               <Avatar name={name} url={avatarUrl} className="size-8" textClassName="text-xs" />
@@ -100,9 +100,9 @@ export function HeaderNav({
               <Link
                 href={href}
                 aria-current={active(href) ? "page" : undefined}
-                className={`relative flex flex-col items-center gap-1 py-2.5 text-[10px] font-semibold ${active(href) ? "text-neon-violet" : "text-white/60"}`}
+                className={`relative flex flex-col items-center gap-1 py-2.5 text-[10px] font-semibold ${active(href) ? "text-neon-orange" : "text-white/60"}`}
               >
-                {active(href) && <span className="absolute inset-x-3 top-0 h-0.5 rounded-full bg-neon-violet shadow-[0_0_10px_rgb(139_0_255)]" />}
+                {active(href) && <span className="absolute inset-x-3 top-0 h-0.5 rounded-full bg-neon-orange shadow-[0_0_10px_rgb(255_106_0)]" />}
                 <span className="relative">
                   <Icon className="size-5" />
                   {!!badge && (

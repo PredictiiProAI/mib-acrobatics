@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { FEED_PAGE_SIZE, FeedList } from "@/components/feed/feed-list";
+import { getHeroText } from "@/lib/acrofeed.server";
 import { requireUser, publicName } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 
@@ -8,12 +9,10 @@ export const metadata: Metadata = { title: "AcroFeed" };
 export default async function FeedPage() {
   const user = await requireUser("/feed");
   const supabase = await createClient();
-  const { data: posts, error } = await supabase
-    .from("feed_posts")
-    .select("*")
-    .order("created_at", { ascending: false })
-    .order("id", { ascending: false })
-    .limit(FEED_PAGE_SIZE);
+  const [{ data: posts, error }, heroText] = await Promise.all([
+    supabase.from("feed_posts").select("*").order("created_at", { ascending: false }).order("id", { ascending: false }).limit(FEED_PAGE_SIZE),
+    getHeroText(),
+  ]);
   if (error) console.error("feed", error.message);
   const firstName = publicName(user).split(" ")[0];
 
@@ -23,7 +22,9 @@ export default async function FeedPage() {
         <div className="pointer-events-none absolute -right-10 -top-16 size-48 rounded-full bg-neon-orange/20 blur-3xl" />
         <p className="text-xs font-semibold uppercase tracking-[0.3em] text-neon-green">AcroFeed</p>
         <h1 className="mt-2 font-display text-2xl font-black sm:text-3xl">Salut, {firstName}!</h1>
-        <p className="mt-1 text-sm text-white/60">Cele mai noi momente de la antrenamente. Apasă inima sau dă dublu-click ca să apreciezi.</p>
+        <p className="mt-1 whitespace-pre-line break-words text-sm text-white/60" data-testid="feed-hero-text">
+          {heroText}
+        </p>
       </section>
       <FeedList initialPosts={posts ?? []} viewer={{ id: user.id, role: user.role, name: publicName(user), avatarUrl: user.avatarUrl }} />
     </div>

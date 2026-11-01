@@ -114,6 +114,12 @@ export type Database = {
         Update: Partial<ScheduleInsert>;
         Relationships: [];
       };
+      app_settings: {
+        Row: { id: boolean; acrofeed_hero_text: string; updated_at: string; updated_by: string | null };
+        Insert: never;
+        Update: { acrofeed_hero_text?: string; updated_at?: string; updated_by?: string | null };
+        Relationships: [];
+      };
       team_members: {
         Row: { id: string; name: string; role: string; image_url: string | null; sort_order: number; created_at: string };
         Insert: { name: string; role?: string; image_url?: string | null; sort_order?: number };

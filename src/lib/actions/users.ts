@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { getSessionUser } from "@/lib/auth";
 import { isStaff } from "@/lib/roles";
-import type { AppRole } from "@/lib/supabase/database.types";
+import type { AppRole, Database } from "@/lib/supabase/database.types";
 import { createAdminClient, removeUserFiles } from "@/lib/supabase/admin";
 import { MEDIA_BUCKET } from "@/lib/supabase/env";
 import { createClient } from "@/lib/supabase/server";
@@ -119,4 +119,16 @@ export async function getUserActivity(target: string): Promise<UserActivity | nu
     posts: posts.data ?? [],
     comments: (comments.data ?? []).map((c) => ({ id: c.id, content: c.content, created_at: c.created_at, post_caption: c.post?.caption ?? null })),
   };
+}
+
+export type WaiverRecord = Database["public"]["Tables"]["waiver_submissions"]["Row"];
+
+/** All waiver / medical-form submissions of one member, newest first (staff only). */
+export async function getWaiverSubmissions(target: string): Promise<WaiverRecord[]> {
+  const me = await getSessionUser();
+  if (!me || !isStaff(me.role)) return [];
+  const supabase = await createClient();
+  const { data, error } = await supabase.from("waiver_submissions").select("*").eq("user_id", target).order("signed_at", { ascending: false });
+  if (error) console.error("getWaiverSubmissions", error.message);
+  return data ?? [];
 }

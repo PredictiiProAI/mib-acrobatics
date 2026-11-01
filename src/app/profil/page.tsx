@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { RoleBadge } from "@/components/role-badge";
 import { publicName, requireUser } from "@/lib/auth";
 import { LEVEL_LABEL } from "@/lib/profile";
+import { needsWaiver } from "@/lib/roles";
 import { createClient } from "@/lib/supabase/server";
 import { DeleteAccountCard } from "./delete-account-card";
 import { WaiverCard } from "./waiver-card";
@@ -13,10 +14,11 @@ export const metadata: Metadata = { title: "Profilul meu" };
 export default async function ProfilePage() {
   const user = await requireUser("/profil");
   const supabase = await createClient();
-  const [{ data: profile }, { data: settings }, { data: details }] = await Promise.all([
+  const [{ data: profile }, { data: settings }, { data: details }, { data: waivers }] = await Promise.all([
     supabase.from("users").select("full_name, display_name, discipline, level").eq("id", user.id).maybeSingle(),
     supabase.from("user_settings").select("phone, notify_feed, notify_schedule").eq("user_id", user.id).maybeSingle(),
     supabase.rpc("profile_details", { p_user: user.id }),
+    supabase.from("waiver_submissions").select("*").eq("user_id", user.id).order("signed_at", { ascending: false }),
   ]);
   const extra = details?.[0];
   const name = publicName(user);
@@ -29,12 +31,14 @@ export default async function ProfilePage() {
         <h1 className="mt-1 font-display text-3xl font-black text-white">Profilul meu</h1>
       </header>
 
-      <WaiverCard
-        signed={extra?.waiver_signed ?? false}
-        signedAt={extra?.waiver_signed_at ?? null}
-        signedBy={extra?.waiver_signed_by_name ?? null}
-        defaultName={profile?.full_name ?? user.fullName ?? ""}
-      />
+      {needsWaiver(user.role) && (
+        <WaiverCard
+          form={extra?.account_type === "Părinte" ? "parinte" : "sportiv"}
+          submissions={waivers ?? []}
+          defaultName={profile?.full_name ?? user.fullName ?? ""}
+          defaultPhone={settings?.phone ?? ""}
+        />
+      )}
 
       <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
         <section className="flex flex-col items-center gap-4 rounded-3xl border border-neon-orange/40 bg-carbon/80 p-6 text-center">

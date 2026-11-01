@@ -3,32 +3,86 @@
 import { after } from "next/server";
 import { revalidatePath } from "next/cache";
 import { getSessionUser, publicName } from "@/lib/auth";
+import { needsWaiver } from "@/lib/roles";
 import { sendWaiverAlert } from "@/lib/signup-alert";
 import { createClient } from "@/lib/supabase/server";
+import { MEDICAL_FIELDS, WAIVER_ACKS, type MedicalKey, type WaiverAck, type WaiverForm } from "@/lib/waiver";
 
+export type WaiverInput = {
+  signerName: string;
+  childName: string;
+  childBirthdate: string;
+  emergencyPhone: string;
+  emergencySecondary: string;
+  medical: Record<MedicalKey, string>;
+  acks: WaiverAck[];
+};
 export type WaiverResult = { ok: true; signedAt: string } | { ok: false; error: string };
 
-export async function signWaiver(input: { name: string; agreed: boolean }): Promise<WaiverResult> {
+const PHONE = /^\+?[0-9 ()./-]{6,20}$/;
+const clean = (v: string, max: number) => v.trim().replace(/\s+/g, " ").slice(0, max);
+
+const DB_ERRORS: [string, string][] = [
+  ["invalid_name", "Scrie numele și prenumele complet pentru semnătură."],
+  ["invalid_phone", "Numărul de telefon de urgență nu este valid."],
+  ["invalid_child", "Completează numele complet și data nașterii copilului."],
+  ["invalid_medical", "Completează toate întrebările medicale (sau „Nu este cazul”)."],
+  ["missing_ack", "Bifează toate declarațiile."],
+];
+
+export async function submitWaiver(input: WaiverInput): Promise<WaiverResult> {
   const me = await getSessionUser();
   if (!me) return { ok: false, error: "Trebuie să fii autentificat." };
-  if (input.agreed !== true) return { ok: false, error: "Bifează că ai citit și ești de acord cu termenii." };
-  const name = input.name.trim().replace(/\s+/g, " ");
-  if (name.length < 3 || name.length > 120 || !name.includes(" ")) return { ok: false, error: "Scrie numele și prenumele complet pentru semnătură." };
+  if (!needsWaiver(me.role)) return { ok: false, error: "Conturile de staff sunt scutite de declarație." };
 
   const supabase = await createClient();
-  const { data: signedAt, error } = await supabase.rpc("sign_waiver", { p_name: name });
+  const { data: details } = await supabase.rpc("profile_details", { p_user: me.id });
+  const form: WaiverForm = details?.[0]?.account_type === "Părinte" ? "parinte" : "sportiv";
+
+  const signerName = clean(input.signerName, 120);
+  const childName = form === "parinte" ? clean(input.childName, 120) : "";
+  const childBirthdate = form === "parinte" ? input.childBirthdate : "";
+  const emergencyPhone = input.emergencyPhone.trim();
+  const emergencySecondary = clean(input.emergencySecondary, 200);
+  const medical = Object.fromEntries(MEDICAL_FIELDS.map((f) => [f.key, (input.medical[f.key] ?? "").trim().slice(0, 1000)])) as Record<MedicalKey, string>;
+
+  if (signerName.length < 3 || !signerName.includes(" ")) return { ok: false, error: DB_ERRORS[0][1] };
+  if (form === "parinte" && (childName.length < 3 || !/^\d{4}-\d{2}-\d{2}$/.test(childBirthdate))) return { ok: false, error: DB_ERRORS[2][1] };
+  if (!PHONE.test(emergencyPhone)) return { ok: false, error: DB_ERRORS[1][1] };
+  if (MEDICAL_FIELDS.some((f) => !medical[f.key])) return { ok: false, error: DB_ERRORS[3][1] };
+  if (WAIVER_ACKS[form].some((a) => !input.acks.includes(a.key))) return { ok: false, error: DB_ERRORS[4][1] };
+
+  const { data: signedAt, error } = await supabase.rpc("submit_waiver", {
+    p: {
+      signer_name: signerName,
+      child_name: childName,
+      child_birthdate: childBirthdate || null,
+      emergency_phone: emergencyPhone,
+      emergency_secondary: emergencySecondary,
+      ...medical,
+      acknowledgements: input.acks,
+    },
+  });
   if (error || !signedAt) {
-    console.error("sign_waiver", error?.message);
-    if (error?.message.includes("already_signed")) return { ok: false, error: "Declarația este deja semnată." };
-    if (error?.message.includes("invalid_name")) return { ok: false, error: "Scrie numele și prenumele complet pentru semnătură." };
-    if (error?.code === "PGRST202" || error?.code === "42883") return { ok: false, error: "Rulează migrarea 0015_waiver.sql în Supabase." };
-    return { ok: false, error: "Nu am putut salva semnătura. Încearcă din nou." };
+    console.error("submit_waiver", error?.message);
+    if (error?.code === "PGRST202" || error?.code === "42883") return { ok: false, error: "Rulează migrarea 0016_waiver_medical.sql în Supabase." };
+    const known = DB_ERRORS.find(([code]) => error?.message.includes(code));
+    return { ok: false, error: known?.[1] ?? "Nu am putut salva declarația. Încearcă din nou." };
   }
 
-  const { data: details } = await supabase.rpc("profile_details", { p_user: me.id });
-  const userName = me.fullName || publicName(me);
   after(() =>
-    sendWaiverAlert({ userName, email: me.email, signedBy: name, signedAt, accountType: details?.[0]?.account_type ?? "Sportiv" })
+    sendWaiverAlert({
+      userName: me.fullName || publicName(me),
+      email: me.email,
+      form,
+      signerName,
+      childName,
+      childBirthdate,
+      emergencyPhone,
+      emergencySecondary,
+      medical,
+      signedAt,
+    }),
   );
   revalidatePath("/profil");
   revalidatePath("/dashboard/users");

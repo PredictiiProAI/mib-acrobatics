@@ -33,6 +33,7 @@ export const PRIVACY_SECTIONS: LegalSection[] = [
           "Date de profil: numele afișat, fotografia de profil, tipul de cont (Sportiv, Părinte, Antrenor), disciplina și nivelul, data nașterii, numărul de telefon și, opțional, contul de Instagram/TikTok.",
           "Date despre copii (dacă ești părinte): numele și vârsta copilului / copiilor, completate de tine.",
           "Contactul de urgență: numele și numărul de telefon al persoanei care trebuie anunțată în caz de accidentare.",
+          "Fișa medicală (doar pentru sportivi și părinți): alergii, afecțiuni cronice, accidentări anterioare și alte contraindicații sau recomandări medicale, precum și, pentru minori, numele complet și data nașterii copilului.",
           "Dovezi legale: data și ora acceptării Termenilor și a acestei Politici la crearea contului, precum și numele complet al semnatarului și data și ora semnării declarației pe proprie răspundere.",
           "Conținut media și interacțiuni: imaginile și videoclipurile încărcate în AcroMib, descrierile acestora, comentariile, reacțiile și mesajele schimbate cu antrenorul.",
           "Date tehnice: data ultimei autentificări, cookie-urile de sesiune necesare autentificării și jurnalele tehnice ale furnizorilor de găzduire (de exemplu adresa IP și tipul de browser/dispozitiv), folosite pentru securitate.",
@@ -48,6 +49,7 @@ export const PRIVACY_SECTIONS: LegalSection[] = [
       {
         list: [
           "Gestionarea contului și accesul la platformă — executarea acordului de utilizare pe care îl accepți la înregistrare (art. 6 alin. 1 lit. b GDPR).",
+          "Datele medicale din fișa medicală — consimțământul tău explicit, exprimat la semnarea declarației (art. 9 alin. 2 lit. a GDPR), și protejarea intereselor vitale ale sportivului în caz de urgență (art. 9 alin. 2 lit. c). Le folosim exclusiv pentru siguranța la antrenamente și le poți retrage sau corecta oricând.",
           "Siguranța sportivilor în sală — contactul de urgență, data nașterii și declarația semnată permit antrenorilor să intervină corect în caz de accidentare și să verifice că participarea a fost asumată (interesul legitim al clubului și al sportivului, art. 6 alin. 1 lit. f, respectiv protejarea intereselor vitale, art. 6 alin. 1 lit. d).",
           "Comunicarea programului, a anunțurilor și a mesajelor între membri și antrenori — executarea acordului de utilizare și interesul legitim al clubului de a-și informa membrii.",
           "Afișarea conținutului în comunitatea AcroMib — consimțământul tău, exprimat prin încărcarea conținutului; îl poți retrage oricând ștergând postarea.",
@@ -74,7 +76,7 @@ export const PRIVACY_SECTIONS: LegalSection[] = [
         list: [
           "Membrii autentificați văd postările din AcroMib, numele afișat, fotografia de profil, comentariile și reacțiile.",
           "Postările marcate ca publice de echipa clubului pot apărea și pe pagina principală a site-ului, vizibilă oricui.",
-          "Datele sensibile — telefonul, data nașterii, datele copiilor, contactul de urgență și declarația semnată — sunt vizibile doar titularului contului și antrenorilor / administratorilor clubului.",
+          "Datele sensibile — telefonul, data nașterii, datele copiilor, contactul de urgență, fișa medicală și declarația semnată — sunt vizibile doar titularului contului și antrenorilor / administratorilor clubului. La fiecare semnare, antrenorul principal primește o copie a declarației și a fișei medicale pe email.",
           "Furnizori tehnici care prelucrează datele exclusiv în numele nostru: Supabase (baza de date, autentificarea și stocarea fișierelor), Vercel (găzduirea site-ului și a aplicației) și furnizorul de email folosit pentru mesajele de confirmare și notificări.",
           "Autorități publice, doar atunci când legea ne obligă.",
         ],

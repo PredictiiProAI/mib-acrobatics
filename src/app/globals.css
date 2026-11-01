@@ -129,3 +129,14 @@ body::before {
     transform: scaleX(0);
   }
 }
+
+@media print {
+  @page {
+    margin: 16mm;
+  }
+  html,
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+}

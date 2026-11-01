@@ -162,6 +162,27 @@ export type Database = {
         Update: { image_url?: string; sort_order?: number };
         Relationships: [];
       };
+      waiver_submissions: {
+        Row: {
+          id: string;
+          user_id: string;
+          form_type: "parinte" | "sportiv";
+          signer_name: string;
+          child_name: string | null;
+          child_birthdate: string | null;
+          emergency_phone: string;
+          emergency_secondary: string | null;
+          allergies: string;
+          chronic_conditions: string;
+          previous_injuries: string;
+          other_medical: string;
+          acknowledgements: string[];
+          signed_at: string;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
       direct_messages: {
         Row: { id: string; sender_id: string; receiver_id: string; content: string; created_at: string; read_at: string | null };
         Insert: { sender_id: string; receiver_id: string; content: string };
@@ -211,7 +232,7 @@ export type Database = {
           waiver_signed_by_name?: string | null;
         }[];
       };
-      sign_waiver: { Args: { p_name: string }; Returns: string };
+      submit_waiver: { Args: { p: Record<string, unknown> }; Returns: string };
       admin_list_users: {
         Args: Record<string, never>;
         Returns: {

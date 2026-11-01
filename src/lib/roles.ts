@@ -6,6 +6,9 @@ export const PUBLISHER_ROLES: AppRole[] = ["media", "admin", "superadmin"];
 export const isStaff = (role: AppRole | null | undefined) => !!role && STAFF_ROLES.includes(role);
 export const canPublish = (role: AppRole | null | undefined) => !!role && PUBLISHER_ROLES.includes(role);
 
+/** Only member accounts (Sportiv / Părinte) must sign the waiver; staff and media are exempt. */
+export const needsWaiver = (role: AppRole | null | undefined) => role === "user";
+
 /** Where a user lands after login: publishers go to the command center, everyone else to the feed. */
 export const homeFor = (role: AppRole | null | undefined) => (canPublish(role) ? "/dashboard" : "/feed");
 

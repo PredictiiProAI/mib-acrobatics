@@ -27,11 +27,14 @@ import {
   createUser,
   deleteUser,
   getUserActivity,
+  getWaiverSubmissions,
   setUserRole,
   type UserActivity,
+  type WaiverRecord,
 } from "@/lib/actions/users";
 import { LEVEL_LABEL } from "@/lib/profile";
-import { isStaff, ROLE_LABEL } from "@/lib/roles";
+import { isStaff, needsWaiver, ROLE_LABEL } from "@/lib/roles";
+import { FORM_ROLE_LABEL, MEDICAL_FIELDS } from "@/lib/waiver";
 import type { AppRole, Database } from "@/lib/supabase/database.types";
 import { timeAgo } from "@/lib/time";
 
@@ -223,6 +226,8 @@ function Detail({
 const waiverFmt = new Intl.DateTimeFormat("ro-RO", { dateStyle: "long", timeStyle: "short", timeZone: "Europe/Bucharest" });
 
 function WaiverStatus({ user }: { user: Row }) {
+  if (!needsWaiver(user.role))
+    return <span className="text-white/50" data-testid="waiver-status">Scutit — conturile de staff nu semnează declarația.</span>;
   return user.waiver_signed ? (
     <span className="text-neon-green" data-testid="waiver-status">
       Semnată de <strong className="text-white">{user.waiver_signed_by_name}</strong>
@@ -235,6 +240,12 @@ function WaiverStatus({ user }: { user: Row }) {
 
 function WaiverBadge({ user }: { user: Row }) {
   const [open, setOpen] = useState(false);
+  if (!needsWaiver(user.role))
+    return (
+      <span className="inline-flex items-center rounded-full bg-white/5 px-2.5 py-1 text-xs font-bold text-white/45 ring-1 ring-white/10" data-testid="waiver-badge" data-signed="exempt">
+        Scutit
+      </span>
+    );
   const signed = !!user.waiver_signed;
   return (
     <div className="relative" onClick={(e) => e.stopPropagation()}>
@@ -263,18 +274,20 @@ function WaiverBadge({ user }: { user: Row }) {
 
 function UserPanel({ user, onClose }: { user: Row; onClose: () => void }) {
   const [activity, setActivity] = useState<UserActivity | null>(null);
+  const [waivers, setWaivers] = useState<WaiverRecord[]>([]);
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     let alive = true;
-    getUserActivity(user.id).then((a) => {
+    Promise.all([getUserActivity(user.id), needsWaiver(user.role) ? getWaiverSubmissions(user.id) : []]).then(([a, w]) => {
       if (!alive) return;
       setActivity(a);
+      setWaivers(w);
       setLoading(false);
     });
     return () => {
       alive = false;
     };
-  }, [user.id]);
+  }, [user.id, user.role]);
   return (
     <Modal title="Profil utilizator" onClose={onClose} side>
       <div className="space-y-6" data-testid="user-panel">
@@ -366,6 +379,50 @@ function UserPanel({ user, onClose }: { user: Row; onClose: () => void }) {
             </Detail>
           </div>
         </div>
+
+        {waivers.length > 0 && (
+          <section data-testid="panel-waivers">
+            <h3 className="text-xs font-semibold uppercase tracking-[0.2em] text-white/50">Declarații & fișe medicale</h3>
+            <ul className="mt-3 space-y-3">
+              {waivers.map((w) => (
+                <li key={w.id} className="rounded-2xl border border-neon-green/30 bg-neon-green/[0.04] p-4 text-sm">
+                  <p className="font-bold text-neon-green">
+                    {FORM_ROLE_LABEL[w.form_type]}
+                    {w.child_name && <> · copil: <span className="text-white">{w.child_name}</span></>}
+                    {w.child_birthdate && <span className="font-normal text-white/60"> ({dateFmt.format(new Date(w.child_birthdate))})</span>}
+                  </p>
+                  <p className="mt-1 text-xs text-white/50">
+                    Semnată de {w.signer_name} pe {waiverFmt.format(new Date(w.signed_at))}
+                  </p>
+                  <Link
+                    href={`/declaratie/${w.id}`}
+                    className="mt-3 inline-flex items-center gap-1.5 rounded-xl bg-neon-orange px-3 py-2 text-xs font-bold text-black hover:bg-neon-green"
+                    data-testid="waiver-document-link"
+                  >
+                    <Eye className="size-3.5" /> Vezi / Printează PDF
+                  </Link>
+                  <dl className="mt-3 grid gap-2">
+                    <div>
+                      <dt className="text-[11px] uppercase tracking-wider text-white/40">Telefon urgență</dt>
+                      <dd>
+                        <a href={`tel:${w.emergency_phone}`} className="font-semibold text-neon-orange">
+                          {w.emergency_phone}
+                        </a>
+                        {w.emergency_secondary && <span className="text-white/60"> · {w.emergency_secondary}</span>}
+                      </dd>
+                    </div>
+                    {MEDICAL_FIELDS.map((f) => (
+                      <div key={f.key}>
+                        <dt className="text-[11px] uppercase tracking-wider text-white/40">{f.label}</dt>
+                        <dd className="whitespace-pre-line break-words text-white/85">{w[f.key]}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         <div className="grid grid-cols-2 gap-2">
           <Link

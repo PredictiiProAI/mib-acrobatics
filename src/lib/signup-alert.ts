@@ -1,5 +1,6 @@
 import "server-only";
 import nodemailer from "nodemailer";
+import { FORM_ROLE_LABEL, MEDICAL_FIELDS, type MedicalKey, type WaiverForm } from "@/lib/waiver";
 
 const ALERT_TO = process.env.ADMIN_ALERT_EMAIL || "marius.butrin@gmail.com";
 const ALERT_FROM = process.env.ALERT_FROM_EMAIL || "MIB Acrobatics <noreply@smart.siguranta-digitala.ro>";
@@ -54,19 +55,54 @@ export async function sendAdminEmail(mail: AdminMail) {
 
 export const sendSignupAlert = (user: { email: string; fullName: string }) => sendAdminEmail(buildMessage(user));
 
-export function sendWaiverAlert(info: { userName: string; email: string; signedBy: string; signedAt: string; accountType: string }) {
+export function sendWaiverAlert(info: {
+  userName: string;
+  email: string;
+  form: WaiverForm;
+  signerName: string;
+  childName: string;
+  childBirthdate: string;
+  emergencyPhone: string;
+  emergencySecondary: string;
+  medical: Record<MedicalKey, string>;
+  signedAt: string;
+}) {
   const when = new Intl.DateTimeFormat("ro-RO", { dateStyle: "long", timeStyle: "medium", timeZone: "Europe/Bucharest" }).format(new Date(info.signedAt));
-  const subject = `Declarație semnată: ${info.userName}`;
-  const rows: [string, string][] = [
-    ["Utilizator", info.userName],
-    ["Email", info.email],
-    ["Tip cont", info.accountType],
-    ["Semnat de", info.signedBy],
-    ["Data și ora", `${when} (ora României)`],
+  const subject = `[AcroMIB] Declarație & Fișă Medicală: ${info.userName} (${FORM_ROLE_LABEL[info.form]})`;
+  const sections: [string, [string, string][]][] = [
+    [
+      "Cont",
+      [
+        ["Utilizator", info.userName],
+        ["Email", info.email],
+        ["Rol", FORM_ROLE_LABEL[info.form]],
+      ],
+    ],
+    ...(info.form === "parinte"
+      ? ([["Copil", [["Nume complet", info.childName], ["Data nașterii", info.childBirthdate.split("-").reverse().join(".")]]]] as [string, [string, string][]][])
+      : []),
+    [
+      "Contact de urgență",
+      [
+        ["Telefon principal", info.emergencyPhone],
+        ["Contact secundar", info.emergencySecondary || "—"],
+      ],
+    ],
+    ["Fișă medicală", MEDICAL_FIELDS.map((f) => [f.label, info.medical[f.key]] as [string, string])],
+    [
+      "Semnătură",
+      [
+        ["Semnat de", info.signerName],
+        ["Data și ora", `${when} (ora României)`],
+        ["Declarații", "Toate clauzele (riscuri, instrucțiunile antrenorilor, prim ajutor / 112, aptitudine medicală, consimțământ date medicale) au fost bifate."],
+      ],
+    ],
   ];
   return sendAdminEmail({
     subject,
-    text: `${subject}\n\n${rows.map(([k, v]) => `${k}: ${v}`).join("\n")}`,
-    html: `<p><strong>${escapeHtml(subject)}</strong></p><p>${rows.map(([k, v]) => `${k}: ${escapeHtml(v)}`).join("<br>")}</p>`,
+    text: `${subject}\n\n${sections.map(([title, rows]) => `${title.toUpperCase()}\n${rows.map(([k, v]) => `${k}: ${v}`).join("\n")}`).join("\n\n")}`,
+    html: `<p><strong>${escapeHtml(subject)}</strong></p>${sections
+      .map(([title, rows]) => `<h3 style="margin:16px 0 4px">${escapeHtml(title)}</h3><p style="margin:0">${rows.map(([k, v]) => `<strong>${escapeHtml(k)}:</strong> ${escapeHtml(v)}`).join("<br>")}</p>`)
+      .join("")}`,
   });
 }

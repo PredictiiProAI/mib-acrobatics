@@ -3,7 +3,7 @@
 import { Avatar } from "@/components/avatar";
 import { Clock, Heart, MessageCircle, Trash2 } from "lucide-react";
 import Image from "next/image";
-import { useCallback, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useConfirm } from "@/components/confirm-dialog";
 import { RoleBadge } from "@/components/role-badge";
 import { deletePost } from "@/lib/actions/posts";
@@ -14,7 +14,7 @@ import { createClient } from "@/lib/supabase/client";
 import { applyReaction, DEFAULT_REACTION, reactionInfo, totalReactions, type ReactionKey } from "@/lib/reactions";
 import { timeAgo } from "@/lib/time";
 import { AutoplayVideo } from "./autoplay-video";
-import { CommentsSheet } from "./comments-sheet";
+import { CommentsSection } from "./comments-section";
 import { ReactionSummary, ReactionTrigger } from "./reactions";
 import type { Viewer } from "./types";
 
@@ -24,7 +24,7 @@ export function PostCard({ post, viewer, priority, onDeleted }: { post: FeedPost
   const [mine, setMine] = useState<ReactionKey | null>(post.my_reaction ?? (post.liked_by_me ? DEFAULT_REACTION : null));
   const [counts, setCounts] = useState(post.reactions ?? (post.like_count ? { [DEFAULT_REACTION]: post.like_count } : {}));
   const [comments, setComments] = useState(post.comment_count);
-  const [sheetOpen, setSheetOpen] = useState(false);
+  const [commentsOpen, setCommentsOpen] = useState(false);
   const [burst, setBurst] = useState(0);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -75,8 +75,6 @@ export function PostCard({ post, viewer, priority, onDeleted }: { post: FeedPost
 
   const total = totalReactions(counts);
   const mineInfo = mine ? reactionInfo(mine) : null;
-
-  const closeSheet = useCallback(() => setSheetOpen(false), []);
 
   async function remove() {
     const ok = await confirm({
@@ -163,9 +161,12 @@ export function PostCard({ post, viewer, priority, onDeleted }: { post: FeedPost
         </div>
         <button
           type="button"
-          onClick={() => setSheetOpen(true)}
-          aria-label="Comentarii"
-          className="group inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-white/[0.04] px-4 py-2.5 text-sm font-bold text-white/80 transition hover:bg-white/[0.08] hover:text-white"
+          onClick={() => setCommentsOpen((v) => !v)}
+          aria-expanded={commentsOpen}
+          data-testid="comments-toggle"
+          className={`group inline-flex flex-1 items-center justify-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-bold transition ${
+            commentsOpen ? "bg-neon-green/10 text-neon-green ring-1 ring-neon-green/30" : "bg-white/[0.04] text-white/80 hover:bg-white/[0.08] hover:text-white"
+          }`}
         >
           <MessageCircle className="size-5 group-hover:text-neon-green" />
           <span data-testid="comment-count">{comments}</span>
@@ -173,7 +174,7 @@ export function PostCard({ post, viewer, priority, onDeleted }: { post: FeedPost
         </button>
       </footer>
 
-      {sheetOpen && <CommentsSheet postId={post.id} viewer={viewer} onClose={closeSheet} onCountChange={setComments} />}
+      {commentsOpen && <CommentsSection postId={post.id} viewer={viewer} onCountChange={setComments} />}
       {confirmDialog}
     </article>
   );

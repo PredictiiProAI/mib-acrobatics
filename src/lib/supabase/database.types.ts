@@ -206,8 +206,12 @@ export type Database = {
           emergency_contact: string | null;
           birthdate: string | null;
           social_link: string | null;
+          waiver_signed?: boolean;
+          waiver_signed_at?: string | null;
+          waiver_signed_by_name?: string | null;
         }[];
       };
+      sign_waiver: { Args: { p_name: string }; Returns: string };
       admin_list_users: {
         Args: Record<string, never>;
         Returns: {
@@ -222,6 +226,13 @@ export type Database = {
           phone: string | null;
           created_at: string;
           last_sign_in_at: string | null;
+          account_type?: AccountType;
+          children_names?: string | null;
+          emergency_contact?: string | null;
+          birthdate?: string | null;
+          waiver_signed?: boolean;
+          waiver_signed_at?: string | null;
+          waiver_signed_by_name?: string | null;
         }[];
       };
       admin_set_role: { Args: { target: string; new_role: AppRole }; Returns: undefined };

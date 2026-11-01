@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Check,
   Clock,
   Eye,
   Film,
@@ -219,6 +220,47 @@ function Detail({
   );
 }
 
+const waiverFmt = new Intl.DateTimeFormat("ro-RO", { dateStyle: "long", timeStyle: "short", timeZone: "Europe/Bucharest" });
+
+function WaiverStatus({ user }: { user: Row }) {
+  return user.waiver_signed ? (
+    <span className="text-neon-green" data-testid="waiver-status">
+      Semnată de <strong className="text-white">{user.waiver_signed_by_name}</strong>
+      {user.waiver_signed_at && <> pe {waiverFmt.format(new Date(user.waiver_signed_at))}</>}
+    </span>
+  ) : (
+    <span className="text-red-300" data-testid="waiver-status">Nesemnată — nu poate participa la antrenamente.</span>
+  );
+}
+
+function WaiverBadge({ user }: { user: Row }) {
+  const [open, setOpen] = useState(false);
+  const signed = !!user.waiver_signed;
+  return (
+    <div className="relative" onClick={(e) => e.stopPropagation()}>
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        aria-label={signed ? "Declarație semnată — vezi detalii" : "Declarație nesemnată — vezi detalii"}
+        className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold ring-1 transition ${
+          signed ? "bg-neon-green/10 text-neon-green ring-neon-green/40 hover:bg-neon-green/20" : "bg-red-500/10 text-red-400 ring-red-500/40 hover:bg-red-500/20"
+        }`}
+        data-testid="waiver-badge"
+        data-signed={signed}
+      >
+        {signed ? <Check className="size-3.5" /> : <X className="size-3.5" />}
+        {signed ? "Semnată" : "Nesemnată"}
+      </button>
+      {open && (
+        <div className="absolute left-0 top-full z-20 mt-2 w-64 rounded-2xl border border-white/10 bg-carbon p-3 text-xs shadow-xl" data-testid="waiver-popover">
+          <WaiverStatus user={user} />
+        </div>
+      )}
+    </div>
+  );
+}
+
 function UserPanel({ user, onClose }: { user: Row; onClose: () => void }) {
   const [activity, setActivity] = useState<UserActivity | null>(null);
   const [loading, setLoading] = useState(true);
@@ -302,6 +344,25 @@ function UserPanel({ user, onClose }: { user: Row; onClose: () => void }) {
               {user.last_sign_in_at
                 ? `${dateTimeFmt.format(new Date(user.last_sign_in_at))} (${timeAgo(user.last_sign_in_at)})`
                 : "Niciodată"}
+            </Detail>
+          </div>
+          <Detail label="Tip cont">{user.account_type ?? "Sportiv"}</Detail>
+          <Detail label="Data nașterii">
+            {user.birthdate ? dateFmt.format(new Date(user.birthdate)) : <span className="text-white/40">—</span>}
+          </Detail>
+          {user.account_type === "Părinte" && (
+            <div className="col-span-2">
+              <Detail label="Copii">{user.children_names || <span className="text-white/40">—</span>}</Detail>
+            </div>
+          )}
+          <div className="col-span-2">
+            <Detail label="Contact de urgență">
+              {user.emergency_contact || <span className="text-red-300">Necompletat</span>}
+            </Detail>
+          </div>
+          <div className="col-span-2">
+            <Detail label="Declarație pe proprie răspundere">
+              <WaiverStatus user={user} />
             </Detail>
           </div>
         </div>
@@ -557,6 +618,7 @@ export function UsersTable({ me, users }: { me: Me; users: Row[] }) {
               <th className="px-4 py-3 font-medium">Utilizator</th>
               <th className="px-4 py-3 font-medium">Rol</th>
               <th className="px-4 py-3 font-medium">Activitate</th>
+              <th className="px-4 py-3 font-medium">Declarație</th>
               <th className="px-4 py-3 font-medium">Ultima accesare</th>
               <th className="px-4 py-3 font-medium">Înscris</th>
               <th className="px-4 py-3" />
@@ -615,6 +677,9 @@ export function UsersTable({ me, users }: { me: Me; users: Row[] }) {
                     {u.comments} comentarii
                   </Link>
                 </td>
+                <td className="px-4 py-3">
+                  <WaiverBadge user={u} />
+                </td>
                 <td
                   className="px-4 py-3 text-xs text-white/60"
                   title={
@@ -657,7 +722,7 @@ export function UsersTable({ me, users }: { me: Me; users: Row[] }) {
             {rows.length === 0 && (
               <tr>
                 <td
-                  colSpan={6}
+                  colSpan={7}
                   className="px-4 py-10 text-center text-white/50"
                 >
                   Niciun utilizator găsit.

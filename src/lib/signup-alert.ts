@@ -11,20 +11,20 @@ function buildMessage(user: { email: string; fullName: string }) {
   const when = new Intl.DateTimeFormat("ro-RO", { dateStyle: "long", timeStyle: "short", timeZone: "Europe/Bucharest" }).format(new Date());
   const name = user.fullName || "—";
   return {
-    from: ALERT_FROM,
-    to: ALERT_TO,
     subject: SUBJECT,
     text: `${SUBJECT}.\n\nEmail: ${user.email}\nNume: ${name}\nData: ${when}`,
     html: `<p><strong>${SUBJECT}.</strong></p><p>Email: ${escapeHtml(user.email)}<br>Nume: ${escapeHtml(name)}<br>Data: ${escapeHtml(when)}</p>`,
   };
 }
 
+type AdminMail = { subject: string; text: string; html: string };
+
 /**
- * Emails the head coach that a new account was created. Never throws.
+ * Emails the head coach. Never throws.
  * Uses SMTP when SMTP_HOST is set (same server as the Supabase Auth emails), otherwise Resend when RESEND_API_KEY is set.
  */
-export async function sendSignupAlert(user: { email: string; fullName: string }) {
-  const msg = buildMessage(user);
+export async function sendAdminEmail(mail: AdminMail) {
+  const msg = { from: ALERT_FROM, to: ALERT_TO, ...mail };
   try {
     if (process.env.SMTP_HOST) {
       const port = Number(process.env.SMTP_PORT || 587);
@@ -43,11 +43,30 @@ export async function sendSignupAlert(user: { email: string; fullName: string })
         headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, "Content-Type": "application/json" },
         body: JSON.stringify({ ...msg, to: [msg.to] }),
       });
-      if (!res.ok) console.error("signup alert failed", res.status, await res.text());
+      if (!res.ok) console.error("admin email failed", res.status, await res.text());
       return;
     }
-    console.warn("signup alert skipped: set SMTP_HOST (or RESEND_API_KEY)");
+    console.warn("admin email skipped: set SMTP_HOST (or RESEND_API_KEY)");
   } catch (e) {
-    console.error("signup alert failed", e);
+    console.error("admin email failed", e);
   }
+}
+
+export const sendSignupAlert = (user: { email: string; fullName: string }) => sendAdminEmail(buildMessage(user));
+
+export function sendWaiverAlert(info: { userName: string; email: string; signedBy: string; signedAt: string; accountType: string }) {
+  const when = new Intl.DateTimeFormat("ro-RO", { dateStyle: "long", timeStyle: "medium", timeZone: "Europe/Bucharest" }).format(new Date(info.signedAt));
+  const subject = `Declarație semnată: ${info.userName}`;
+  const rows: [string, string][] = [
+    ["Utilizator", info.userName],
+    ["Email", info.email],
+    ["Tip cont", info.accountType],
+    ["Semnat de", info.signedBy],
+    ["Data și ora", `${when} (ora României)`],
+  ];
+  return sendAdminEmail({
+    subject,
+    text: `${subject}\n\n${rows.map(([k, v]) => `${k}: ${v}`).join("\n")}`,
+    html: `<p><strong>${escapeHtml(subject)}</strong></p><p>${rows.map(([k, v]) => `${k}: ${escapeHtml(v)}`).join("<br>")}</p>`,
+  });
 }

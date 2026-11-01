@@ -4,6 +4,7 @@ import { RoleBadge } from "@/components/role-badge";
 import { publicName, requireUser } from "@/lib/auth";
 import { LEVEL_LABEL } from "@/lib/profile";
 import { createClient } from "@/lib/supabase/server";
+import { WaiverCard } from "./waiver-card";
 import { AvatarUploader, NotificationToggles, PasswordForm, ProfileForm } from "./profile-forms";
 
 export const metadata: Metadata = { title: "Profilul meu" };
@@ -26,6 +27,13 @@ export default async function ProfilePage() {
         <p className="text-xs font-bold uppercase tracking-[0.3em] text-neon-green">Cont</p>
         <h1 className="mt-1 font-display text-3xl font-black text-white">Profilul meu</h1>
       </header>
+
+      <WaiverCard
+        signed={extra?.waiver_signed ?? false}
+        signedAt={extra?.waiver_signed_at ?? null}
+        signedBy={extra?.waiver_signed_by_name ?? null}
+        defaultName={profile?.full_name ?? user.fullName ?? ""}
+      />
 
       <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
         <section className="flex flex-col items-center gap-4 rounded-3xl border border-neon-orange/40 bg-carbon/80 p-6 text-center">

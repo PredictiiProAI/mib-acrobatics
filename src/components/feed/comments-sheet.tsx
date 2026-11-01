@@ -1,5 +1,6 @@
 "use client";
 
+import { Avatar } from "@/components/avatar";
 import { Loader2, Maximize2, MessageCircle, Minimize2, Send, Trash2, X } from "lucide-react";
 import { useEffect, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from "react";
 import { createPortal } from "react-dom";
@@ -20,11 +21,11 @@ type CommentRow = {
   content: string;
   created_at: string;
   user_id: string;
-  author: { full_name: string | null; role: AppRole } | null;
+  author: { full_name: string | null; display_name: string | null; avatar_url: string | null; role: AppRole } | null;
   reactions: ReactionRow[];
 };
 
-const SELECT = "id, content, created_at, user_id, author:users!comments_user_id_fkey(full_name, role), reactions:comment_reactions(user_id, reaction)";
+const SELECT = "id, content, created_at, user_id, author:users!comments_user_id_fkey(full_name, display_name, avatar_url, role), reactions:comment_reactions(user_id, reaction)";
 const fullDate = new Intl.DateTimeFormat("ro-RO", { dateStyle: "long", timeStyle: "short" });
 
 /** Pixels the mobile drawer must be dragged before it expands / collapses / closes. */
@@ -195,7 +196,7 @@ export function CommentsSheet({
         style={style}
         data-testid="comments-panel"
         data-expanded={expanded}
-        className={`relative flex h-[var(--sheet-h)] w-full max-w-2xl animate-[sheet-up_.25s_ease-out] flex-col overflow-hidden rounded-t-[2rem] border border-b-0 border-white/10 bg-carbon/95 shadow-[0_-20px_60px_-20px_rgb(168_85_247/0.35)] backdrop-blur-2xl md:h-full md:w-[30rem] md:max-w-none md:animate-[slide-in_.25s_ease-out] md:rounded-l-[2rem] md:rounded-tr-none md:border-b md:border-r-0 lg:w-[34rem] ${
+        className={`relative flex h-[var(--sheet-h)] w-full max-w-2xl animate-[sheet-up_.25s_ease-out] flex-col overflow-hidden rounded-t-[2rem] border border-b-0 border-white/10 bg-carbon/95 shadow-[0_-20px_60px_-20px_rgb(139_0_255/0.35)] backdrop-blur-2xl md:h-full md:w-[30rem] md:max-w-none md:animate-[slide-in_.25s_ease-out] md:rounded-l-[2rem] md:rounded-tr-none md:border-b md:border-r-0 lg:w-[34rem] ${
           drag === null ? "transition-[height,transform] duration-300 ease-out" : ""
         }`}
       >
@@ -240,14 +241,12 @@ export function CommentsSheet({
             </li>
           )}
           {comments?.map((c) => {
-            const name = c.author?.full_name ?? "Utilizator";
+            const name = c.author?.display_name || c.author?.full_name || "Utilizator";
             const mine = c.reactions.find((r) => r.user_id === viewer.id)?.reaction ?? null;
             const mineInfo = mine ? reactionInfo(mine) : null;
             return (
               <li key={c.id} className="group flex gap-3 rounded-2xl px-2 py-3 transition hover:bg-white/[0.02]" data-testid="comment">
-                <span className="grid size-10 shrink-0 place-items-center rounded-full bg-gradient-to-br from-neon-violet to-neon-purple p-[2px]">
-                  <span className="grid size-full place-items-center rounded-full bg-carbon text-sm font-black">{name[0]?.toUpperCase()}</span>
-                </span>
+                <Avatar name={name} url={c.author?.avatar_url} />
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                     <span className="font-semibold">{name}</span>
@@ -301,9 +300,7 @@ export function CommentsSheet({
           }}
           className="flex items-end gap-3 border-t border-white/5 bg-black/20 px-4 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] md:px-6"
         >
-          <span className="hidden size-10 shrink-0 place-items-center rounded-full bg-gradient-to-br from-neon-violet to-neon-purple text-sm font-black text-black sm:grid">
-            {viewer.name[0]?.toUpperCase()}
-          </span>
+          <Avatar name={viewer.name} url={viewer.avatarUrl} className="hidden size-10 sm:grid" />
           <textarea
             value={text}
             onChange={(e) => setText(e.target.value)}

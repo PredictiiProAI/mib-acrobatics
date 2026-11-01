@@ -4,12 +4,12 @@
   --color-ink: #000000;
   --color-carbon: #09090b;
   --color-graphite: #131316;
-  --color-neon-violet: #a855f7;
-  --color-neon-purple: #8b5cf6;
+  --color-neon-violet: #8b00ff;
+  --color-neon-lime: #76ff03;
   /* Soft violet glows */
-  --shadow-neon-sm: 0 0 12px rgb(168 85 247 / 0.2);
-  --shadow-neon: 0 0 15px rgb(168 85 247 / 0.3);
-  --shadow-neon-lg: 0 0 24px rgb(168 85 247 / 0.4);
+  --shadow-neon-sm: 0 0 12px rgb(139 0 255 / 0.2);
+  --shadow-neon: 0 0 15px rgb(139 0 255 / 0.3);
+  --shadow-neon-lg: 0 0 24px rgb(139 0 255 / 0.4);
   --font-sans: var(--font-geist-sans);
   --font-display: var(--font-exo);
 }
@@ -20,7 +20,7 @@
 
 body {
   background: var(--color-ink);
-  color: #ededf0;
+  color: #ffffff;
   font-family: var(--font-geist-sans), system-ui, sans-serif;
 }
 
@@ -32,8 +32,8 @@ body::before {
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(60rem 40rem at 10% -10%, rgb(139 92 246 / 0.16), transparent 60%),
-    radial-gradient(50rem 35rem at 110% 10%, rgb(139 92 246 / 0.08), transparent 60%),
+    radial-gradient(60rem 40rem at 10% -10%, rgb(118 255 3 / 0.16), transparent 60%),
+    radial-gradient(50rem 35rem at 110% 10%, rgb(118 255 3 / 0.08), transparent 60%),
     var(--color-ink);
 }
 
@@ -46,7 +46,7 @@ body::before {
 }
 
 @utility text-gradient {
-  background: linear-gradient(90deg, var(--color-neon-violet), #c4b5fd 45%, var(--color-neon-purple));
+  background: linear-gradient(90deg, var(--color-neon-violet), #ffffff 45%, var(--color-neon-lime));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;

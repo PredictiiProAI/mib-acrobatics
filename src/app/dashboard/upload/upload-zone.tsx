@@ -132,12 +132,12 @@ export function UploadZone({ userId }: { userId: string }) {
           addFiles(e.dataTransfer.files);
         }}
         className={`glass group flex cursor-pointer flex-col items-center justify-center gap-4 rounded-3xl border-2 border-dashed p-10 text-center transition sm:p-14 ${
-          dragging ? "border-neon-purple bg-neon-purple/5" : "border-white/15 hover:border-neon-violet/60 hover:shadow-neon"
+          dragging ? "border-neon-lime bg-neon-lime/5" : "border-white/15 hover:border-neon-violet/60 hover:shadow-neon"
         }`}
       >
         <span
           className={`flex size-16 items-center justify-center rounded-2xl transition ${
-            dragging ? "bg-neon-purple/15 text-neon-purple" : "bg-neon-violet/10 text-neon-violet group-hover:scale-110"
+            dragging ? "bg-neon-lime/15 text-neon-lime" : "bg-neon-violet/10 text-neon-violet group-hover:scale-110"
           }`}
         >
           <CloudUpload className="size-8" />
@@ -209,8 +209,8 @@ export function UploadZone({ userId }: { userId: string }) {
                   )}
                   {item.status === "done" && (
                     <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/60 backdrop-blur-sm">
-                      <CheckCircle2 className="size-10 text-neon-purple" />
-                      <p className="text-sm font-semibold text-neon-purple">Publicat</p>
+                      <CheckCircle2 className="size-10 text-neon-lime" />
+                      <p className="text-sm font-semibold text-neon-lime">Publicat</p>
                     </div>
                   )}
                 </div>
@@ -237,7 +237,7 @@ export function UploadZone({ userId }: { userId: string }) {
                 checked={isPublic}
                 onChange={(e) => setIsPublic(e.target.checked)}
                 disabled={busy}
-                className="size-4 accent-[var(--color-neon-purple)]"
+                className="size-4 accent-[var(--color-neon-lime)]"
               />
               <span>
                 Public <span className="text-white/50">— apare și pe pagina principală, nu doar în AcroFeed</span>
@@ -245,7 +245,7 @@ export function UploadZone({ userId }: { userId: string }) {
             </label>
             <div className="flex items-center gap-3">
               {doneCount > 0 && !busy && (
-                <Link href="/dashboard/posts" className="text-sm text-neon-purple hover:underline">
+                <Link href="/dashboard/posts" className="text-sm text-neon-lime hover:underline">
                   Vezi postările ({doneCount})
                 </Link>
               )}

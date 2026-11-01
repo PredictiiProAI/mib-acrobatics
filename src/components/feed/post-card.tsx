@@ -1,5 +1,6 @@
 "use client";
 
+import { Avatar } from "@/components/avatar";
 import { Clock, Heart, MessageCircle, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { useCallback, useState } from "react";
@@ -80,13 +81,11 @@ export function PostCard({ post, viewer, priority, onDeleted }: { post: FeedPost
 
   return (
     <article
-      className={`mx-auto w-full max-w-xl overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-graphite/90 to-carbon/90 shadow-[0_20px_60px_-30px_rgb(168_85_247/0.5)] transition hover:border-neon-violet/25 hover:shadow-neon ${deleting ? "pointer-events-none opacity-50" : ""}`}
+      className={`mx-auto w-full max-w-xl overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-graphite/90 to-carbon/90 shadow-[0_20px_60px_-30px_rgb(139_0_255/0.5)] transition hover:border-neon-violet/25 hover:shadow-neon ${deleting ? "pointer-events-none opacity-50" : ""}`}
       data-testid="post-card"
     >
       <header className="flex items-center gap-3 px-5 py-4">
-        <span className="grid size-11 shrink-0 place-items-center rounded-full bg-gradient-to-br from-neon-violet to-neon-purple p-[2px]">
-          <span className="grid size-full place-items-center rounded-full bg-carbon font-display text-base font-black text-white">{author[0]?.toUpperCase()}</span>
-        </span>
+        <Avatar name={author} url={post.author_avatar} className="size-11" textClassName="text-base" />
         <div className="min-w-0 flex-1">
           <p className="flex items-center gap-2">
             <span className="truncate font-semibold" data-testid="post-author">
@@ -115,7 +114,7 @@ export function PostCard({ post, viewer, priority, onDeleted }: { post: FeedPost
           {burst > 0 && (
             <Heart
               key={burst}
-              className="pointer-events-none absolute left-1/2 top-1/2 size-24 -translate-x-1/2 -translate-y-1/2 animate-[heart-pop_.8s_ease-out_forwards] fill-neon-violet text-neon-violet drop-shadow-[0_0_24px_rgb(168_85_247/0.8)]"
+              className="pointer-events-none absolute left-1/2 top-1/2 size-24 -translate-x-1/2 -translate-y-1/2 animate-[heart-pop_.8s_ease-out_forwards] fill-neon-violet text-neon-violet drop-shadow-[0_0_24px_rgb(139_0_255/0.8)]"
             />
           )}
         </div>
@@ -149,7 +148,7 @@ export function PostCard({ post, viewer, priority, onDeleted }: { post: FeedPost
           aria-label="Comentarii"
           className="group inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-white/[0.04] px-4 py-2.5 text-sm font-bold text-white/80 transition hover:bg-white/[0.08] hover:text-white"
         >
-          <MessageCircle className="size-5 group-hover:text-neon-purple" />
+          <MessageCircle className="size-5 group-hover:text-neon-lime" />
           <span data-testid="comment-count">{comments}</span>
           <span className="font-medium">{comments === 1 ? "comentariu" : "comentarii"}</span>
         </button>

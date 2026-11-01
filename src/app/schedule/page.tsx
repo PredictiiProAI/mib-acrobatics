@@ -18,7 +18,7 @@ export default async function SchedulePage() {
 
   return (
     <div className="space-y-8">
-      <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-neon-violet/20 via-carbon to-neon-purple/10 p-6 sm:p-8">
+      <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-neon-violet/20 via-carbon to-neon-lime/10 p-6 sm:p-8">
         <div className="pointer-events-none absolute -right-10 -top-16 size-56 rounded-full bg-neon-violet/25 blur-3xl" />
         <div className="relative flex flex-wrap items-end justify-between gap-4">
           <div>

@@ -6,7 +6,7 @@ const base =
 
 const variants = {
   primary: "bg-neon-violet text-white font-bold shadow-neon hover:shadow-neon-lg hover:brightness-110",
-  accent: "bg-neon-purple text-white font-bold shadow-neon hover:shadow-neon-lg hover:brightness-110",
+  accent: "bg-neon-lime text-black font-bold shadow-[0_0_15px_rgb(118_255_3/0.3)] hover:shadow-[0_0_24px_rgb(118_255_3/0.4)] hover:brightness-110",
   ghost: "glass text-white hover:border-neon-violet/50 hover:shadow-neon-sm",
 };
 

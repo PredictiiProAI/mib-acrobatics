@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { CloudUpload, Rss } from "lucide-react";
 import { ButtonLink } from "@/components/ui";
-import { requireRole } from "@/lib/auth";
+import { requireRole, publicName } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { PUBLISHER_ROLES, ROLE_LABEL, isStaff } from "@/lib/roles";
 
@@ -29,9 +29,9 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-8">
       <div>
-        <p className="text-xs uppercase tracking-[0.3em] text-neon-purple">Command Center</p>
+        <p className="text-xs uppercase tracking-[0.3em] text-neon-lime">Command Center</p>
         <h1 className="mt-2 font-display text-3xl font-black sm:text-4xl">
-          Salut, <span className="text-gradient">{user.fullName ?? user.email}</span>
+          Salut, <span className="text-gradient">{publicName(user)}</span>
         </h1>
         <p className="mt-2 text-white/60">
           Rol: <span className="text-neon-violet">{ROLE_LABEL[user.role]}</span>

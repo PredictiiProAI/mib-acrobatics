@@ -28,7 +28,7 @@ export function NavLinks({ items, badges = {} }: { items: DashNavItem[]; badges?
           >
             {item.label}
             {(badges[item.href] ?? 0) > 0 && (
-              <span className="ml-2 inline-grid min-w-5 place-items-center rounded-full bg-neon-purple px-1 text-[10px] font-black text-black">
+              <span className="ml-2 inline-grid min-w-5 place-items-center rounded-full bg-neon-lime px-1 text-[10px] font-black text-black">
                 {badges[item.href]}
               </span>
             )}

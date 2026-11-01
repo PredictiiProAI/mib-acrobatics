@@ -2,6 +2,7 @@
 
 import { CalendarDays, House, Info, LayoutDashboard, LogOut, MessageSquare, Rss, type LucideIcon } from "lucide-react";
 import Link from "next/link";
+import { Avatar } from "./avatar";
 import { usePathname } from "next/navigation";
 import { signOut } from "@/app/(auth)/actions";
 import { Logo } from "@/components/logo";
@@ -12,7 +13,7 @@ type Item = { href: string; label: string; icon: LucideIcon; badge?: number };
 
 function Badge({ n }: { n: number }) {
   return (
-    <span data-testid="unread-badge" className="grid min-w-5 place-items-center rounded-full bg-neon-purple px-1 text-[10px] font-black leading-5 text-black">
+    <span data-testid="unread-badge" className="grid min-w-5 place-items-center rounded-full bg-neon-lime px-1 text-[10px] font-black leading-5 text-black">
       {n > 99 ? "99+" : n}
     </span>
   );
@@ -20,12 +21,14 @@ function Badge({ n }: { n: number }) {
 
 export function HeaderNav({
   name,
+  avatarUrl,
   role,
   dashboard,
   messagesHref,
   unread,
 }: {
   name: string;
+  avatarUrl: string | null;
   role: AppRole;
   dashboard: { href: string; label: string } | null;
   messagesHref: string;
@@ -67,15 +70,19 @@ export function HeaderNav({
           </nav>
 
           <div className="ml-auto flex items-center gap-2">
-            <div className="flex items-center gap-2.5 rounded-2xl border border-white/10 bg-white/[0.03] py-1 pl-1 pr-3" data-testid="header-user">
-              <span className="grid size-8 place-items-center rounded-xl bg-gradient-to-br from-neon-violet to-neon-purple text-sm font-black text-black">
-                {name[0]?.toUpperCase()}
-              </span>
+            <Link
+              href="/profil"
+              aria-label="Profilul meu"
+              aria-current={active("/profil") ? "page" : undefined}
+              className={`flex items-center gap-2.5 rounded-2xl border py-1 pl-1 pr-3 transition hover:border-neon-violet/70 ${active("/profil") ? "border-neon-violet bg-neon-violet/15" : "border-white/10 bg-white/[0.03]"}`}
+              data-testid="header-user"
+            >
+              <Avatar name={name} url={avatarUrl} className="size-8" textClassName="text-xs" />
               <span className="hidden min-w-0 flex-col leading-tight sm:flex">
                 <span className="max-w-36 truncate text-sm font-semibold">{name}</span>
                 <RoleBadge role={role} className="mt-0.5 w-fit !px-1.5 !py-0 !text-[9px]" />
               </span>
-            </div>
+            </Link>
             <form action={signOut}>
               <button type="submit" className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-white/70 transition hover:bg-red-500/10 hover:text-red-300">
                 <LogOut className="size-4" />
@@ -95,7 +102,7 @@ export function HeaderNav({
                 aria-current={active(href) ? "page" : undefined}
                 className={`relative flex flex-col items-center gap-1 py-2.5 text-[10px] font-semibold ${active(href) ? "text-neon-violet" : "text-white/60"}`}
               >
-                {active(href) && <span className="absolute inset-x-3 top-0 h-0.5 rounded-full bg-neon-violet shadow-[0_0_10px_rgb(168_85_247)]" />}
+                {active(href) && <span className="absolute inset-x-3 top-0 h-0.5 rounded-full bg-neon-violet shadow-[0_0_10px_rgb(139_0_255)]" />}
                 <span className="relative">
                   <Icon className="size-5" />
                   {!!badge && (

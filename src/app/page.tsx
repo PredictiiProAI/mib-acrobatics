@@ -52,7 +52,7 @@ const DISCIPLINE_ICON: Record<DisciplineKey, LucideIcon> = {
 function SectionTitle({ eyebrow, children, text }: { eyebrow: string; children: React.ReactNode; text?: string }) {
   return (
     <div>
-      <p className="text-xs font-semibold uppercase tracking-[0.3em] text-neon-purple">{eyebrow}</p>
+      <p className="text-xs font-semibold uppercase tracking-[0.3em] text-neon-lime">{eyebrow}</p>
       <h2 className="mt-3 font-display text-3xl font-black uppercase sm:text-4xl">{children}</h2>
       {text && <p className="mt-3 max-w-2xl text-white/60">{text}</p>}
     </div>
@@ -74,8 +74,8 @@ export default async function LandingPage() {
         {!user && <SiteHeader current="/" />}
 
         <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col justify-center px-5 pb-20">
-          <p className="mb-4 inline-flex w-fit items-center gap-2 rounded-full border border-neon-purple/40 bg-neon-purple/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.25em] text-neon-purple">
-            <span className="size-1.5 animate-pulse rounded-full bg-neon-purple" /> Club de acrobatică
+          <p className="mb-4 inline-flex w-fit items-center gap-2 rounded-full border border-neon-lime/40 bg-neon-lime/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.25em] text-neon-lime">
+            <span className="size-1.5 animate-pulse rounded-full bg-neon-lime" /> Club de acrobatică
           </p>
           <h1 className="font-display text-5xl font-black uppercase leading-[0.95] tracking-tight sm:text-7xl lg:text-8xl">
             Sfidează
@@ -121,7 +121,7 @@ export default async function LandingPage() {
           <ul className="mt-6 space-y-3">
             {WHY_MIB.map((item) => (
               <li key={item} className="flex items-start gap-3 text-sm text-white/80">
-                <span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-neon-purple/15 text-neon-purple">
+                <span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-neon-lime/15 text-neon-lime">
                   <Check className="size-3.5" />
                 </span>
                 {item}
@@ -133,9 +133,9 @@ export default async function LandingPage() {
           </ButtonLink>
         </div>
         <div className="relative">
-          <div className="absolute -inset-6 -z-10 rounded-[2.5rem] bg-gradient-to-br from-neon-violet/25 via-transparent to-neon-purple/20 blur-2xl" />
+          <div className="absolute -inset-6 -z-10 rounded-[2.5rem] bg-gradient-to-br from-neon-violet/25 via-transparent to-neon-lime/20 blur-2xl" />
           <div className="glass grid place-items-center rounded-[2rem] p-10 sm:p-14">
-            <Image src={logoMark} alt="MIB Acrobatics" className="aspect-square h-auto w-full max-w-xs rounded-3xl shadow-[0_0_60px_-10px_rgb(168_85_247/0.7)] ring-1 ring-white/10" />
+            <Image src={logoMark} alt="MIB Acrobatics" className="aspect-square h-auto w-full max-w-xs rounded-3xl shadow-[0_0_60px_-10px_rgb(139_0_255/0.7)] ring-1 ring-white/10" />
             <div className="mt-8 grid w-full grid-cols-3 gap-3 text-center">
               {[
                 { icon: Activity, label: "Forță" },
@@ -159,7 +159,7 @@ export default async function LandingPage() {
         <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {PILLARS.map(({ icon: Icon, title, text }) => (
             <div key={title} className="glass rounded-2xl p-6 transition hover:-translate-y-1 hover:border-neon-violet/40 hover:shadow-neon">
-              <Icon className="size-7 text-neon-purple" />
+              <Icon className="size-7 text-neon-lime" />
               <h3 className="mt-4 font-display text-lg font-extrabold">{title}</h3>
               <p className="mt-2 text-sm text-white/60">{text}</p>
             </div>
@@ -182,7 +182,7 @@ export default async function LandingPage() {
                 </span>
                 <h3 className="mt-5 font-display text-xl font-extrabold">{d.title}</h3>
                 <p className="mt-2 text-sm text-white/60">{d.text}</p>
-                <p className="mt-4 inline-flex rounded-full bg-neon-purple/10 px-2.5 py-1 text-[11px] font-semibold text-neon-purple">{d.level}</p>
+                <p className="mt-4 inline-flex rounded-full bg-neon-lime/10 px-2.5 py-1 text-[11px] font-semibold text-neon-lime">{d.level}</p>
               </article>
             );
           })}
@@ -191,7 +191,7 @@ export default async function LandingPage() {
 
       <section id="program" className="mx-auto max-w-6xl scroll-mt-8 px-5 py-12">
         <SectionTitle eyebrow="Antrenamente" text="Grupe pe vârste și niveluri. Pentru o oră de probă sau schimbări de program, scrie-i antrenorului din aplicație.">
-          Program <span className="text-neon-purple">săptămânal</span>
+          Program <span className="text-neon-lime">săptămânal</span>
         </SectionTitle>
         <ScheduleGrid groups={groupSchedule(schedule)} today={todayIsoDay()} className="mt-10">
           <div className="flex flex-col justify-between rounded-2xl border border-neon-violet/40 bg-gradient-to-br from-neon-violet/20 to-transparent p-6">
@@ -209,7 +209,7 @@ export default async function LandingPage() {
       <section id="acrofeed" className="mx-auto max-w-6xl scroll-mt-8 px-5 py-20">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <SectionTitle eyebrow="Din sală" text="Cele mai noi momente publice. Membrii văd tot feed-ul, cu aprecieri și comentarii.">
-            Din <span className="text-neon-purple">AcroFeed</span>
+            Din <span className="text-neon-lime">AcroFeed</span>
           </SectionTitle>
           <ButtonLink href={user ? "/feed" : "/signup"} variant="ghost">
             Vezi tot <ArrowRight className="size-4" />
@@ -227,7 +227,7 @@ export default async function LandingPage() {
       </section>
 
       <section className="mx-auto max-w-6xl px-5 pb-24">
-        <div className="relative overflow-hidden rounded-[2rem] border border-neon-violet/30 bg-gradient-to-br from-neon-violet/20 via-carbon to-neon-purple/15 p-8 sm:p-12">
+        <div className="relative overflow-hidden rounded-[2rem] border border-neon-violet/30 bg-gradient-to-br from-neon-violet/20 via-carbon to-neon-lime/15 p-8 sm:p-12">
           <div className="pointer-events-none absolute -right-20 -top-20 size-72 rounded-full bg-neon-violet/25 blur-3xl" />
           <div className="relative flex flex-col items-start gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div>

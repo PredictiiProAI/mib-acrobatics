@@ -20,7 +20,7 @@ export default async function CommentsModerationPage() {
   return (
     <div className="space-y-8">
       <div>
-        <p className="text-xs uppercase tracking-[0.3em] text-neon-purple">Moderare</p>
+        <p className="text-xs uppercase tracking-[0.3em] text-neon-lime">Moderare</p>
         <h1 className="mt-2 font-display text-3xl font-black sm:text-4xl">Comentarii recente</h1>
         <p className="mt-2 text-white/60">Ultimele 200 de comentarii din AcroFeed. Poți șterge oricare dintre ele.</p>
       </div>

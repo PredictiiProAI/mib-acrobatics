@@ -1,4 +1,4 @@
-import type { SessionUser } from "@/lib/auth";
+import { publicName, type SessionUser } from "@/lib/auth";
 import { getUnreadCount } from "@/lib/messages";
 import { canPublish, isStaff } from "@/lib/roles";
 import { HeaderNav } from "./header-nav";
@@ -8,7 +8,8 @@ export async function AppHeader({ user }: { user: SessionUser }) {
   const unread = await getUnreadCount(user.id);
   return (
     <HeaderNav
-      name={user.fullName || user.email.split("@")[0]}
+      name={publicName(user)}
+      avatarUrl={user.avatarUrl}
       role={user.role}
       dashboard={canPublish(user.role) ? { href: "/dashboard", label: isStaff(user.role) ? "Admin" : "Dashboard" } : null}
       messagesHref={isStaff(user.role) ? "/dashboard/messages" : "/messages"}

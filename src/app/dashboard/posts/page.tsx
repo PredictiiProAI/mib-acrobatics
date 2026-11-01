@@ -23,7 +23,7 @@ export default async function PostsPage() {
     <div className="space-y-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-xs uppercase tracking-[0.3em] text-neon-purple">{staff ? "Moderare" : "Conținutul tău"}</p>
+          <p className="text-xs uppercase tracking-[0.3em] text-neon-lime">{staff ? "Moderare" : "Conținutul tău"}</p>
           <h1 className="mt-2 font-display text-3xl font-black sm:text-4xl">{staff ? "Toate postările" : "Postările mele"}</h1>
           <p className="mt-2 text-white/60">
             {staff

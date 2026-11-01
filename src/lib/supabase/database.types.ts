@@ -2,6 +2,7 @@
 export type AppRole = "superadmin" | "admin" | "media" | "user";
 export type MediaType = "video" | "image";
 export type ReactionKey = "like" | "love" | "fire" | "clap" | "acro";
+export type TrainingLevel = "beginner" | "intermediate" | "advanced";
 export type ScheduleLevel = "all" | "beginner" | "intermediate" | "advanced";
 export type BadgeColor = "violet" | "fuchsia" | "sky" | "emerald" | "amber" | "rose";
 type ScheduleInsert = {
@@ -22,9 +23,25 @@ export type Database = {
   public: {
     Tables: {
       users: {
-        Row: { id: string; email: string; role: AppRole; full_name: string | null; created_at: string };
+        Row: {
+          id: string;
+          email: string;
+          role: AppRole;
+          full_name: string | null;
+          created_at: string;
+          display_name: string | null;
+          discipline: string | null;
+          level: TrainingLevel | null;
+          avatar_url: string | null;
+        };
         Insert: never;
-        Update: { full_name?: string | null };
+        Update: { full_name?: string | null; display_name?: string | null; discipline?: string | null; level?: TrainingLevel | null; avatar_url?: string | null };
+        Relationships: [];
+      };
+      user_settings: {
+        Row: { user_id: string; phone: string | null; notify_feed: boolean; notify_schedule: boolean; updated_at: string };
+        Insert: { user_id: string; phone?: string | null; notify_feed?: boolean; notify_schedule?: boolean; updated_at?: string };
+        Update: { phone?: string | null; notify_feed?: boolean; notify_schedule?: boolean; updated_at?: string };
         Relationships: [];
       };
       posts: {
@@ -124,6 +141,7 @@ export type Database = {
           liked_by_me: boolean;
           reactions: Partial<Record<ReactionKey, number>>;
           my_reaction: ReactionKey | null;
+          author_avatar: string | null;
         };
         Relationships: Rel[];
       };

@@ -112,7 +112,7 @@ export function UsersTable({ me, users }: { me: { id: string; role: AppRole }; u
               <tr key={u.id} className="transition hover:bg-white/[0.02]">
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-3">
-                    <span className="grid size-9 shrink-0 place-items-center rounded-full bg-gradient-to-br from-neon-violet to-neon-purple text-sm font-black text-black">
+                    <span className="grid size-9 shrink-0 place-items-center rounded-full bg-gradient-to-br from-neon-violet to-neon-lime text-sm font-black text-black">
                       {(u.full_name || u.email)[0]?.toUpperCase()}
                     </span>
                     <div className="min-w-0">

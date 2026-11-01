@@ -65,7 +65,7 @@ export default async function AboutPage() {
       {user && <AppHeader user={user} />}
       <main className={`flex-1 ${user ? "pb-20 lg:pb-0" : ""}`}>
         <section className="relative isolate overflow-hidden">
-          <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(50rem_30rem_at_70%_0%,rgb(168_85_247/0.28),transparent_65%),radial-gradient(40rem_25rem_at_0%_100%,rgb(139_92_246/0.18),transparent_60%)]" />
+          <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(50rem_30rem_at_70%_0%,rgb(139_0_255/0.28),transparent_65%),radial-gradient(40rem_25rem_at_0%_100%,rgb(118_255_3/0.18),transparent_60%)]" />
           {!user && <SiteHeader current="/despre" />}
           <div className="mx-auto max-w-6xl px-5 pb-20 pt-12 sm:pt-20">
             <p className="inline-flex items-center gap-2 rounded-full border border-neon-violet/40 bg-neon-violet/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.25em] text-neon-violet">
@@ -97,7 +97,7 @@ export default async function AboutPage() {
         </section>
 
         <section className="mx-auto max-w-6xl px-5 py-16">
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-neon-purple">
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-neon-lime">
             Pilonii noștri
           </p>
           <h2 className="mt-3 font-display text-3xl font-black uppercase sm:text-4xl">
@@ -113,7 +113,7 @@ export default async function AboutPage() {
         </section>
 
         <section className="mx-auto max-w-6xl px-5 py-16">
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-neon-purple">
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-neon-lime">
             Pentru părinți
           </p>
           <h2 className="mt-3 font-display text-3xl font-black uppercase sm:text-4xl">
@@ -142,7 +142,7 @@ export default async function AboutPage() {
           id="demo"
           className="mx-auto max-w-6xl scroll-mt-8 px-5 pb-24 pt-8"
         >
-          <div className="relative overflow-hidden rounded-[2rem] border border-neon-violet/40 bg-gradient-to-br from-neon-violet/25 via-carbon to-neon-purple/15 p-8 shadow-[0_0_80px_-30px_rgb(168_85_247/0.8)] sm:p-12">
+          <div className="relative overflow-hidden rounded-[2rem] border border-neon-violet/40 bg-gradient-to-br from-neon-violet/25 via-carbon to-neon-lime/15 p-8 shadow-[0_0_80px_-30px_rgb(139_0_255/0.8)] sm:p-12">
             <div className="pointer-events-none absolute -right-16 -top-16 size-72 animate-pulse rounded-full bg-neon-violet/25 blur-3xl" />
             <div className="relative grid items-center gap-8 lg:grid-cols-[1.4fr_1fr]">
               <div>
@@ -172,7 +172,7 @@ export default async function AboutPage() {
                     href={whatsapp}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#25d366] px-7 py-4 text-base font-semibold text-black transition hover:brightness-110"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-neon-lime px-7 py-4 text-base font-semibold text-black transition hover:brightness-110"
                   >
                     WhatsApp
                   </a>

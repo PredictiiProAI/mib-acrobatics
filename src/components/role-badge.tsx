@@ -2,9 +2,9 @@ import { ROLE_LABEL } from "@/lib/roles";
 import type { AppRole } from "@/lib/supabase/database.types";
 
 export const ROLE_BADGE_STYLE: Record<AppRole, string> = {
-  superadmin: "bg-rose-500/15 text-rose-300 ring-rose-400/30",
-  admin: "bg-neon-violet/15 text-neon-violet ring-neon-violet/30",
-  media: "bg-sky-500/15 text-sky-300 ring-sky-400/30",
+  superadmin: "bg-neon-violet/15 text-neon-violet ring-neon-violet/30",
+  admin: "bg-neon-lime/10 text-neon-lime ring-neon-lime/30",
+  media: "bg-white/10 text-white ring-white/30",
   user: "bg-white/[0.06] text-white/75 ring-white/15",
 };
 

@@ -51,7 +51,7 @@ export function InboxList({ conversations }: { conversations: Conversation[] }) 
                 href={`/dashboard/messages/${c.userId}`}
                 className={`flex items-center gap-3 border-l-2 px-4 py-3 transition ${active ? "border-neon-violet bg-neon-violet/10" : "border-transparent hover:bg-white/5"}`}
               >
-                <span className="grid size-10 shrink-0 place-items-center rounded-full bg-gradient-to-br from-neon-violet to-neon-purple font-black text-black">
+                <span className="grid size-10 shrink-0 place-items-center rounded-full bg-gradient-to-br from-neon-violet to-neon-lime font-black text-black">
                   {c.name[0]?.toUpperCase()}
                 </span>
                 <span className="min-w-0 flex-1">
@@ -67,10 +67,10 @@ export function InboxList({ conversations }: { conversations: Conversation[] }) 
                       {c.lastMessage}
                     </span>
                     {c.unread > 0 && (
-                      <span className="ml-auto grid min-w-5 shrink-0 place-items-center rounded-full bg-neon-purple px-1 text-[10px] font-black text-black">{c.unread}</span>
+                      <span className="ml-auto grid min-w-5 shrink-0 place-items-center rounded-full bg-neon-lime px-1 text-[10px] font-black text-black">{c.unread}</span>
                     )}
                   </span>
-                  {c.role !== "user" && <span className="text-[10px] uppercase text-neon-purple">{ROLE_LABEL[c.role]}</span>}
+                  {c.role !== "user" && <span className="text-[10px] uppercase text-neon-lime">{ROLE_LABEL[c.role]}</span>}
                 </span>
               </Link>
             </li>

@@ -178,6 +178,7 @@ export type Database = {
           other_medical: string;
           acknowledgements: string[];
           signed_at: string;
+          replaces: string | null;
         };
         Insert: never;
         Update: never;
@@ -230,9 +231,11 @@ export type Database = {
           waiver_signed?: boolean;
           waiver_signed_at?: string | null;
           waiver_signed_by_name?: string | null;
+          rules_accepted_at?: string | null;
         }[];
       };
-      submit_waiver: { Args: { p: Record<string, unknown> }; Returns: string };
+      submit_waiver: { Args: { p: Record<string, unknown> }; Returns: { id: string; signed_at: string } };
+      accept_rules: { Args: Record<string, never>; Returns: string };
       admin_list_users: {
         Args: Record<string, never>;
         Returns: {
@@ -254,6 +257,7 @@ export type Database = {
           waiver_signed?: boolean;
           waiver_signed_at?: string | null;
           waiver_signed_by_name?: string | null;
+          rules_accepted_at?: string | null;
         }[];
       };
       admin_set_role: { Args: { target: string; new_role: AppRole }; Returns: undefined };

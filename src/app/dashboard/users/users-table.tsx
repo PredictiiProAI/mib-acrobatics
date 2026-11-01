@@ -225,16 +225,26 @@ function Detail({
 
 const waiverFmt = new Intl.DateTimeFormat("ro-RO", { dateStyle: "long", timeStyle: "short", timeZone: "Europe/Bucharest" });
 
+const isParent = (user: Row) => user.account_type === "Părinte";
+
 function WaiverStatus({ user }: { user: Row }) {
   if (!needsWaiver(user.role))
-    return <span className="text-white/50" data-testid="waiver-status">Scutit — conturile de staff nu semnează declarația.</span>;
+    return <span className="text-white/50" data-testid="waiver-status">Scutit — conturile de staff nu semnează documente.</span>;
+  if (!isParent(user))
+    return user.rules_accepted_at ? (
+      <span className="text-neon-green" data-testid="waiver-status">
+        Regulament acceptat pe {waiverFmt.format(new Date(user.rules_accepted_at))}. Acordul parental îl semnează părintele din contul lui.
+      </span>
+    ) : (
+      <span className="text-red-300" data-testid="waiver-status">Regulamentul de siguranță nu a fost acceptat încă.</span>
+    );
   return user.waiver_signed ? (
     <span className="text-neon-green" data-testid="waiver-status">
-      Semnată de <strong className="text-white">{user.waiver_signed_by_name}</strong>
+      Acord parental semnat de <strong className="text-white">{user.waiver_signed_by_name}</strong>
       {user.waiver_signed_at && <> pe {waiverFmt.format(new Date(user.waiver_signed_at))}</>}
     </span>
   ) : (
-    <span className="text-red-300" data-testid="waiver-status">Nesemnată — nu poate participa la antrenamente.</span>
+    <span className="text-red-300" data-testid="waiver-status">Acord parental nesemnat — copilul nu poate participa la antrenamente.</span>
   );
 }
 
@@ -246,22 +256,25 @@ function WaiverBadge({ user }: { user: Row }) {
         Scutit
       </span>
     );
-  const signed = !!user.waiver_signed;
+  const parent = isParent(user);
+  const signed = parent ? !!user.waiver_signed : !!user.rules_accepted_at;
+  const label = parent ? (signed ? "Acord semnat" : "Acord nesemnat") : signed ? "Regulament ✓" : "Regulament ✕";
   return (
     <div className="relative" onClick={(e) => e.stopPropagation()}>
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
-        aria-label={signed ? "Declarație semnată — vezi detalii" : "Declarație nesemnată — vezi detalii"}
+        aria-label={`${label} — vezi detalii`}
         className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold ring-1 transition ${
           signed ? "bg-neon-green/10 text-neon-green ring-neon-green/40 hover:bg-neon-green/20" : "bg-red-500/10 text-red-400 ring-red-500/40 hover:bg-red-500/20"
         }`}
         data-testid="waiver-badge"
         data-signed={signed}
+        data-kind={parent ? "parent" : "rules"}
       >
-        {signed ? <Check className="size-3.5" /> : <X className="size-3.5" />}
-        {signed ? "Semnată" : "Nesemnată"}
+        {parent && (signed ? <Check className="size-3.5" /> : <X className="size-3.5" />)}
+        {label}
       </button>
       {open && (
         <div className="absolute left-0 top-full z-20 mt-2 w-64 rounded-2xl border border-white/10 bg-carbon p-3 text-xs shadow-xl" data-testid="waiver-popover">
@@ -374,7 +387,7 @@ function UserPanel({ user, onClose }: { user: Row; onClose: () => void }) {
             </Detail>
           </div>
           <div className="col-span-2">
-            <Detail label="Declarație pe proprie răspundere">
+            <Detail label={isParent(user) ? "Acord parental & fișă medicală" : needsWaiver(user.role) ? "Regulament & siguranță" : "Documente"}>
               <WaiverStatus user={user} />
             </Detail>
           </div>
@@ -384,8 +397,11 @@ function UserPanel({ user, onClose }: { user: Row; onClose: () => void }) {
           <section data-testid="panel-waivers">
             <h3 className="text-xs font-semibold uppercase tracking-[0.2em] text-white/50">Declarații & fișe medicale</h3>
             <ul className="mt-3 space-y-3">
-              {waivers.map((w) => (
-                <li key={w.id} className="rounded-2xl border border-neon-green/30 bg-neon-green/[0.04] p-4 text-sm">
+              {waivers.map((w) => {
+                const old = waivers.some((v) => v.replaces === w.id);
+                return (
+                <li key={w.id} className={`rounded-2xl border p-4 text-sm ${old ? "border-white/10 opacity-60" : "border-neon-green/30 bg-neon-green/[0.04]"}`} data-testid="panel-waiver" data-current={!old}>
+                  {old && <p className="mb-1 text-[11px] font-bold uppercase tracking-wider text-white/50">Versiune anterioară</p>}
                   <p className="font-bold text-neon-green">
                     {FORM_ROLE_LABEL[w.form_type]}
                     {w.child_name && <> · copil: <span className="text-white">{w.child_name}</span></>}
@@ -419,7 +435,8 @@ function UserPanel({ user, onClose }: { user: Row; onClose: () => void }) {
                     ))}
                   </dl>
                 </li>
-              ))}
+                );
+              })}
             </ul>
           </section>
         )}
@@ -675,7 +692,7 @@ export function UsersTable({ me, users }: { me: Me; users: Row[] }) {
               <th className="px-4 py-3 font-medium">Utilizator</th>
               <th className="px-4 py-3 font-medium">Rol</th>
               <th className="px-4 py-3 font-medium">Activitate</th>
-              <th className="px-4 py-3 font-medium">Declarație</th>
+              <th className="px-4 py-3 font-medium">Documente</th>
               <th className="px-4 py-3 font-medium">Ultima accesare</th>
               <th className="px-4 py-3 font-medium">Înscris</th>
               <th className="px-4 py-3" />

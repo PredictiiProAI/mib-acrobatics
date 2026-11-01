@@ -34,7 +34,7 @@ export const PRIVACY_SECTIONS: LegalSection[] = [
           "Date despre copii (dacă ești părinte): numele și vârsta copilului / copiilor, completate de tine.",
           "Contactul de urgență: numele și numărul de telefon al persoanei care trebuie anunțată în caz de accidentare.",
           "Fișa medicală (doar pentru sportivi și părinți): alergii, afecțiuni cronice, accidentări anterioare și alte contraindicații sau recomandări medicale, precum și, pentru minori, numele complet și data nașterii copilului.",
-          "Dovezi legale: data și ora acceptării Termenilor și a acestei Politici la crearea contului, precum și numele complet al semnatarului și data și ora semnării declarației pe proprie răspundere.",
+          "Dovezi legale: data și ora acceptării Termenilor și a acestei Politici la crearea contului, numele complet al semnatarului și data și ora semnării acordului parental, precum și data și ora acceptării regulamentului de către sportiv.",
           "Conținut media și interacțiuni: imaginile și videoclipurile încărcate în AcroMib, descrierile acestora, comentariile, reacțiile și mesajele schimbate cu antrenorul.",
           "Date tehnice: data ultimei autentificări, cookie-urile de sesiune necesare autentificării și jurnalele tehnice ale furnizorilor de găzduire (de exemplu adresa IP și tipul de browser/dispozitiv), folosite pentru securitate.",
         ],
@@ -76,7 +76,7 @@ export const PRIVACY_SECTIONS: LegalSection[] = [
         list: [
           "Membrii autentificați văd postările din AcroMib, numele afișat, fotografia de profil, comentariile și reacțiile.",
           "Postările marcate ca publice de echipa clubului pot apărea și pe pagina principală a site-ului, vizibilă oricui.",
-          "Datele sensibile — telefonul, data nașterii, datele copiilor, contactul de urgență, fișa medicală și declarația semnată — sunt vizibile doar titularului contului și antrenorilor / administratorilor clubului. La fiecare semnare, antrenorul principal primește o copie a declarației și a fișei medicale pe email.",
+          "Datele sensibile — telefonul, data nașterii, datele copiilor, contactul de urgență, fișa medicală și declarația semnată — sunt vizibile doar titularului contului și antrenorilor / administratorilor clubului. La fiecare semnare sau actualizare, antrenorul principal primește o copie a acordului și a fișei medicale pe email.",
           "Furnizori tehnici care prelucrează datele exclusiv în numele nostru: Supabase (baza de date, autentificarea și stocarea fișierelor), Vercel (găzduirea site-ului și a aplicației) și furnizorul de email folosit pentru mesajele de confirmare și notificări.",
           "Autorități publice, doar atunci când legea ne obligă.",
         ],
@@ -218,11 +218,11 @@ export const TERMS_SECTIONS: LegalSection[] = [
   },
   {
     id: "declaratie",
-    title: "Declarația pe proprie răspundere",
+    title: "Acordul parental și regulamentul sportivului",
     body: [
-      "Participarea la antrenamente este condiționată de semnarea digitală a Declarației pe proprie răspundere și a Acordului de participare, disponibile în pagina Profil, secțiunea „Documente Legale & Siguranță”.",
-      "Semnătura digitală constă în bifarea acordului și introducerea numelui complet al adultului semnatar; platforma înregistrează numele și data și ora semnării. Pentru sportivii minori, declarația este semnată de părinte sau de tutorele legal.",
-      "Prin semnare confirmi că ai citit declarația, că îți asumi riscurile inerente activităților sportive și că informațiile furnizate sunt reale.",
+      "Participarea sportivilor la antrenamente este condiționată de Acordul Parental & Fișa Medicală Sportiv, semnate digital de părinte sau de tutorele legal din contul de tip Părinte, în pagina Profil. Părintele poate edita oricând fișa medicală; fiecare versiune se păstrează în istoric.",
+      "Semnătura digitală constă în bifarea declarațiilor și introducerea numelui complet al părintelui sau tutorelui; platforma înregistrează numele și data și ora semnării. Prin semnare, părintele confirmă că a citit acordul, că își asumă riscurile inerente activităților sportive pentru copil și că informațiile furnizate sunt reale.",
+      "Sportivii confirmă din contul lor că au înțeles și respectă „Regulamentul & Siguranța Sportiv AcroMIB” (instrucțiunile antrenorilor, anunțarea oricărei dureri sau accidentări, fără elemente riscante nesupravegheate, echipament și comportament sigur); platforma înregistrează data și ora acceptării.",
     ],
   },
   {

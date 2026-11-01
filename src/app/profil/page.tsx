@@ -6,7 +6,7 @@ import { LEVEL_LABEL } from "@/lib/profile";
 import { needsWaiver } from "@/lib/roles";
 import { createClient } from "@/lib/supabase/server";
 import { DeleteAccountCard } from "./delete-account-card";
-import { WaiverCard } from "./waiver-card";
+import { RulesCard, WaiverCard } from "./waiver-card";
 import { AvatarUploader, NotificationToggles, PasswordForm, ProfileForm } from "./profile-forms";
 
 export const metadata: Metadata = { title: "Profilul meu" };
@@ -31,14 +31,15 @@ export default async function ProfilePage() {
         <h1 className="mt-1 font-display text-3xl font-black text-white">Profilul meu</h1>
       </header>
 
-      {needsWaiver(user.role) && (
-        <WaiverCard
-          form={extra?.account_type === "Părinte" ? "parinte" : "sportiv"}
-          submissions={waivers ?? []}
-          defaultName={profile?.full_name ?? user.fullName ?? ""}
-          defaultPhone={settings?.phone ?? ""}
-        />
-      )}
+      {needsWaiver(user.role) &&
+        (extra?.account_type === "Părinte" ? (
+          <WaiverCard
+            submissions={waivers ?? []}
+            parent={{ name: profile?.full_name || user.fullName || "", email: user.email, phone: settings?.phone ?? "" }}
+          />
+        ) : (
+          <RulesCard acceptedAt={extra?.rules_accepted_at ?? null} />
+        ))}
 
       <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
         <section className="flex flex-col items-center gap-4 rounded-3xl border border-neon-orange/40 bg-carbon/80 p-6 text-center">

@@ -10,7 +10,7 @@ import { createClient } from "@/lib/supabase/server";
 import { FORM_ROLE_LABEL, MEDICAL_FIELDS, NOT_APPLICABLE, WAIVER_ACKS, WAIVER_INTRO, WAIVER_TITLE } from "@/lib/waiver";
 import { PrintButton } from "./print-button";
 
-export const metadata: Metadata = { title: "Declarație & Fișă medicală", robots: { index: false } };
+export const metadata: Metadata = { title: "Acord Parental & Fișă Medicală Sportiv", robots: { index: false } };
 
 type Submission = Database["public"]["Tables"]["waiver_submissions"]["Row"];
 
@@ -53,7 +53,10 @@ export default async function WaiverDocumentPage({ params }: { params: Promise<{
   const supabase = await createClient();
   const { data: w } = await supabase.from("waiver_submissions").select("*").eq("id", id).maybeSingle();
   if (!w) notFound();
-  const { data: member } = await supabase.from("users").select("full_name, display_name").eq("id", w.user_id).maybeSingle();
+  const [{ data: member }, { data: newer }] = await Promise.all([
+    supabase.from("users").select("full_name, display_name").eq("id", w.user_id).maybeSingle(),
+    supabase.from("waiver_submissions").select("id").eq("replaces", w.id).order("signed_at", { ascending: false }).limit(1).maybeSingle(),
+  ]);
 
   const parent = w.form_type === "parinte";
   const docNo = w.id.slice(0, 8).toUpperCase();
@@ -90,7 +93,7 @@ export default async function WaiverDocumentPage({ params }: { params: Promise<{
             <div className="flex-1">
               <p className="font-display text-sm font-black tracking-[0.3em] text-[#ff6a00]">MIB ACROBATICS</p>
               <h1 className="mt-1 font-display text-xl font-black leading-tight text-[#111827] sm:text-2xl">{WAIVER_TITLE}</h1>
-              <p className="mt-1 text-[13px] text-[#4b5563]">{parent ? "Acord parental și fișa medicală a sportivului minor" : "Declarație sportiv major"}</p>
+              <p className="mt-1 text-[13px] text-[#4b5563]">Acord parental și fișa medicală a sportivului</p>
             </div>
             <dl className="shrink-0 rounded-xl border border-[#e5e7eb] bg-[#f9fafb] px-4 py-3 text-[12px]" data-testid="waiver-doc-meta">
               <div className="flex justify-between gap-4">
@@ -101,8 +104,23 @@ export default async function WaiverDocumentPage({ params }: { params: Promise<{
                 <dt className="text-[#6b7280]">Generat</dt>
                 <dd className="font-semibold text-[#111827]">{shortFmt.format(new Date())}</dd>
               </div>
+              {w.replaces && (
+                <div className="mt-1 flex justify-between gap-4">
+                  <dt className="text-[#6b7280]">Înlocuiește</dt>
+                  <dd className="font-mono font-bold text-[#111827]">{w.replaces.slice(0, 8).toUpperCase()}</dd>
+                </div>
+              )}
             </dl>
           </header>
+
+          {newer && (
+            <p className="rounded-xl border border-[#ff6a00]/50 bg-[#fff7ed] px-4 py-3 text-[13px] font-semibold text-[#9a3412]" data-testid="waiver-doc-superseded">
+              Versiune anterioară: părintele a actualizat fișa medicală.{" "}
+              <a href={`/declaratie/${newer.id}`} className="underline print:no-underline">
+                Vezi versiunea curentă ({newer.id.slice(0, 8).toUpperCase()})
+              </a>
+            </p>
+          )}
 
           <section className="space-y-2 text-[#374151]">
             {WAIVER_INTRO[w.form_type].map((p, i) => (
@@ -162,7 +180,7 @@ export default async function WaiverDocumentPage({ params }: { params: Promise<{
               </div>
               <div>
                 <dt className="text-[11px] font-semibold uppercase tracking-wider text-[#6b7280]">Rol verificat</dt>
-                <dd className="font-semibold">{parent ? "Părinte / tutore legal" : "Sportiv major"} · cont {FORM_ROLE_LABEL[w.form_type]}</dd>
+                <dd className="font-semibold">{parent ? "Părinte / tutore legal" : "Sportiv"} · cont {FORM_ROLE_LABEL[w.form_type]}</dd>
               </div>
               <div>
                 <dt className="text-[11px] font-semibold uppercase tracking-wider text-[#6b7280]">Data și ora semnării</dt>

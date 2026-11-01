@@ -1,6 +1,6 @@
 import "server-only";
 import nodemailer from "nodemailer";
-import { FORM_ROLE_LABEL, MEDICAL_FIELDS, type MedicalKey, type WaiverForm } from "@/lib/waiver";
+import { FORM_ROLE_LABEL, MEDICAL_FIELDS, WAIVER_TITLE, type MedicalKey } from "@/lib/waiver";
 
 const ALERT_TO = process.env.ADMIN_ALERT_EMAIL || "marius.butrin@gmail.com";
 const ALERT_FROM = process.env.ALERT_FROM_EMAIL || "MIB Acrobatics <noreply@smart.siguranta-digitala.ro>";
@@ -56,9 +56,10 @@ export async function sendAdminEmail(mail: AdminMail) {
 export const sendSignupAlert = (user: { email: string; fullName: string }) => sendAdminEmail(buildMessage(user));
 
 export function sendWaiverAlert(info: {
+  id: string;
+  edited: boolean;
   userName: string;
   email: string;
-  form: WaiverForm;
   signerName: string;
   childName: string;
   childBirthdate: string;
@@ -68,19 +69,27 @@ export function sendWaiverAlert(info: {
   signedAt: string;
 }) {
   const when = new Intl.DateTimeFormat("ro-RO", { dateStyle: "long", timeStyle: "medium", timeZone: "Europe/Bucharest" }).format(new Date(info.signedAt));
-  const subject = `[AcroMIB] Declarație & Fișă Medicală: ${info.userName} (${FORM_ROLE_LABEL[info.form]})`;
+  const role = FORM_ROLE_LABEL.parinte;
+  const subject = `[AcroMIB] Declarație & Fișă Medicală: ${info.userName} (${role})${info.edited ? " — actualizare" : ""}`;
+  const site = (process.env.NEXT_PUBLIC_SITE_URL || "https://mib-acrobatics.vercel.app").replace(/\/$/, "");
+  const docUrl = `${site}/declaratie/${info.id}`;
   const sections: [string, [string, string][]][] = [
     [
-      "Cont",
+      info.edited ? "Fișă medicală actualizată" : "Fișă medicală nouă",
+      [
+        ["Document", `${WAIVER_TITLE} nr. ${info.id.slice(0, 8).toUpperCase()}`],
+        ["PDF", docUrl],
+      ],
+    ],
+    [
+      "Cont părinte",
       [
         ["Utilizator", info.userName],
         ["Email", info.email],
-        ["Rol", FORM_ROLE_LABEL[info.form]],
+        ["Rol", role],
       ],
     ],
-    ...(info.form === "parinte"
-      ? ([["Copil", [["Nume complet", info.childName], ["Data nașterii", info.childBirthdate.split("-").reverse().join(".")]]]] as [string, [string, string][]][])
-      : []),
+    ["Copil", [["Nume complet", info.childName], ["Data nașterii", info.childBirthdate.split("-").reverse().join(".")]]],
     [
       "Contact de urgență",
       [
@@ -94,14 +103,14 @@ export function sendWaiverAlert(info: {
       [
         ["Semnat de", info.signerName],
         ["Data și ora", `${when} (ora României)`],
-        ["Declarații", "Toate clauzele (riscuri, instrucțiunile antrenorilor, prim ajutor / 112, aptitudine medicală, consimțământ date medicale) au fost bifate."],
+        ["Declarații", "Toate clauzele (riscuri, instrucțiunile antrenorilor, prim ajutor / 112, aptitudine medicală, consimțământ date medicale, părinte / tutore legal) au fost bifate."],
       ],
     ],
   ];
   return sendAdminEmail({
     subject,
     text: `${subject}\n\n${sections.map(([title, rows]) => `${title.toUpperCase()}\n${rows.map(([k, v]) => `${k}: ${v}`).join("\n")}`).join("\n\n")}`,
-    html: `<p><strong>${escapeHtml(subject)}</strong></p>${sections
+    html: `<p><strong>${escapeHtml(subject)}</strong></p><p><a href="${escapeHtml(docUrl)}">Vezi / descarcă PDF-ul fișei</a></p>${sections
       .map(([title, rows]) => `<h3 style="margin:16px 0 4px">${escapeHtml(title)}</h3><p style="margin:0">${rows.map(([k, v]) => `<strong>${escapeHtml(k)}:</strong> ${escapeHtml(v)}`).join("<br>")}</p>`)
       .join("")}`,
   });

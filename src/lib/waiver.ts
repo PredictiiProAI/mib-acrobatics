@@ -1,5 +1,6 @@
-export const WAIVER_TITLE = "Declarație pe proprie răspundere și Fișă medicală";
+export const WAIVER_TITLE = "Acord Parental & Fișă Medicală Sportiv";
 
+/** "sportiv" only exists on records signed before 0017 (adult athlete waiver, no longer offered). */
 export type WaiverForm = "parinte" | "sportiv";
 export type WaiverAck = "risks" | "instructions" | "first_aid" | "fitness" | "medical_consent" | "guardian" | "adult";
 
@@ -59,3 +60,12 @@ export const MEDICAL_FIELDS = [
 export type MedicalKey = (typeof MEDICAL_FIELDS)[number]["key"];
 export const NOT_APPLICABLE = "Nu este cazul";
 export const FORM_ROLE_LABEL: Record<WaiverForm, string> = { parinte: "Părinte", sportiv: "Sportiv" };
+
+export const RULES_TITLE = "Regulament & Siguranță Sportiv AcroMIB";
+export const RULES = [
+  "Respect în orice moment instrucțiunile date de antrenori.",
+  "Anunț imediat antrenorul dacă simt durere, mă accidentez sau nu mă simt bine.",
+  "Nu încerc elemente acrobatice sau trick-uri riscante fără supravegherea antrenorului.",
+  "Vin la antrenament cu echipament potrivit și mă port sigur și respectuos cu colegii.",
+];
+export const RULES_ACCEPT = "Am înțeles și respect regulile AcroMIB";

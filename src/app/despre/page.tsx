@@ -7,14 +7,19 @@ import {
   HeartHandshake,
   MessageSquare,
   MonitorOff,
+  Pencil,
   ShieldCheck,
 } from "lucide-react";
 import { AppHeader } from "@/components/app-header";
 import { SiteFooter, SiteHeader } from "@/components/site-header";
+import Image from "next/image";
+import Link from "next/link";
 import { ButtonLink } from "@/components/ui";
+import { getAboutContent } from "@/lib/about.server";
 import { getSessionUser } from "@/lib/auth";
 import { PARTNER_SCHOOLS, WHATSAPP_NUMBER } from "@/lib/club";
 import { isStaff } from "@/lib/roles";
+import { GalleryGrid } from "./gallery-grid";
 import { PillarCards } from "./pillar-cards";
 
 export const metadata: Metadata = {
@@ -50,7 +55,8 @@ const DEMO_TEXT =
   "Bună ziua! Aș dori să înscriu copilul la o ședință demonstrativă MIB Acrobatics.";
 
 export default async function AboutPage() {
-  const user = await getSessionUser();
+  const [user, { team, gallery }] = await Promise.all([getSessionUser(), getAboutContent()]);
+  const canEdit = isStaff(user?.role);
   const chatHref = !user
     ? "/signup?next=/messages"
     : isStaff(user.role)
@@ -138,6 +144,45 @@ export default async function AboutPage() {
           </div>
         </section>
 
+        {(team.length > 0 || canEdit) && (
+          <section className="mx-auto max-w-6xl px-5 py-16" data-testid="team-section">
+            <SectionHead eyebrow="Antrenori" title="Echipa" accent="Noastră" canEdit={canEdit} />
+            {team.length === 0 ? (
+              <p className="mt-6 text-white/50">Niciun membru adăugat încă.</p>
+            ) : (
+              <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                {team.map((m) => (
+                  <article
+                    key={m.id}
+                    className="group overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-graphite/90 to-carbon/90 transition hover:-translate-y-1 hover:border-neon-violet/50 hover:shadow-neon"
+                    data-testid="team-card"
+                  >
+                    <div className="relative aspect-[4/5] overflow-hidden bg-black">
+                      {m.image_url ? (
+                        <Image src={m.image_url} alt={m.name} fill sizes="(min-width: 1024px) 280px, (min-width: 640px) 45vw, 100vw" className="object-cover transition duration-500 group-hover:scale-105" />
+                      ) : (
+                        <span className="grid size-full place-items-center bg-neon-violet/10 font-display text-6xl font-black text-neon-violet">{m.name[0]?.toUpperCase()}</span>
+                      )}
+                      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/80 to-transparent" />
+                    </div>
+                    <div className="p-5">
+                      <h3 className="font-display text-xl font-extrabold">{m.name}</h3>
+                      <p className="mt-1 text-sm font-semibold text-neon-lime">{m.role}</p>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
+          </section>
+        )}
+
+        {(gallery.length > 0 || canEdit) && (
+          <section className="mx-auto max-w-6xl px-5 py-16" data-testid="gallery-section">
+            <SectionHead eyebrow="Sala noastră" title="Galerie" accent="Foto" canEdit={canEdit} />
+            <div className="mt-10">{gallery.length === 0 ? <p className="text-white/50">Nicio fotografie încă.</p> : <GalleryGrid images={gallery} />}</div>
+          </section>
+        )}
+
         <section
           id="demo"
           className="mx-auto max-w-6xl scroll-mt-8 px-5 pb-24 pt-8"
@@ -191,5 +236,23 @@ export default async function AboutPage() {
         <SiteFooter />
       </main>
     </>
+  );
+}
+
+function SectionHead({ eyebrow, title, accent, canEdit }: { eyebrow: string; title: string; accent: string; canEdit: boolean }) {
+  return (
+    <div className="flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-neon-lime">{eyebrow}</p>
+        <h2 className="mt-3 font-display text-3xl font-black uppercase sm:text-4xl">
+          {title} <span className="text-neon-violet">{accent}</span>
+        </h2>
+      </div>
+      {canEdit && (
+        <Link href="/dashboard/about" className="inline-flex items-center gap-2 rounded-xl border border-neon-violet/40 px-3 py-2 text-sm font-semibold text-neon-violet transition hover:bg-neon-violet/10">
+          <Pencil className="size-4" /> Editează
+        </Link>
+      )}
+    </div>
   );
 }

@@ -114,6 +114,18 @@ export type Database = {
         Update: Partial<ScheduleInsert>;
         Relationships: [];
       };
+      team_members: {
+        Row: { id: string; name: string; role: string; image_url: string | null; sort_order: number; created_at: string };
+        Insert: { name: string; role?: string; image_url?: string | null; sort_order?: number };
+        Update: { name?: string; role?: string; image_url?: string | null; sort_order?: number };
+        Relationships: [];
+      };
+      gallery_images: {
+        Row: { id: string; image_url: string; sort_order: number; created_at: string };
+        Insert: { image_url: string; sort_order?: number };
+        Update: { image_url?: string; sort_order?: number };
+        Relationships: [];
+      };
       direct_messages: {
         Row: { id: string; sender_id: string; receiver_id: string; content: string; created_at: string; read_at: string | null };
         Insert: { sender_id: string; receiver_id: string; content: string };

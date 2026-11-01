@@ -5,3 +5,4 @@ export const SUPABASE_KEY =
 export const isSupabaseConfigured = Boolean(SUPABASE_URL && SUPABASE_KEY);
 
 export const MEDIA_BUCKET = "mib_media";
+export const ABOUT_BUCKET = "about_media";

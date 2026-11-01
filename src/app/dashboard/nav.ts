@@ -15,7 +15,7 @@ export const DASH_NAV: DashNavItem[] = [
   { label: "Utilizatori", href: "/dashboard/users", roles: STAFF },
   { label: "Mesaje", href: "/dashboard/messages", roles: STAFF },
   { label: "Program & Grupe", href: "/dashboard/schedule", roles: STAFF },
-  { label: "Setări AcroFeed", href: "/dashboard/acrofeed", roles: STAFF },
+  { label: "Setări AcroMib", href: "/dashboard/acrofeed", roles: STAFF },
   { label: "Editare Despre Noi", href: "/dashboard/about", roles: STAFF },
 ];
 

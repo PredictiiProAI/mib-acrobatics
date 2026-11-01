@@ -1,5 +1,6 @@
 import { House, Rss } from "lucide-react";
 import Link from "next/link";
+import { DashboardBack } from "@/components/back-button";
 import { Logo } from "@/components/logo";
 import { SignOutButton } from "@/components/sign-out-button";
 import { requireRole, publicName } from "@/lib/auth";
@@ -25,12 +26,15 @@ export default async function DashboardLayout({ children }: LayoutProps<"/dashbo
             <House className="size-4" /> Acasă
           </Link>
           <Link href="/feed" className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-white/70 hover:bg-white/5 hover:text-white">
-            <Rss className="size-4" /> AcroFeed
+            <Rss className="size-4" /> AcroMib
           </Link>
           <SignOutButton compact />
         </div>
       </aside>
-      <main className="flex-1 p-6 md:p-10">{children}</main>
+      <main className="flex-1 p-6 md:p-10">
+        <DashboardBack />
+        {children}
+      </main>
     </div>
   );
 }

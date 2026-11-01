@@ -15,7 +15,7 @@ export default async function UploadPage() {
         <h1 className="mt-2 font-display text-3xl font-black sm:text-4xl">Încarcă media</h1>
         <p className="mt-2 text-white/60">
           Fotografii (JPG, PNG, WEBP, GIF, HEIC) și videoclipuri (MP4, MOV, WEBM), maxim {formatBytes(MAX_UPLOAD_BYTES)} per fișier.
-          Fiecare fișier devine o postare în AcroFeed.
+          Fiecare fișier devine o postare în AcroMib.
         </p>
       </div>
       <UploadZone userId={user.id} />

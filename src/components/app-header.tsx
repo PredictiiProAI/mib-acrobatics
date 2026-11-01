@@ -3,7 +3,7 @@ import { getUnreadCount } from "@/lib/messages";
 import { canPublish, isStaff } from "@/lib/roles";
 import { HeaderNav } from "./header-nav";
 
-/** Top bar (and mobile tab bar) for member-facing pages: AcroFeed, Messenger. */
+/** Top bar (and mobile tab bar) for member-facing pages: AcroMib, Messenger. */
 export async function AppHeader({ user }: { user: SessionUser }) {
   const unread = await getUnreadCount(user.id);
   return (

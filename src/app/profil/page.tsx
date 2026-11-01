@@ -1,3 +1,4 @@
+import { BackButton } from "@/components/back-button";
 import type { Metadata } from "next";
 import { RoleBadge } from "@/components/role-badge";
 import { publicName, requireUser } from "@/lib/auth";
@@ -18,6 +19,7 @@ export default async function ProfilePage() {
 
   return (
     <div className="space-y-6">
+      <BackButton fallback="/feed" className="lg:hidden" />
       <header>
         <p className="text-xs font-bold uppercase tracking-[0.3em] text-neon-green">Cont</p>
         <h1 className="mt-1 font-display text-3xl font-black text-white">Profilul meu</h1>

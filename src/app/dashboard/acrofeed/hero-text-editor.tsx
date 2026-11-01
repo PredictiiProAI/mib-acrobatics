@@ -33,7 +33,7 @@ export function HeroTextEditor({ initialText }: { initialText: string }) {
       if (!r.ok) return setStatus({ ok: false, message: r.error });
       setSaved(text.trim());
       setText(text.trim());
-      setStatus({ ok: true, message: "Salvat! Mesajul apare acum în AcroFeed." });
+      setStatus({ ok: true, message: "Salvat! Mesajul apare acum în AcroMib." });
     });
   }
 
@@ -53,7 +53,7 @@ export function HeroTextEditor({ initialText }: { initialText: string }) {
             setStatus(null);
           }}
           className="w-full resize-y rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-[15px] leading-relaxed outline-none placeholder:text-white/30 focus:border-neon-orange/70"
-          placeholder="Scrie mesajul pentru AcroFeed…"
+          placeholder="Scrie mesajul pentru AcroMib…"
         />
         <p className={`text-right text-xs ${tooLong ? "text-red-300" : "text-white/40"}`}>
           {text.length}/{HERO_TEXT_MAX}

@@ -51,7 +51,7 @@ export default async function DashboardPage() {
           <CloudUpload className="size-4" /> Încarcă media
         </ButtonLink>
         <ButtonLink href="/feed" variant="ghost">
-          <Rss className="size-4" /> Deschide AcroFeed
+          <Rss className="size-4" /> Deschide AcroMib
         </ButtonLink>
       </div>
     </div>

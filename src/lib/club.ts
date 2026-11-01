@@ -27,7 +27,7 @@ export const WHY_MIB = [
   `Laborator tehnic deschis: elevi din ${PARTNER_SCHOOLS} școli partenere se antrenează aici fără să-și părăsească clubul`,
   "Acrobatică sigură, postură corectă și forță de core, pe niveluri",
   "Antrenori dedicați și tehnică sigură înaintea oricărui element nou",
-  "AcroFeed și mesaje directe cu antrenorul, din aplicație",
+  "AcroMib și mesaje directe cu antrenorul, din aplicație",
 ] as const;
 
 /** Optional WhatsApp number (international format, e.g. 40712345678) for the "Despre Noi" CTA. */

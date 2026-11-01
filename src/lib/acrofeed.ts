@@ -1,15 +1,15 @@
 export const HERO_TEXT_MAX = 500;
 
 export const DEFAULT_HERO_TEXT =
-  "Bine ai aterizat pe AcroFeed! Aici e locul unde gravitația e doar o sugestie. Vezi cele mai tari scheme, fețele de concentrare și distracția de la antrenamente. Dă un double-tap la ce-ți place!";
+  "Bine ai aterizat pe AcroMib! Aici e locul unde gravitația e doar o sugestie. Vezi cele mai tari scheme, fețele de concentrare și distracția de la antrenamente. Dă un double-tap la ce-ți place!";
 
 export const HERO_TEMPLATES = [
-  "Bine ai aterizat pe AcroFeed! Aici e locul unde gravitația e doar o sugestie. Dă un double-tap la ce-ți place!",
+  "Bine ai aterizat pe AcroMib! Aici e locul unde gravitația e doar o sugestie. Dă un double-tap la ce-ți place!",
   "Gata de zbor? 🚀 Aici prindem reușitele epice, aterizările amuzante și toată energia de la sală.",
   "Aici strângem cele mai blană momente de la sală. De la încălzire până la cele mai grele elemente. Enjoy!",
   "Azi am distrus frici și am deblocat skill-uri noi! 💪 Urmărește progresul grupei și lasă un like pentru curaj.",
   "Flick-flack, șuruburi și vibe bun. 🔥 Vezi ce nebunii am mai făcut azi la antrenament!",
-  "Transpirație, bătături și multe zâmbete! 🤸‍♂️ AcroFeed e doza ta zilnică de motivație direct de pe saltea.",
+  "Transpirație, bătături și multe zâmbete! 🤸‍♂️ AcroMib e doza ta zilnică de motivație direct de pe saltea.",
   "Familia MIB în acțiune! 🖤💚 Aruncă un ochi peste nebunia de azi de la sală și susține-ți colegii.",
   "Când antrenorii dau tonul, gravitația ia o pauză. 😎 Vezi cele mai tari faze de la antrenamentul de azi!",
   "Singurul loc unde a sta cu capul în jos e perfect normal. 🙃 Dă un like dacă te-ai regăsit în clipurile de azi!",
@@ -19,14 +19,14 @@ export const HERO_TEMPLATES = [
   "Atenție! ⚠️ Conținut cu un nivel ridicat de adrenalină. Recomandăm vizionarea cu un dublu-click pregătit.",
   "Cine are nevoie de aripi când ai trambulină și un antrenor care strigă la tine să tragi de genunchi? 🦅",
   "Acrobația nu e magie, e fizică... pe care uneori o ignorăm complet. 🪄 Vezi trucurile de azi!",
-  "Zburăm, aterizăm, repetăm. 🔁 AcroFeed e jurnalul nostru de bord. Tu ce element vrei să înveți mâine?",
+  "Zburăm, aterizăm, repetăm. 🔁 AcroMib e jurnalul nostru de bord. Tu ce element vrei să înveți mâine?",
   "Blondu și Claudiu aprobă aceste scheme! ✅ (Mai puțin cele cu genunchii îndoiți). Lasă-ne un like de încurajare!",
   "Azi am dat block la frică și am dat unlock la scheme noi. 🔓 Susține comunitatea cu o reacție!",
   "Nu contează de câte ori ai ratat aterizarea, contează că ai intrat în sală! 🙌 Vibe-ul de azi, fix aici.",
   "Sărim mai sus decât așteptările! 🚀 Fă un scroll să vezi cât de departe am ajuns la antrenamentul de azi.",
   "Dacă podeaua ar putea vorbi... ar cere și ea o pauză! 😂 Energia de azi a fost la cote maxime. Vezi dovezile!",
   "Suntem o adunătură de ninja în devenire. 🥷 Urmărește misiunea de azi și lasă un double-tap dacă îți place.",
-  "Zâmbete pe fețe, magneziu pe mâini și trick-uri în aer. ✨ AcroFeed e filmul nostru preferat de acțiune.",
+  "Zâmbete pe fețe, magneziu pe mâini și trick-uri în aer. ✨ AcroMib e filmul nostru preferat de acțiune.",
   "Azi s-a stat mai mult în aer decât pe pământ. 🚁 Dă un scroll să vezi cine a sfidat cel mai bine gravitația!",
   "La noi, 'imposibil' e doar o încălzire. 🔥 Intră în atmosfera MIB și vezi cele mai noi highlight-uri din sală!",
   "Vrei să înveți să zbori? Uită-te la postările de azi și ia notițe! 📝🚀",
@@ -103,8 +103,35 @@ export const HERO_TEMPLATES = [
   "Cele mai bune amintiri se fac în aer. ☁️ Uite ce am creat azi.",
   "Astăzi: mai mult zbor, mai puține griji. 🎈",
   "N-avem frâne, avem doar trambuline! 🚫🛑",
-  "Acesta este doar începutul. Stai cu ochii pe AcroFeed, nivelul tot crește! 📈🚀",
+  "Acesta este doar începutul. Stai cu ochii pe AcroMib, nivelul tot crește! 📈🚀",
 ];
 
 /** Lowercase, diacritics-free text for template search. */
 export const foldText = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
+export type AnnouncementTone = "important" | "success" | "urgent" | "info";
+export type QuickLink = { title: string; url: string };
+export type Announcement = { enabled: boolean; text: string; tone: AnnouncementTone };
+export type FeedSettings = { heroText: string; announcement: Announcement; links: QuickLink[] };
+
+export const ANNOUNCEMENT_MAX = 300;
+export const QUICK_LINKS_MAX = 3;
+export const QUICK_LINK_TITLE_MAX = 30;
+export const ANNOUNCEMENT_TONES: { value: AnnouncementTone; label: string }[] = [
+  { value: "important", label: "Important" },
+  { value: "success", label: "Veste bună" },
+  { value: "urgent", label: "Urgent" },
+  { value: "info", label: "Informativ" },
+];
+
+/** Accepts absolute http(s), mailto:, tel: and in-app paths. */
+export function isValidQuickUrl(url: string) {
+  if (url.startsWith("/") && !url.startsWith("//")) return true;
+  if (/^(mailto|tel):\S+$/i.test(url)) return true;
+  try {
+    const u = new URL(url);
+    return u.protocol === "https:" || u.protocol === "http:";
+  } catch {
+    return false;
+  }
+}

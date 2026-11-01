@@ -89,7 +89,7 @@ export default async function LandingPage() {
           <div className="mt-10 flex flex-wrap gap-3">
             {user ? (
               <ButtonLink href="/feed" className="px-7 py-3.5 text-base">
-                Deschide AcroFeed <ArrowRight className="size-5" />
+                Deschide AcroMib <ArrowRight className="size-5" />
               </ButtonLink>
             ) : (
               <>
@@ -209,7 +209,7 @@ export default async function LandingPage() {
       <section id="acrofeed" className="mx-auto max-w-6xl scroll-mt-8 px-5 py-20">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <SectionTitle eyebrow="Din sală" text="Cele mai noi momente publice. Membrii văd tot feed-ul, cu aprecieri și comentarii.">
-            Din <span className="text-neon-green">AcroFeed</span>
+            Din <span className="text-neon-green">AcroMib</span>
           </SectionTitle>
           <ButtonLink href={user ? "/feed" : "/signup"} variant="ghost">
             Vezi tot <ArrowRight className="size-4" />
@@ -234,12 +234,12 @@ export default async function LandingPage() {
               <h2 className="font-display text-3xl font-black uppercase sm:text-4xl">
                 Gata de <span className="text-gradient">primul salt?</span>
               </h2>
-              <p className="mt-3 max-w-xl text-white/70">Intră în comunitatea MIB: urmărește antrenamentele în AcroFeed și vorbește direct cu antrenorul.</p>
+              <p className="mt-3 max-w-xl text-white/70">Intră în comunitatea MIB: urmărește antrenamentele în AcroMib și vorbește direct cu antrenorul.</p>
             </div>
             <div className="flex flex-wrap gap-3">
               {user ? (
                 <ButtonLink href="/feed" className="px-7 py-3.5 text-base">
-                  <Rss className="size-5" /> Deschide AcroFeed
+                  <Rss className="size-5" /> Deschide AcroMib
                 </ButtonLink>
               ) : (
                 <>

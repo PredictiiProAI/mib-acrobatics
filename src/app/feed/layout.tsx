@@ -1,4 +1,5 @@
 import { AppHeader } from "@/components/app-header";
+import { ScrollTopButton } from "@/components/scroll-top-button";
 import { requireUser } from "@/lib/auth";
 
 export default async function FeedLayout({ children }: LayoutProps<"/feed">) {
@@ -7,6 +8,7 @@ export default async function FeedLayout({ children }: LayoutProps<"/feed">) {
     <>
       <AppHeader user={user} />
       <main className="mx-auto w-full max-w-2xl flex-1 px-4 pb-28 pt-6 lg:pb-10">{children}</main>
+      <ScrollTopButton />
     </>
   );
 }

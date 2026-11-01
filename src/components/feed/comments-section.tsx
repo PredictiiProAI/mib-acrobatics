@@ -1,7 +1,7 @@
 "use client";
 
 import { Avatar } from "@/components/avatar";
-import { Loader2, Send, Trash2 } from "lucide-react";
+import { Loader2, Send, Trash2, ChevronUp } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useConfirm } from "@/components/confirm-dialog";
 import { RoleBadge } from "@/components/role-badge";
@@ -47,7 +47,17 @@ async function fetchComments(supabase: Client, filter: { post_id: string } | { i
 }
 
 /** Facebook-style comments section that expands under a post: list + "Adaugă un comentariu..." input. */
-export function CommentsSection({ postId, viewer, onCountChange }: { postId: string; viewer: Viewer; onCountChange: (count: number) => void }) {
+export function CommentsSection({
+  postId,
+  viewer,
+  onCountChange,
+  onCollapse,
+}: {
+  postId: string;
+  viewer: Viewer;
+  onCountChange: (count: number) => void;
+  onCollapse?: () => void;
+}) {
   const [comments, setComments] = useState<CommentRow[] | null>(null);
   const [text, setText] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -266,6 +276,16 @@ export function CommentsSection({ postId, viewer, onCountChange }: { postId: str
         </button>
       </form>
       {confirmDialog}
+      {onCollapse && (
+        <button
+          type="button"
+          onClick={onCollapse}
+          data-testid="comments-collapse"
+          className="mx-auto mt-3 flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-semibold text-white/55 transition hover:bg-white/5 hover:text-neon-green"
+        >
+          <ChevronUp className="size-4" /> Restrânge
+        </button>
+      )}
     </section>
   );
 }

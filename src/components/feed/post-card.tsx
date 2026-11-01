@@ -25,6 +25,12 @@ export function PostCard({ post, viewer, priority, onDeleted }: { post: FeedPost
   const [counts, setCounts] = useState(post.reactions ?? (post.like_count ? { [DEFAULT_REACTION]: post.like_count } : {}));
   const [comments, setComments] = useState(post.comment_count);
   const [commentsOpen, setCommentsOpen] = useState(false);
+  const [commentsMounted, setCommentsMounted] = useState(false);
+  const toggleComments = () => {
+    if (commentsMounted) return setCommentsOpen((v) => !v);
+    setCommentsMounted(true);
+    requestAnimationFrame(() => setCommentsOpen(true));
+  };
   const [burst, setBurst] = useState(0);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -161,7 +167,7 @@ export function PostCard({ post, viewer, priority, onDeleted }: { post: FeedPost
         </div>
         <button
           type="button"
-          onClick={() => setCommentsOpen((v) => !v)}
+          onClick={toggleComments}
           aria-expanded={commentsOpen}
           data-testid="comments-toggle"
           className={`group inline-flex flex-1 items-center justify-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-bold transition ${
@@ -174,7 +180,19 @@ export function PostCard({ post, viewer, priority, onDeleted }: { post: FeedPost
         </button>
       </footer>
 
-      {commentsOpen && <CommentsSection postId={post.id} viewer={viewer} onCountChange={setComments} />}
+      {commentsMounted && (
+        <div
+          className={`grid transition-[grid-template-rows,opacity] duration-300 ease-out ${commentsOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}
+          aria-hidden={!commentsOpen}
+          inert={!commentsOpen}
+          data-testid="comments-wrapper"
+          data-open={commentsOpen}
+        >
+          <div className="min-h-0 overflow-hidden">
+            <CommentsSection postId={post.id} viewer={viewer} onCountChange={setComments} onCollapse={() => setCommentsOpen(false)} />
+          </div>
+        </div>
+      )}
       {confirmDialog}
     </article>
   );

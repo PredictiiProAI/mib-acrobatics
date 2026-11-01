@@ -206,7 +206,7 @@ function Toggle({ label, initial, setting }: { label: string; initial: boolean; 
 export function NotificationToggles({ feed, schedule }: { feed: boolean; schedule: boolean }) {
   return (
     <ul className="mt-3 divide-y divide-white/10">
-      <Toggle setting="notify_feed" initial={feed} label="Notificări email pentru analize & postări noi în AcroFeed" />
+      <Toggle setting="notify_feed" initial={feed} label="Notificări email pentru analize & postări noi în AcroMib" />
       <Toggle setting="notify_schedule" initial={schedule} label="Notificări email pentru modificări de orar & grupe" />
     </ul>
   );

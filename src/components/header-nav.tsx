@@ -37,7 +37,7 @@ export function HeaderNav({
   const pathname = usePathname();
   const items: Item[] = [
     { href: "/", label: "Acasă", icon: House },
-    { href: "/feed", label: "AcroFeed", icon: Rss },
+    { href: "/feed", label: "AcroMib", icon: Rss },
     { href: "/schedule", label: "Program", icon: CalendarDays },
     ...(dashboard ? [{ ...dashboard, icon: LayoutDashboard }] : []),
     { href: messagesHref, label: "Mesaje", icon: MessageSquare, badge: unread },

@@ -115,9 +115,26 @@ export type Database = {
         Relationships: [];
       };
       app_settings: {
-        Row: { id: boolean; acrofeed_hero_text: string; updated_at: string; updated_by: string | null };
+        Row: {
+          id: boolean;
+          acrofeed_hero_text: string;
+          updated_at: string;
+          updated_by: string | null;
+          announcement_enabled?: boolean;
+          announcement_text?: string | null;
+          announcement_tone?: string;
+          quick_links?: { title: string; url: string }[];
+        };
         Insert: never;
-        Update: { acrofeed_hero_text?: string; updated_at?: string; updated_by?: string | null };
+        Update: {
+          acrofeed_hero_text?: string;
+          updated_at?: string;
+          updated_by?: string | null;
+          announcement_enabled?: boolean;
+          announcement_text?: string | null;
+          announcement_tone?: string;
+          quick_links?: { title: string; url: string }[];
+        };
         Relationships: [];
       };
       team_members: {

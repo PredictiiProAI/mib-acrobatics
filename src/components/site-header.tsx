@@ -6,7 +6,7 @@ export const SITE_NAV = [
   { href: "/despre", label: "Despre Noi" },
   { href: "/#discipline", label: "Discipline" },
   { href: "/#program", label: "Program" },
-  { href: "/#acrofeed", label: "AcroFeed" },
+  { href: "/#acrofeed", label: "AcroMib" },
 ];
 
 /** Public header for visitors who are not logged in (logged-in users get the app header everywhere). */

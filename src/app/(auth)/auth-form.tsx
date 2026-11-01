@@ -99,7 +99,7 @@ export function AuthForm({ mode, next }: { mode: "login" | "signup"; next?: stri
     <form action={action} className="space-y-4">
       <div className="space-y-1">
         <h1 className="font-display text-2xl font-black">{isLogin ? "Bine ai revenit" : "Creează cont"}</h1>
-        <p className="text-sm text-white/50">{isLogin ? "Intră în comunitatea MIB Acrobatics." : "Alătură-te AcroFeed și vorbește direct cu antrenorul."}</p>
+        <p className="text-sm text-white/50">{isLogin ? "Intră în comunitatea MIB Acrobatics." : "Alătură-te AcroMib și vorbește direct cu antrenorul."}</p>
       </div>
 
       {next && <input type="hidden" name="next" value={next} />}

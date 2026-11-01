@@ -28,7 +28,7 @@ export default async function CommentsModerationPage({ searchParams }: PageProps
       <div>
         <p className="text-xs uppercase tracking-[0.3em] text-neon-green">Moderare</p>
         <h1 className="mt-2 font-display text-3xl font-black sm:text-4xl">Comentarii recente</h1>
-        <p className="mt-2 text-white/60">Ultimele 200 de comentarii din AcroFeed. Poți șterge oricare dintre ele.</p>
+        <p className="mt-2 text-white/60">Ultimele 200 de comentarii din AcroMib. Poți șterge oricare dintre ele.</p>
       </div>
       {userId && (
         <div className="flex flex-wrap items-center gap-3 text-sm" data-testid="comments-filter">

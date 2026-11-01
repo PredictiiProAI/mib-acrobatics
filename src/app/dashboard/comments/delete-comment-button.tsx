@@ -17,7 +17,7 @@ export function DeleteCommentButton({ id }: { id: string }) {
       disabled={pending}
       aria-label="Șterge comentariul"
       onClick={async () => {
-        if (!(await confirm({ title: "Ștergi acest comentariu?", description: "Comentariul va fi eliminat definitiv din AcroFeed.", confirmLabel: "Șterge" }))) return;
+        if (!(await confirm({ title: "Ștergi acest comentariu?", description: "Comentariul va fi eliminat definitiv din AcroMib.", confirmLabel: "Șterge" }))) return;
         startTransition(async () => {
           setError(null);
           const r = await deleteComment(id);

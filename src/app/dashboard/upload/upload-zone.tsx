@@ -218,13 +218,13 @@ export function UploadZone({ userId }: { userId: string }) {
           <p className="mt-3 font-display text-xl font-bold text-neon-green">
             {published === 1 ? "Postarea a fost publicată!" : `${published} postări au fost publicate!`}
           </p>
-          <p className="mt-1 text-sm text-white/60">Te ducem în AcroFeed în câteva secunde…</p>
+          <p className="mt-1 text-sm text-white/60">Te ducem în AcroMib în câteva secunde…</p>
           <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
             <Button onClick={postAgain} data-testid="upload-again">
               <RotateCcw className="size-4" /> Postează din nou
             </Button>
             <ButtonLink href="/feed" variant="ghost">
-              Vezi în AcroFeed
+              Vezi în AcroMib
             </ButtonLink>
           </div>
           <div className="absolute inset-x-0 bottom-0 h-1 origin-left animate-[shrink_2s_linear_forwards] bg-neon-green/70" />
@@ -301,7 +301,7 @@ export function UploadZone({ userId }: { userId: string }) {
                 className="size-4 accent-[var(--color-neon-green)]"
               />
               <span>
-                Public <span className="text-white/50">— apare și pe pagina principală, nu doar în AcroFeed</span>
+                Public <span className="text-white/50">— apare și pe pagina principală, nu doar în AcroMib</span>
               </span>
             </label>
             <div className="flex items-center gap-3">

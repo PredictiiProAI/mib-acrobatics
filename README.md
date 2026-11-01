@@ -73,3 +73,7 @@ Layouts enforce roles server-side (`requireRole` in `src/lib/auth.ts`); RLS enfo
 ## Local development with Supabase CLI
 
 `npx supabase start` applies `supabase/migrations` to a local stack (emails land in Mailpit on port 54324).
+
+## Android app (Google Play)
+
+Capacitor shell that loads the live Vercel site. Build, signing and release steps: [docs/ANDROID_RELEASE.md](docs/ANDROID_RELEASE.md).

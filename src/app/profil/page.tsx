@@ -4,6 +4,7 @@ import { RoleBadge } from "@/components/role-badge";
 import { publicName, requireUser } from "@/lib/auth";
 import { LEVEL_LABEL } from "@/lib/profile";
 import { createClient } from "@/lib/supabase/server";
+import { DeleteAccountCard } from "./delete-account-card";
 import { WaiverCard } from "./waiver-card";
 import { AvatarUploader, NotificationToggles, PasswordForm, ProfileForm } from "./profile-forms";
 
@@ -81,6 +82,8 @@ export default async function ProfilePage() {
           <PasswordForm />
         </section>
       </div>
+
+      <DeleteAccountCard />
     </div>
   );
 }

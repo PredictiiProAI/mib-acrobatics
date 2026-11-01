@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { getSessionUser } from "@/lib/auth";
 import { isStaff } from "@/lib/roles";
 import type { AppRole } from "@/lib/supabase/database.types";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createAdminClient, removeUserFiles } from "@/lib/supabase/admin";
 import { MEDIA_BUCKET } from "@/lib/supabase/env";
 import { createClient } from "@/lib/supabase/server";
 import type { ActionResult } from "./posts";
@@ -81,12 +81,7 @@ export async function deleteUser(target: string): Promise<ActionResult> {
   const admin = createAdminClient();
   if (!admin) return { ok: false, error: MISSING_KEY };
 
-  const bucket = admin.storage.from(MEDIA_BUCKET);
-  const { data: files } = await bucket.list(target, { limit: 1000 });
-  if (files?.length) {
-    const { error } = await bucket.remove(files.map((f) => `${target}/${f.name}`));
-    if (error) console.error("deleteUser storage", error.message);
-  }
+  await removeUserFiles(admin, target, [MEDIA_BUCKET, "avatars"]);
 
   const { error } = await admin.auth.admin.deleteUser(target);
   if (error) {

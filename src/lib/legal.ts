@@ -1,5 +1,10 @@
 export const LEGAL_CONTACT_EMAIL = "marius.butrin@gmail.com";
 export const LEGAL_UPDATED = "1 noiembrie 2026";
+export const DELETE_CONFIRM_WORD = "ȘTERGE";
+
+/** Accepts "ȘTERGE" with or without diacritics, any case. */
+export const isDeleteConfirmation = (v: string) =>
+  v.normalize("NFD").replace(/\p{M}/gu, "").trim().toUpperCase() === "STERGE";
 
 export type LegalBlock = string | { list: string[] };
 export type LegalSection = { id: string; title: string; body: LegalBlock[] };
@@ -115,8 +120,8 @@ export const PRIVACY_SECTIONS: LegalSection[] = [
     id: "stergere-cont",
     title: "Cum îți ștergi contul",
     body: [
-      `Trimite un email la ${LEGAL_CONTACT_EMAIL} de pe adresa cu care te-ai înregistrat, cu subiectul „Ștergere cont AcroMIB”. Dacă ești părinte, poți cere în același mod ștergerea datelor copilului.`,
-      "Ștergem contul și toate datele asociate (profil, postări, fișiere, comentarii, reacții, mesaje, declarație) în cel mult 30 de zile și îți confirmăm prin email.",
+      "Din aplicație: intră în Profil, secțiunea „Ștergere cont”, apasă „Șterge contul” și confirmă. Contul și toate datele asociate (profil, postări, fișiere, comentarii, reacții, mesaje, declarație) se șterg imediat și definitiv.",
+      `Prin email: dacă nu mai ai acces la cont, scrie-ne la ${LEGAL_CONTACT_EMAIL} de pe adresa cu care te-ai înregistrat, cu subiectul „Ștergere cont AcroMIB”. Dacă ești părinte, poți cere în același mod ștergerea datelor copilului. Ștergem contul și toate datele asociate în cel mult 30 de zile și îți confirmăm prin email.`,
     ],
   },
   {

@@ -13,9 +13,9 @@ import { ABOUT_BUCKET } from "@/lib/supabase/env";
 
 const card = "glass rounded-3xl p-6 sm:p-8";
 const field =
-  "w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-[15px] outline-none placeholder:text-white/30 focus:border-neon-violet/70";
+  "w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-[15px] outline-none placeholder:text-white/30 focus:border-neon-orange/70";
 const primaryBtn =
-  "inline-flex items-center justify-center gap-2 rounded-xl bg-neon-violet px-5 py-3 font-bold text-white shadow-neon transition hover:brightness-110 hover:shadow-neon-lg disabled:opacity-40";
+  "inline-flex items-center justify-center gap-2 rounded-xl bg-neon-orange px-5 py-3 font-bold text-black shadow-neon transition hover:brightness-110 hover:shadow-neon-lg disabled:opacity-40";
 const iconBtn = "grid size-9 place-items-center rounded-xl text-white/60 transition hover:bg-white/5 hover:text-white disabled:opacity-30";
 
 function checkFile(file: File) {
@@ -113,7 +113,7 @@ export function TeamManager({ members }: { members: TeamMember[] }) {
         <button
           type="button"
           onClick={() => fileRef.current?.click()}
-          className="group relative grid size-28 place-items-center overflow-hidden rounded-2xl border-2 border-dashed border-white/15 bg-black/30 text-white/50 transition hover:border-neon-violet/60 hover:text-neon-violet"
+          className="group relative grid size-28 place-items-center overflow-hidden rounded-2xl border-2 border-dashed border-white/15 bg-black/30 text-white/50 transition hover:border-neon-orange/60 hover:text-neon-orange"
           aria-label="Alege fotografia antrenorului"
         >
           {preview ? (
@@ -152,11 +152,11 @@ export function TeamManager({ members }: { members: TeamMember[] }) {
         {members.length === 0 && <li className="text-sm text-white/45">Niciun membru adăugat încă.</li>}
         {members.map((m, i) => (
           <li key={m.id} className="flex items-center gap-4 rounded-2xl border border-white/10 bg-black/30 p-3" data-testid="team-item">
-            <div className="relative size-16 shrink-0 overflow-hidden rounded-xl bg-graphite ring-1 ring-neon-violet/30">
+            <div className="relative size-16 shrink-0 overflow-hidden rounded-xl bg-graphite ring-1 ring-neon-orange/30">
               {m.image_url ? (
                 <Image src={m.image_url} alt={m.name} fill sizes="64px" className="object-cover" />
               ) : (
-                <span className="grid size-full place-items-center font-display text-2xl font-black text-neon-lime">{m.name[0]?.toUpperCase()}</span>
+                <span className="grid size-full place-items-center font-display text-2xl font-black text-neon-green">{m.name[0]?.toUpperCase()}</span>
               )}
             </div>
             {editing?.id === m.id ? (
@@ -167,14 +167,14 @@ export function TeamManager({ members }: { members: TeamMember[] }) {
             ) : (
               <div className="min-w-0 flex-1">
                 <p className="truncate font-semibold">{m.name}</p>
-                <p className="truncate text-sm text-neon-lime">{m.role}</p>
+                <p className="truncate text-sm text-neon-green">{m.role}</p>
               </div>
             )}
             <div className="flex shrink-0 flex-wrap justify-end gap-0.5">
               {editing?.id === m.id ? (
                 <>
                   <button type="button" className={iconBtn} disabled={pending} onClick={() => run(() => updateTeamMember(m.id, editing), () => setEditing(null))} aria-label="Salvează">
-                    <Check className="size-4 text-neon-lime" />
+                    <Check className="size-4 text-neon-green" />
                   </button>
                   <button type="button" className={iconBtn} onClick={() => setEditing(null)} aria-label="Renunță">
                     <X className="size-4" />
@@ -256,10 +256,10 @@ export function GalleryManager({ images }: { images: GalleryImage[] }) {
           addFiles(e.dataTransfer.files);
         }}
         className={`mt-6 flex cursor-pointer flex-col items-center justify-center gap-3 rounded-3xl border-2 border-dashed p-8 text-center transition ${
-          dragging ? "border-neon-lime bg-neon-lime/5" : "border-white/15 hover:border-neon-violet/60 hover:shadow-neon"
+          dragging ? "border-neon-green bg-neon-green/5" : "border-white/15 hover:border-neon-orange/60 hover:shadow-neon"
         }`}
       >
-        {busy ? <Loader2 className="size-8 animate-spin text-neon-violet" /> : <ImagePlus className="size-8 text-neon-violet" />}
+        {busy ? <Loader2 className="size-8 animate-spin text-neon-orange" /> : <ImagePlus className="size-8 text-neon-orange" />}
         <p className="font-semibold">{progress ? `Se încarcă ${progress.done}/${progress.total}…` : "Adaugă fotografii"}</p>
         <p className="text-xs text-white/45">JPG, PNG, WEBP sau GIF, maximum {formatBytes(ABOUT_MAX_BYTES)} fiecare</p>
       </div>

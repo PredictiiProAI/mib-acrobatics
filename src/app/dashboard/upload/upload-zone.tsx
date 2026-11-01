@@ -1,14 +1,16 @@
 "use client";
 
-import { CheckCircle2, CloudUpload, Film, ImageIcon, Loader2, TriangleAlert, X } from "lucide-react";
-import Link from "next/link";
+import { CheckCircle2, CloudUpload, Film, ImageIcon, Loader2, RotateCcw, TriangleAlert, X } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Button } from "@/components/ui";
+import { Button, ButtonLink } from "@/components/ui";
 import { createPost } from "@/lib/actions/posts";
 import { ACCEPT_ATTR, extensionFor, formatBytes, MAX_UPLOAD_BYTES, mediaTypeFor } from "@/lib/media";
 import type { MediaType } from "@/lib/supabase/database.types";
 import { createClient } from "@/lib/supabase/client";
 import { MEDIA_BUCKET, SUPABASE_KEY, SUPABASE_URL } from "@/lib/supabase/env";
+
+const REDIRECT_MS = 2000;
 
 type Status = "ready" | "uploading" | "saving" | "done" | "error";
 type Item = {
@@ -54,6 +56,7 @@ export function UploadZone({ userId }: { userId: string }) {
   const [dragging, setDragging] = useState(false);
   const [busy, setBusy] = useState(false);
   const [published, setPublished] = useState(0);
+  const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const itemsRef = useRef(items);
 
@@ -123,6 +126,31 @@ export function UploadZone({ userId }: { userId: string }) {
     }, 1200);
   }
 
+  useEffect(() => {
+    if (!published) return;
+    const timer = setTimeout(() => router.push("/feed"), REDIRECT_MS);
+    return () => clearTimeout(timer);
+  }, [published, router]);
+
+  function resetForm() {
+    itemsRef.current.forEach((i) => URL.revokeObjectURL(i.preview));
+    setItems([]);
+    setRejected([]);
+    setIsPublic(true);
+    setPublished(0);
+  }
+
+  function postAgain() {
+    resetForm();
+    inputRef.current?.click();
+  }
+
+  function close() {
+    resetForm();
+    if (window.history.length > 1) router.back();
+    else router.push("/feed");
+  }
+
   const pendingCount = items.filter((i) => i.status === "ready" || i.status === "error").length;
 
   return (
@@ -143,12 +171,12 @@ export function UploadZone({ userId }: { userId: string }) {
           addFiles(e.dataTransfer.files);
         }}
         className={`glass group flex cursor-pointer flex-col items-center justify-center gap-4 rounded-3xl border-2 border-dashed p-10 text-center transition sm:p-14 ${
-          dragging ? "border-neon-lime bg-neon-lime/5" : "border-white/15 hover:border-neon-violet/60 hover:shadow-neon"
+          dragging ? "border-neon-green bg-neon-green/5" : "border-white/15 hover:border-neon-orange/60 hover:shadow-neon"
         }`}
       >
         <span
           className={`flex size-16 items-center justify-center rounded-2xl transition ${
-            dragging ? "bg-neon-lime/15 text-neon-lime" : "bg-neon-violet/10 text-neon-violet group-hover:scale-110"
+            dragging ? "bg-neon-green/15 text-neon-green" : "bg-neon-orange/10 text-neon-orange group-hover:scale-110"
           }`}
         >
           <CloudUpload className="size-8" />
@@ -182,18 +210,24 @@ export function UploadZone({ userId }: { userId: string }) {
       )}
 
       {published > 0 && (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-neon-lime/30 bg-neon-lime/10 p-4 text-sm" data-testid="upload-success">
-          <p className="flex items-center gap-2 font-semibold text-neon-lime">
-            <CheckCircle2 className="size-5" /> {published === 1 ? "Postarea a fost publicată." : `${published} postări au fost publicate.`}
+        <div className="relative overflow-hidden rounded-3xl border border-neon-green/40 bg-neon-green/10 p-6 text-center sm:p-8" role="status" data-testid="upload-success">
+          <button type="button" onClick={close} aria-label="Închide" className="absolute right-3 top-3 rounded-full p-2 text-white/70 transition hover:bg-white/10 hover:text-white" data-testid="upload-close">
+            <X className="size-5" />
+          </button>
+          <CheckCircle2 className="mx-auto size-12 text-neon-green" />
+          <p className="mt-3 font-display text-xl font-bold text-neon-green">
+            {published === 1 ? "Postarea a fost publicată!" : `${published} postări au fost publicate!`}
           </p>
-          <div className="flex gap-4">
-            <Link href="/feed" className="font-semibold text-white hover:underline">
+          <p className="mt-1 text-sm text-white/60">Te ducem în AcroFeed în câteva secunde…</p>
+          <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
+            <Button onClick={postAgain} data-testid="upload-again">
+              <RotateCcw className="size-4" /> Postează din nou
+            </Button>
+            <ButtonLink href="/feed" variant="ghost">
               Vezi în AcroFeed
-            </Link>
-            <Link href="/dashboard/posts" className="text-white/70 hover:underline">
-              Postările mele
-            </Link>
+            </ButtonLink>
           </div>
+          <div className="absolute inset-x-0 bottom-0 h-1 origin-left animate-[shrink_2s_linear_forwards] bg-neon-green/70" />
         </div>
       )}
 
@@ -225,19 +259,19 @@ export function UploadZone({ userId }: { userId: string }) {
                   )}
                   {(item.status === "uploading" || item.status === "saving") && (
                     <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/60 backdrop-blur-sm">
-                      <Loader2 className="size-8 animate-spin text-neon-violet" />
+                      <Loader2 className="size-8 animate-spin text-neon-orange" />
                       <p className="text-sm font-semibold">
                         {item.status === "saving" ? "Se publică…" : `${Math.round(item.progress * 100)}%`}
                       </p>
                       <div className="h-1.5 w-2/3 overflow-hidden rounded-full bg-white/10">
-                        <div className="h-full bg-neon-violet transition-[width]" style={{ width: `${item.progress * 100}%` }} />
+                        <div className="h-full bg-neon-orange transition-[width]" style={{ width: `${item.progress * 100}%` }} />
                       </div>
                     </div>
                   )}
                   {item.status === "done" && (
                     <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/60 backdrop-blur-sm">
-                      <CheckCircle2 className="size-10 text-neon-lime" />
-                      <p className="text-sm font-semibold text-neon-lime">Publicat</p>
+                      <CheckCircle2 className="size-10 text-neon-green" />
+                      <p className="text-sm font-semibold text-neon-green">Publicat</p>
                     </div>
                   )}
                 </div>
@@ -249,7 +283,7 @@ export function UploadZone({ userId }: { userId: string }) {
                     maxLength={2200}
                     rows={2}
                     placeholder="Descriere (opțional)…"
-                    className="w-full resize-none rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm outline-none placeholder:text-white/30 focus:border-neon-violet/70 disabled:opacity-60"
+                    className="w-full resize-none rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm outline-none placeholder:text-white/30 focus:border-neon-orange/70 disabled:opacity-60"
                   />
                   {item.error && <p className="text-xs text-red-300">{item.error}</p>}
                 </div>
@@ -264,7 +298,7 @@ export function UploadZone({ userId }: { userId: string }) {
                 checked={isPublic}
                 onChange={(e) => setIsPublic(e.target.checked)}
                 disabled={busy}
-                className="size-4 accent-[var(--color-neon-lime)]"
+                className="size-4 accent-[var(--color-neon-green)]"
               />
               <span>
                 Public <span className="text-white/50">— apare și pe pagina principală, nu doar în AcroFeed</span>

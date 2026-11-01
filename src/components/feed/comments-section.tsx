@@ -176,7 +176,7 @@ export function CommentsSection({ postId, viewer, onCountChange }: { postId: str
       <ul ref={listRef} className="max-h-[28rem] space-y-1 overflow-y-auto overscroll-contain">
         {comments === null && (
           <li className="flex justify-center py-6">
-            <Loader2 className="size-6 animate-spin text-neon-violet" />
+            <Loader2 className="size-6 animate-spin text-neon-orange" />
           </li>
         )}
         {comments?.length === 0 && <li className="py-4 text-center text-sm text-white/50">Niciun comentariu încă. Fii primul care comentează.</li>}
@@ -207,7 +207,7 @@ export function CommentsSection({ postId, viewer, onCountChange }: { postId: str
                     <ReactionTrigger
                       mine={mine}
                       onReact={(next) => reactToComment(c, next)}
-                      className={`inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 font-semibold transition ${mine ? "text-neon-violet" : "text-white/50 hover:text-white"}`}
+                      className={`inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 font-semibold transition ${mine ? "text-neon-orange" : "text-white/50 hover:text-white"}`}
                     >
                       {mineInfo ? (
                         <>
@@ -254,13 +254,13 @@ export function CommentsSection({ postId, viewer, onCountChange }: { postId: str
           placeholder="Adaugă un comentariu..."
           aria-label="Adaugă un comentariu"
           data-testid="comment-input"
-          className="min-w-0 flex-1 rounded-full border border-white/10 bg-black/40 px-4 py-2.5 text-[15px] outline-none placeholder:text-white/35 focus:border-neon-violet/70"
+          className="min-w-0 flex-1 rounded-full border border-white/10 bg-black/40 px-4 py-2.5 text-[15px] outline-none placeholder:text-white/35 focus:border-neon-orange/70"
         />
         <button
           type="submit"
           disabled={!text.trim()}
           aria-label="Trimite comentariul"
-          className="grid size-10 shrink-0 place-items-center rounded-full bg-neon-violet text-white transition hover:brightness-110 disabled:opacity-40"
+          className="grid size-10 shrink-0 place-items-center rounded-full bg-neon-orange text-black transition hover:brightness-110 disabled:opacity-40"
         >
           <Send className="size-4" />
         </button>

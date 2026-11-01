@@ -71,10 +71,10 @@ export default async function AboutPage() {
       {user && <AppHeader user={user} />}
       <main className={`flex-1 ${user ? "pb-20 lg:pb-0" : ""}`}>
         <section className="relative isolate overflow-hidden">
-          <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(50rem_30rem_at_70%_0%,rgb(139_0_255/0.28),transparent_65%),radial-gradient(40rem_25rem_at_0%_100%,rgb(118_255_3/0.18),transparent_60%)]" />
+          <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(50rem_30rem_at_70%_0%,rgb(255_106_0/0.28),transparent_65%),radial-gradient(40rem_25rem_at_0%_100%,rgb(57_255_20/0.18),transparent_60%)]" />
           {!user && <SiteHeader current="/despre" />}
           <div className="mx-auto max-w-6xl px-5 pb-20 pt-12 sm:pt-20">
-            <p className="inline-flex items-center gap-2 rounded-full border border-neon-violet/40 bg-neon-violet/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.25em] text-neon-violet">
+            <p className="inline-flex items-center gap-2 rounded-full border border-neon-orange/40 bg-neon-orange/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.25em] text-neon-orange">
               <Brain className="size-3.5" /> Despre Noi
             </p>
             <h1 className="mt-5 max-w-4xl font-display text-4xl font-black uppercase leading-[0.95] tracking-tight sm:text-6xl lg:text-7xl">
@@ -103,12 +103,12 @@ export default async function AboutPage() {
         </section>
 
         <section className="mx-auto max-w-6xl px-5 py-16">
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-neon-lime">
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-neon-green">
             Pilonii noștri
           </p>
           <h2 className="mt-3 font-display text-3xl font-black uppercase sm:text-4xl">
             Trei discipline,{" "}
-            <span className="text-neon-violet">un copil complet</span>
+            <span className="text-neon-orange">un copil complet</span>
           </h2>
           <p className="mt-3 max-w-2xl text-white/60">
             Alege un pilon ca să vezi ce câștigă copilul tău.
@@ -119,20 +119,20 @@ export default async function AboutPage() {
         </section>
 
         <section className="mx-auto max-w-6xl px-5 py-16">
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-neon-lime">
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-neon-green">
             Pentru părinți
           </p>
           <h2 className="mt-3 font-display text-3xl font-black uppercase sm:text-4xl">
-            De ce ne aleg <span className="text-neon-violet">părinții</span>
+            De ce ne aleg <span className="text-neon-orange">părinții</span>
           </h2>
           <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {WHY_PARENTS.map(({ icon: Icon, title, text }) => (
               <div
                 key={title}
-                className="glass rounded-2xl p-6 transition hover:-translate-y-1 hover:border-neon-violet/40 hover:shadow-neon"
+                className="glass rounded-2xl p-6 transition hover:-translate-y-1 hover:border-neon-orange/40 hover:shadow-neon"
                 data-testid="why-parents"
               >
-                <span className="grid size-12 place-items-center rounded-2xl bg-neon-violet/10 text-neon-violet ring-1 ring-neon-violet/25">
+                <span className="grid size-12 place-items-center rounded-2xl bg-neon-orange/10 text-neon-orange ring-1 ring-neon-orange/25">
                   <Icon className="size-6" />
                 </span>
                 <h3 className="mt-5 font-display text-lg font-extrabold">
@@ -154,20 +154,20 @@ export default async function AboutPage() {
                 {team.map((m) => (
                   <article
                     key={m.id}
-                    className="group overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-graphite/90 to-carbon/90 transition hover:-translate-y-1 hover:border-neon-violet/50 hover:shadow-neon"
+                    className="group overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-graphite/90 to-carbon/90 transition hover:-translate-y-1 hover:border-neon-orange/50 hover:shadow-neon"
                     data-testid="team-card"
                   >
                     <div className="relative aspect-[4/5] overflow-hidden bg-black">
                       {m.image_url ? (
                         <Image src={m.image_url} alt={m.name} fill sizes="(min-width: 1024px) 280px, (min-width: 640px) 45vw, 100vw" className="object-cover transition duration-500 group-hover:scale-105" />
                       ) : (
-                        <span className="grid size-full place-items-center bg-neon-violet/10 font-display text-6xl font-black text-neon-violet">{m.name[0]?.toUpperCase()}</span>
+                        <span className="grid size-full place-items-center bg-neon-orange/10 font-display text-6xl font-black text-neon-orange">{m.name[0]?.toUpperCase()}</span>
                       )}
                       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/80 to-transparent" />
                     </div>
                     <div className="p-5">
                       <h3 className="font-display text-xl font-extrabold">{m.name}</h3>
-                      <p className="mt-1 text-sm font-semibold text-neon-lime">{m.role}</p>
+                      <p className="mt-1 text-sm font-semibold text-neon-green">{m.role}</p>
                     </div>
                   </article>
                 ))}
@@ -187,11 +187,11 @@ export default async function AboutPage() {
           id="demo"
           className="mx-auto max-w-6xl scroll-mt-8 px-5 pb-24 pt-8"
         >
-          <div className="relative overflow-hidden rounded-[2rem] border border-neon-violet/40 bg-gradient-to-br from-neon-violet/25 via-carbon to-neon-lime/15 p-8 shadow-[0_0_80px_-30px_rgb(139_0_255/0.8)] sm:p-12">
-            <div className="pointer-events-none absolute -right-16 -top-16 size-72 animate-pulse rounded-full bg-neon-violet/25 blur-3xl" />
+          <div className="relative overflow-hidden rounded-[2rem] border border-neon-orange/40 bg-gradient-to-br from-neon-orange/25 via-carbon to-neon-green/15 p-8 shadow-[0_0_80px_-30px_rgb(255_106_0/0.8)] sm:p-12">
+            <div className="pointer-events-none absolute -right-16 -top-16 size-72 animate-pulse rounded-full bg-neon-orange/25 blur-3xl" />
             <div className="relative grid items-center gap-8 lg:grid-cols-[1.4fr_1fr]">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-neon-violet">
+                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-neon-orange">
                   Ședință demonstrativă
                 </p>
                 <h2 className="mt-3 font-display text-3xl font-black uppercase sm:text-4xl">
@@ -217,7 +217,7 @@ export default async function AboutPage() {
                     href={whatsapp}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-neon-lime px-7 py-4 text-base font-semibold text-black transition hover:brightness-110"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-neon-green px-7 py-4 text-base font-semibold text-black transition hover:brightness-110"
                   >
                     WhatsApp
                   </a>
@@ -243,13 +243,13 @@ function SectionHead({ eyebrow, title, accent, canEdit }: { eyebrow: string; tit
   return (
     <div className="flex flex-wrap items-end justify-between gap-4">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-neon-lime">{eyebrow}</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-neon-green">{eyebrow}</p>
         <h2 className="mt-3 font-display text-3xl font-black uppercase sm:text-4xl">
-          {title} <span className="text-neon-violet">{accent}</span>
+          {title} <span className="text-neon-orange">{accent}</span>
         </h2>
       </div>
       {canEdit && (
-        <Link href="/dashboard/about" className="inline-flex items-center gap-2 rounded-xl border border-neon-violet/40 px-3 py-2 text-sm font-semibold text-neon-violet transition hover:bg-neon-violet/10">
+        <Link href="/dashboard/about" className="inline-flex items-center gap-2 rounded-xl border border-neon-orange/40 px-3 py-2 text-sm font-semibold text-neon-orange transition hover:bg-neon-orange/10">
           <Pencil className="size-4" /> Editează
         </Link>
       )}

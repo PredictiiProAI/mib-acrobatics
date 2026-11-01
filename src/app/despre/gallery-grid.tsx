@@ -28,7 +28,7 @@ export function GalleryGrid({ images }: { images: GalleryImage[] }) {
             key={img.id}
             type="button"
             onClick={() => setOpen(i)}
-            className={`group relative overflow-hidden rounded-2xl bg-graphite ring-1 ring-white/10 transition hover:ring-neon-violet/60 hover:shadow-neon ${
+            className={`group relative overflow-hidden rounded-2xl bg-graphite ring-1 ring-white/10 transition hover:ring-neon-orange/60 hover:shadow-neon ${
               i === 0 && images.length > 2 ? "col-span-2 row-span-2 aspect-square" : "aspect-square"
             }`}
             aria-label={`Deschide fotografia ${i + 1}`}
@@ -49,10 +49,10 @@ export function GalleryGrid({ images }: { images: GalleryImage[] }) {
           </button>
           {images.length > 1 && (
             <>
-              <button type="button" onClick={(e) => (e.stopPropagation(), step(-1))} aria-label="Fotografia anterioară" className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white hover:bg-neon-violet">
+              <button type="button" onClick={(e) => (e.stopPropagation(), step(-1))} aria-label="Fotografia anterioară" className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white hover:bg-neon-orange hover:text-black">
                 <ChevronLeft className="size-6" />
               </button>
-              <button type="button" onClick={(e) => (e.stopPropagation(), step(1))} aria-label="Fotografia următoare" className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white hover:bg-neon-violet">
+              <button type="button" onClick={(e) => (e.stopPropagation(), step(1))} aria-label="Fotografia următoare" className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white hover:bg-neon-orange hover:text-black">
                 <ChevronRight className="size-6" />
               </button>
             </>

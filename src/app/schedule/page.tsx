@@ -18,11 +18,11 @@ export default async function SchedulePage() {
 
   return (
     <div className="space-y-8">
-      <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-neon-violet/20 via-carbon to-neon-lime/10 p-6 sm:p-8">
-        <div className="pointer-events-none absolute -right-10 -top-16 size-56 rounded-full bg-neon-violet/25 blur-3xl" />
+      <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-neon-orange/20 via-carbon to-neon-green/10 p-6 sm:p-8">
+        <div className="pointer-events-none absolute -right-10 -top-16 size-56 rounded-full bg-neon-orange/25 blur-3xl" />
         <div className="relative flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-neon-violet">Antrenamente</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-neon-orange">Antrenamente</p>
             <h1 className="mt-2 font-display text-3xl font-black sm:text-4xl">
               Program <span className="text-gradient">săptămânal</span>
             </h1>
@@ -42,7 +42,7 @@ export default async function SchedulePage() {
 
       <section className="glass rounded-3xl p-6" data-testid="today">
         <h2 className="inline-flex items-center gap-2 font-display text-lg font-extrabold">
-          <CalendarDays className="size-5 text-neon-violet" /> Azi, {dayLabel(today)}
+          <CalendarDays className="size-5 text-neon-orange" /> Azi, {dayLabel(today)}
         </h2>
         {todays.length ? (
           <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">

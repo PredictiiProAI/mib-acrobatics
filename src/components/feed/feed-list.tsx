@@ -108,9 +108,9 @@ export function FeedList({ initialPosts, viewer }: { initialPosts: FeedPost[]; v
         <PostCard key={post.id} post={post} viewer={viewer} priority={i === 0} onDeleted={removePost} />
       ))}
       <div ref={sentinel} className="flex justify-center py-6 text-sm text-white/40">
-        {loading && <Loader2 className="size-6 animate-spin text-neon-violet" />}
+        {loading && <Loader2 className="size-6 animate-spin text-neon-orange" />}
         {error && (
-          <button type="button" onClick={loadMore} className="text-neon-violet hover:underline">
+          <button type="button" onClick={loadMore} className="text-neon-orange hover:underline">
             Eroare la încărcare. Reîncearcă
           </button>
         )}

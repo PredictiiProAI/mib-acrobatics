@@ -134,9 +134,18 @@ body::before {
   @page {
     margin: 16mm;
   }
+  :root,
   html,
   body {
     background: #fff !important;
-    color: #000 !important;
+    color: #111827 !important;
+    color-scheme: light !important;
+  }
+  body::before {
+    display: none;
+  }
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 }

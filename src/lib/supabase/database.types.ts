@@ -164,7 +164,19 @@ export type Database = {
       can_publish: { Args: Record<string, never>; Returns: boolean };
       admin_list_users: {
         Args: Record<string, never>;
-        Returns: { id: string; email: string; role: AppRole; full_name: string | null; created_at: string }[];
+        Returns: {
+          id: string;
+          email: string;
+          role: AppRole;
+          full_name: string | null;
+          display_name: string | null;
+          avatar_url: string | null;
+          discipline: string | null;
+          level: TrainingLevel | null;
+          phone: string | null;
+          created_at: string;
+          last_sign_in_at: string | null;
+        }[];
       };
       admin_set_role: { Args: { target: string; new_role: AppRole }; Returns: undefined };
       email_registered: { Args: { p_email: string }; Returns: boolean };

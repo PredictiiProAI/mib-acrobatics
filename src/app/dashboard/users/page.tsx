@@ -27,8 +27,8 @@ export default async function UsersPage() {
         <h1 className="mt-2 font-display text-3xl font-black sm:text-4xl">Utilizatori</h1>
         <p className="mt-2 text-white/60">
           {me.role === "superadmin"
-            ? "Ca Super Admin poți atribui orice rol."
-            : "Poți transforma un sportiv în cont Media (și invers). Rolurile de Antrenor le atribuie doar Super Admin."}
+            ? "Ca Super Admin poți crea conturi cu orice rol, schimba roluri și șterge utilizatori."
+            : "Poți crea conturi de Sportiv sau Media și transforma un sportiv în cont Media (și invers). Rolurile de Antrenor le atribuie doar Super Admin."}
         </p>
       </div>
       <UsersTable

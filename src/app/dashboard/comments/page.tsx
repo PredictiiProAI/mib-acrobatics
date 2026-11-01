@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { X } from "lucide-react";
+import Link from "next/link";
 import { requireRole } from "@/lib/auth";
 import { STAFF_ROLES } from "@/lib/roles";
 import { createClient } from "@/lib/supabase/server";
@@ -7,14 +9,18 @@ import { DeleteCommentButton } from "./delete-comment-button";
 
 export const metadata: Metadata = { title: "Moderare comentarii" };
 
-export default async function CommentsModerationPage() {
+export default async function CommentsModerationPage({ searchParams }: PageProps<"/dashboard/comments">) {
+  const { user } = await searchParams;
+  const userId = typeof user === "string" ? user : null;
   await requireRole(STAFF_ROLES, "/dashboard/comments");
   const supabase = await createClient();
-  const { data: comments, error } = await supabase
+  let query = supabase
     .from("comments")
     .select("id, content, created_at, author:users!comments_user_id_fkey(full_name), post:posts!comments_post_id_fkey(caption, media_type)")
     .order("created_at", { ascending: false })
     .limit(200);
+  if (userId) query = query.eq("user_id", userId);
+  const { data: comments, error } = await query;
   if (error) console.error("moderation comments", error.message);
 
   return (
@@ -24,6 +30,15 @@ export default async function CommentsModerationPage() {
         <h1 className="mt-2 font-display text-3xl font-black sm:text-4xl">Comentarii recente</h1>
         <p className="mt-2 text-white/60">Ultimele 200 de comentarii din AcroFeed. Poți șterge oricare dintre ele.</p>
       </div>
+      {userId && (
+        <div className="flex flex-wrap items-center gap-3 text-sm" data-testid="comments-filter">
+          <span className="text-white/60">Comentariile lui</span>
+          <span className="rounded-full bg-neon-orange/15 px-3 py-1 font-semibold text-neon-orange">{comments?.[0]?.author?.full_name ?? "utilizator"}</span>
+          <Link href="/dashboard/comments" className="inline-flex items-center gap-1 text-white/50 hover:text-white">
+            <X className="size-4" /> Toate comentariile
+          </Link>
+        </div>
+      )}
       {!comments?.length ? (
         <div className="glass rounded-3xl p-10 text-center text-white/60">Niciun comentariu încă.</div>
       ) : (

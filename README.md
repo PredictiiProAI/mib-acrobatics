@@ -5,12 +5,12 @@ coach messenger and the Admin/Media Command Center.
 
 ## Setup
 
-1. Supabase → SQL Editor → run `supabase/migrations/0001_init.sql`, then `0002_reactions.sql`, `0003_schedule.sql`, `0004_email_exists.sql`, `0005_profile.sql`, `0006_likes_permissions.sql`, `0007_comments.sql`, `0008_about.sql` and `0009_posts_realtime.sql` (all idempotent, safe to re-run). It creates the
+1. Supabase → SQL Editor → run `supabase/migrations/0001_init.sql`, then `0002_reactions.sql`, `0003_schedule.sql`, `0004_email_exists.sql`, `0005_profile.sql`, `0006_likes_permissions.sql`, `0007_comments.sql`, `0008_about.sql`, `0009_posts_realtime.sql` and `0010_users_crm.sql` (all idempotent, safe to re-run). It creates the
    tables, RLS policies, role helpers, the `feed_posts` view, Realtime publication entries and the public
    `mib_media` Storage bucket with its policies.
 2. Supabase → Authentication → URL Configuration: set **Site URL** to the production origin and add
    `<origin>/auth/callback` to the redirect URLs.
-3. Copy `.env.example` to `.env.local` and fill in `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
+3. Copy `.env.example` to `.env.local` and fill in `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. For creating/deleting users from /dashboard/users also set the server-only `SUPABASE_SERVICE_ROLE_KEY` (Supabase → Project Settings → API keys → service_role/secret; on Vercel too, never `NEXT_PUBLIC_`).
 4. `npm install && npm run dev`.
 5. After the coach (Marius) and the media account (Claudiu) sign up, assign roles in the SQL Editor:
 

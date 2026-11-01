@@ -2,6 +2,7 @@
 export type AppRole = "superadmin" | "admin" | "media" | "user";
 export type MediaType = "video" | "image";
 export type ReactionKey = "like" | "love" | "fire" | "clap" | "acro";
+export type AccountType = "Sportiv" | "Părinte" | "Antrenor";
 export type TrainingLevel = "beginner" | "intermediate" | "advanced";
 export type ScheduleLevel = "all" | "beginner" | "intermediate" | "advanced";
 export type BadgeColor = "violet" | "fuchsia" | "sky" | "emerald" | "amber" | "rose";
@@ -33,9 +34,21 @@ export type Database = {
           discipline: string | null;
           level: TrainingLevel | null;
           avatar_url: string | null;
+          account_type?: AccountType;
         };
         Insert: never;
-        Update: { full_name?: string | null; display_name?: string | null; discipline?: string | null; level?: TrainingLevel | null; avatar_url?: string | null };
+        Update: {
+          full_name?: string | null;
+          display_name?: string | null;
+          discipline?: string | null;
+          level?: TrainingLevel | null;
+          avatar_url?: string | null;
+          account_type?: AccountType;
+          children_names?: string | null;
+          emergency_contact?: string | null;
+          birthdate?: string | null;
+          social_link?: string | null;
+        };
         Relationships: [];
       };
       user_settings: {
@@ -185,6 +198,16 @@ export type Database = {
       current_app_role: { Args: Record<string, never>; Returns: AppRole | null };
       is_staff: { Args: Record<string, never>; Returns: boolean };
       can_publish: { Args: Record<string, never>; Returns: boolean };
+      profile_details: {
+        Args: { p_user: string };
+        Returns: {
+          account_type: AccountType;
+          children_names: string | null;
+          emergency_contact: string | null;
+          birthdate: string | null;
+          social_link: string | null;
+        }[];
+      };
       admin_list_users: {
         Args: Record<string, never>;
         Returns: {

@@ -11,10 +11,12 @@ export const metadata: Metadata = { title: "Profilul meu" };
 export default async function ProfilePage() {
   const user = await requireUser("/profil");
   const supabase = await createClient();
-  const [{ data: profile }, { data: settings }] = await Promise.all([
+  const [{ data: profile }, { data: settings }, { data: details }] = await Promise.all([
     supabase.from("users").select("full_name, display_name, discipline, level").eq("id", user.id).maybeSingle(),
     supabase.from("user_settings").select("phone, notify_feed, notify_schedule").eq("user_id", user.id).maybeSingle(),
+    supabase.rpc("profile_details", { p_user: user.id }),
   ]);
+  const extra = details?.[0];
   const name = publicName(user);
 
   return (
@@ -50,6 +52,11 @@ export default async function ProfilePage() {
               discipline: profile?.discipline ?? "",
               level: profile?.level ?? "",
               phone: settings?.phone ?? "",
+              account_type: extra?.account_type ?? "Sportiv",
+              children_names: extra?.children_names ?? "",
+              emergency_contact: extra?.emergency_contact ?? "",
+              birthdate: extra?.birthdate ?? "",
+              social_link: extra?.social_link ?? "",
             }}
           />
         </section>

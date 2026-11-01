@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useActionState, useRef, useState, useTransition } from "react";
 import { Avatar } from "@/components/avatar";
 import { Button, Input } from "@/components/ui";
-import { AVATAR_MAX_BYTES, AVATAR_TYPES, DISCIPLINE_SUGGESTIONS, LEVEL_LABEL, LEVELS } from "@/lib/profile";
+import { ACCOUNT_TYPES, AVATAR_MAX_BYTES, AVATAR_TYPES, DISCIPLINE_SUGGESTIONS, LEVEL_LABEL, LEVELS } from "@/lib/profile";
 import { createClient } from "@/lib/supabase/client";
 import { changePassword, saveProfile, setAvatar, setNotification, type FormState } from "./actions";
 
@@ -105,14 +105,61 @@ export function AvatarUploader({ userId, name, url }: { userId: string; name: st
   );
 }
 
-type ProfileValues = { full_name: string; display_name: string; discipline: string; level: string; phone: string };
+type ProfileValues = {
+  full_name: string;
+  display_name: string;
+  discipline: string;
+  level: string;
+  phone: string;
+  account_type: string;
+  children_names: string;
+  emergency_contact: string;
+  birthdate: string;
+  social_link: string;
+};
+
+const chip = (on: boolean) =>
+  `rounded-xl border px-3 py-2.5 text-sm font-semibold transition ${
+    on ? "border-neon-green bg-neon-green/10 text-neon-green" : "border-white/10 text-white/70 hover:border-neon-orange/60 hover:text-white"
+  }`;
 
 export function ProfileForm({ initial }: { initial: ProfileValues }) {
   const [state, action, pending] = useActionState(saveProfile, undefined);
   const [level, setLevel] = useState(initial.level);
+  const [accountType, setAccountType] = useState(initial.account_type || "Sportiv");
+  const today = new Date().toISOString().slice(0, 10);
 
   return (
     <form action={action} className="mt-5 space-y-4" data-testid="profile-form">
+      <fieldset>
+        <legend className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-white/60">Tip cont</legend>
+        <input type="hidden" name="account_type" value={accountType} />
+        <div className="grid grid-cols-3 gap-2" role="radiogroup" aria-label="Tip cont" data-testid="account-type">
+          {ACCOUNT_TYPES.map((t) => (
+            <button key={t} type="button" role="radio" aria-checked={accountType === t} onClick={() => setAccountType(t)} className={chip(accountType === t)}>
+              {t}
+            </button>
+          ))}
+        </div>
+      </fieldset>
+
+      <div className={`grid transition-[grid-template-rows,opacity] duration-300 ${accountType === "Părinte" ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}>
+        <div className="min-h-0 overflow-hidden px-px pb-px">
+          {accountType === "Părinte" && (
+            <Field label="Numele și vârsta copilului / copiilor">
+              <Input
+                name="children_names"
+                defaultValue={initial.children_names}
+                maxLength={300}
+                required
+                placeholder="ex. Andrei, 9 ani; Maria, 12 ani"
+                data-testid="children-names"
+              />
+            </Field>
+          )}
+        </div>
+      </div>
+
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Nume complet">
           <Input name="full_name" defaultValue={initial.full_name} maxLength={120} required autoComplete="name" />
@@ -130,6 +177,15 @@ export function ProfileForm({ initial }: { initial: ProfileValues }) {
         </Field>
         <Field label="Număr de telefon">
           <Input name="phone" type="tel" defaultValue={initial.phone} maxLength={20} placeholder="07xx xxx xxx" autoComplete="tel" />
+        </Field>
+        <Field label="Data nașterii">
+          <Input name="birthdate" type="date" defaultValue={initial.birthdate} min="1900-01-01" max={today} className="[color-scheme:dark]" data-testid="birthdate" />
+        </Field>
+        <Field label="Contact de urgență (Nume & Telefon)">
+          <Input name="emergency_contact" defaultValue={initial.emergency_contact} maxLength={200} placeholder="ex. Ioana Popescu — 07xx xxx xxx" data-testid="emergency-contact" />
+        </Field>
+        <Field label="Instagram / TikTok (Opțional)">
+          <Input name="social_link" defaultValue={initial.social_link} maxLength={200} placeholder="@numele_tau sau link" autoCapitalize="none" data-testid="social-link" />
         </Field>
       </div>
 

@@ -68,4 +68,4 @@ export const RULES = [
   "Nu încerc elemente acrobatice sau trick-uri riscante fără supravegherea antrenorului.",
   "Vin la antrenament cu echipament potrivit și mă port sigur și respectuos cu colegii.",
 ];
-export const RULES_ACCEPT = "Am înțeles și respect regulile AcroMIB";
+export const RULES_ACCEPT = "Am citit și respect regulile AcroMIB";

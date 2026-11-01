@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  Check,
+  FileText,
   Clock,
   Eye,
   Film,
@@ -46,6 +46,15 @@ type Row =
 type Me = { id: string; role: AppRole };
 
 const ALL_ROLES: AppRole[] = ["superadmin", "admin", "media", "user"];
+
+/** UI-only role: Părinte is a member account (role user) with account_type "Părinte". */
+type UiRole = AppRole | "parent";
+const UI_ROLES: UiRole[] = ["superadmin", "admin", "media", "parent", "user"];
+const uiRoleOf = (u: Row): UiRole => (u.role === "user" && u.account_type === "Părinte" ? "parent" : u.role);
+const uiLabel = (r: UiRole) => (r === "parent" ? "Părinte" : ROLE_LABEL[r]);
+const uiStyle = (r: UiRole) => (r === "parent" ? "bg-neon-orange/10 text-neon-orange/90 ring-neon-orange/25" : ROLE_BADGE_STYLE[r]);
+const withParent = (roles: AppRole[]): UiRole[] => roles.flatMap((r): UiRole[] => (r === "user" ? ["parent", "user"] : [r]));
+const toAppRole = (r: UiRole) => ({ role: r === "parent" ? ("user" as const) : r, memberType: r === "parent" ? ("Părinte" as const) : r === "user" ? ("Sportiv" as const) : undefined });
 const dateFmt = new Intl.DateTimeFormat("ro-RO", {
   day: "numeric",
   month: "short",
@@ -121,7 +130,7 @@ function CreateUserDialog({ me, onClose }: { me: Me; onClose: () => void }) {
     name: "",
     email: "",
     password: "",
-    role: "user" as AppRole,
+    role: "user" as UiRole,
   });
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -138,7 +147,7 @@ function CreateUserDialog({ me, onClose }: { me: Me; onClose: () => void }) {
           e.preventDefault();
           startTransition(async () => {
             setError(null);
-            const r = await createUser(form);
+            const r = await createUser({ ...form, ...toAppRole(form.role) });
             if (!r.ok) return setError(r.error);
             onClose();
             router.refresh();
@@ -182,9 +191,9 @@ function CreateUserDialog({ me, onClose }: { me: Me; onClose: () => void }) {
           name="role"
           aria-label="Rol"
         >
-          {creatableRoles(me).map((r) => (
+          {withParent(creatableRoles(me)).map((r) => (
             <option key={r} value={r} className="bg-graphite">
-              {ROLE_LABEL[r]}
+              {uiLabel(r)}
             </option>
           ))}
         </select>
@@ -258,7 +267,7 @@ function WaiverBadge({ user }: { user: Row }) {
     );
   const parent = isParent(user);
   const signed = parent ? !!user.waiver_signed : !!user.rules_accepted_at;
-  const label = parent ? (signed ? "Acord semnat" : "Acord nesemnat") : signed ? "Regulament ✓" : "Regulament ✕";
+  const label = parent ? (signed ? "Declarație ✓" : "Declarație ✕") : signed ? "Regulament ✓" : "Regulament ✕";
   return (
     <div className="relative" onClick={(e) => e.stopPropagation()}>
       <button
@@ -273,14 +282,43 @@ function WaiverBadge({ user }: { user: Row }) {
         data-signed={signed}
         data-kind={parent ? "parent" : "rules"}
       >
-        {parent && (signed ? <Check className="size-3.5" /> : <X className="size-3.5" />)}
         {label}
       </button>
       {open && (
         <div className="absolute left-0 top-full z-20 mt-2 w-64 rounded-2xl border border-white/10 bg-carbon p-3 text-xs shadow-xl" data-testid="waiver-popover">
           <WaiverStatus user={user} />
+          {parent && signed && <PdfLinks userId={user.id} />}
         </div>
       )}
+    </div>
+  );
+}
+
+function PdfLinks({ userId }: { userId: string }) {
+  const [docs, setDocs] = useState<WaiverRecord[] | null>(null);
+  useEffect(() => {
+    let live = true;
+    getWaiverSubmissions(userId).then((w) => live && setDocs(w.filter((d) => d.form_type === "parinte" && !w.some((n) => n.replaces === d.id))));
+    return () => {
+      live = false;
+    };
+  }, [userId]);
+  if (!docs) return <Loader2 className="mt-2 size-4 animate-spin text-white/40" />;
+  return (
+    <div className="mt-2 grid gap-1.5 border-t border-white/10 pt-2">
+      {docs.map((d) => (
+        <a
+          key={d.id}
+          href={`/declaratie/${d.id}`}
+          target="_blank"
+          rel="noopener"
+          className="inline-flex items-center gap-1.5 rounded-lg bg-neon-orange/15 px-2.5 py-1.5 font-semibold text-neon-orange hover:bg-neon-orange/25"
+          data-testid="waiver-pdf-link"
+        >
+          <FileText className="size-3.5 shrink-0" />
+          <span className="truncate">PDF · {d.child_name || "Fișă medicală"}</span>
+        </a>
+      ))}
     </div>
   );
 }
@@ -323,9 +361,9 @@ function UserPanel({ user, onClose }: { user: Row; onClose: () => void }) {
                 </p>
               )}
             <span
-              className={`mt-1 inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ${ROLE_BADGE_STYLE[user.role]}`}
+              className={`mt-1 inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ${uiStyle(uiRoleOf(user))}`}
             >
-              {ROLE_LABEL[user.role]}
+              {uiLabel(uiRoleOf(user))}
             </span>
           </div>
         </div>
@@ -576,10 +614,10 @@ function DeleteUserButton({ user }: { user: Row }) {
 }
 
 /** Mirrors public.admin_set_role so the UI only offers changes the database will accept. */
-function assignableRoles(me: Me, target: Row): AppRole[] {
+function assignableRoles(me: Me, target: Row): UiRole[] {
   if (target.id === me.id) return [];
-  if (me.role === "superadmin") return ALL_ROLES;
-  if (me.role === "admin" && !isStaff(target.role)) return ["user", "media"];
+  if (me.role === "superadmin") return UI_ROLES;
+  if (me.role === "admin" && !isStaff(target.role)) return ["parent", "user", "media"];
   return [];
 }
 
@@ -591,19 +629,20 @@ function RoleCell({ me, user }: { me: Me; user: Row }) {
   if (!options.length)
     return (
       <span
-        className={`rounded-full px-2.5 py-1 text-xs font-semibold ${ROLE_BADGE_STYLE[user.role]}`}
+        className={`rounded-full px-2.5 py-1 text-xs font-semibold ${uiStyle(uiRoleOf(user))}`}
       >
-        {ROLE_LABEL[user.role]}
+        {uiLabel(uiRoleOf(user))}
       </span>
     );
   return (
     <div className="flex items-center gap-2">
       <select
         aria-label={`Rol pentru ${user.full_name ?? user.email}`}
-        value={user.role}
+        value={uiRoleOf(user)}
         disabled={pending}
+        data-testid="role-select"
         onChange={async (e) => {
-          const role = e.target.value as AppRole;
+          const { role, memberType } = toAppRole(e.target.value as UiRole);
           if (role === "admin" || role === "superadmin") {
             const ok = await confirm({
               tone: "warning",
@@ -615,15 +654,15 @@ function RoleCell({ me, user }: { me: Me; user: Row }) {
           }
           startTransition(async () => {
             setError(null);
-            const r = await setUserRole(user.id, role);
+            const r = await setUserRole(user.id, role, memberType);
             if (!r.ok) setError(r.error);
           });
         }}
-        className={`cursor-pointer rounded-full border-0 px-2.5 py-1 text-xs font-semibold outline-none ring-1 ring-white/10 focus:ring-neon-orange/60 ${ROLE_BADGE_STYLE[user.role]}`}
+        className={`cursor-pointer rounded-full border-0 px-2.5 py-1 text-xs font-semibold outline-none ring-1 ring-white/10 focus:ring-neon-orange/60 ${uiStyle(uiRoleOf(user))}`}
       >
         {options.map((r) => (
           <option key={r} value={r} className="bg-graphite text-white">
-            {ROLE_LABEL[r]}
+            {uiLabel(r)}
           </option>
         ))}
       </select>
@@ -639,18 +678,18 @@ export function UsersTable({ me, users }: { me: Me; users: Row[] }) {
   const [creating, setCreating] = useState(false);
   const [openId, setOpenId] = useState<string | null>(null);
   const opened = users.find((u) => u.id === openId) ?? null;
-  const [filter, setFilter] = useState<AppRole | "all">("all");
+  const [filter, setFilter] = useState<UiRole | "all">("all");
   const q = query.trim().toLowerCase();
   const rows = users.filter(
     (u) =>
-      (filter === "all" || u.role === filter) &&
+      (filter === "all" || uiRoleOf(u) === filter) &&
       (!q ||
         u.email.toLowerCase().includes(q) ||
         nameOf(u).toLowerCase().includes(q) ||
         (u.phone ?? "").includes(q)),
   );
-  const counts = ALL_ROLES.reduce<Record<string, number>>(
-    (acc, r) => ({ ...acc, [r]: users.filter((u) => u.role === r).length }),
+  const counts = UI_ROLES.reduce<Record<string, number>>(
+    (acc, r) => ({ ...acc, [r]: users.filter((u) => uiRoleOf(u) === r).length }),
     {},
   );
 
@@ -670,16 +709,17 @@ export function UsersTable({ me, users }: { me: Me; users: Row[] }) {
           />
         </label>
         <div className="flex flex-wrap gap-1.5">
-          {(["all", ...ALL_ROLES] as const).map((r) => (
+          {(["all", ...UI_ROLES] as const).map((r) => (
             <button
               key={r}
               type="button"
               onClick={() => setFilter(r)}
+              data-testid={`filter-${r}`}
               className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${filter === r ? "bg-neon-orange text-black" : "bg-white/5 text-white/60 hover:text-black"}`}
             >
               {r === "all"
                 ? `Toți (${users.length})`
-                : `${ROLE_LABEL[r]} (${counts[r]})`}
+                : `${r === "parent" ? "Părinți" : ROLE_LABEL[r]} (${counts[r]})`}
             </button>
           ))}
         </div>

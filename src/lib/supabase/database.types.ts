@@ -236,6 +236,7 @@ export type Database = {
       };
       submit_waiver: { Args: { p: Record<string, unknown> }; Returns: { id: string; signed_at: string } };
       accept_rules: { Args: Record<string, never>; Returns: string };
+      admin_set_account_type: { Args: { target: string; new_type: "Sportiv" | "Părinte" }; Returns: undefined };
       admin_list_users: {
         Args: Record<string, never>;
         Returns: {

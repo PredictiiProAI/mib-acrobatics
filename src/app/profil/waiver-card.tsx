@@ -27,7 +27,7 @@ const input =
   "mt-2 w-full rounded-2xl border border-white/15 bg-black px-4 py-3 font-normal text-white outline-none placeholder:text-white/30 focus:border-neon-orange";
 
 type Parent = { name: string; email: string; phone: string };
-type Props = { submissions: WaiverSubmission[]; parent: Parent };
+type Props = { submissions: WaiverSubmission[]; parent: Parent; autoOpen?: boolean };
 
 /** Current version of each child's sheet: edits point at the version they replace. */
 function current(submissions: WaiverSubmission[]) {
@@ -42,9 +42,9 @@ function current(submissions: WaiverSubmission[]) {
   });
 }
 
-export function WaiverCard({ submissions, parent }: Props) {
-  const [open, setOpen] = useState<WaiverSubmission | "new" | null>(null);
+export function WaiverCard({ submissions, parent, autoOpen }: Props) {
   const latest = current(submissions);
+  const [open, setOpen] = useState<WaiverSubmission | "new" | null>(autoOpen && !latest.length ? "new" : null);
   const signed = latest.length > 0;
 
   return (

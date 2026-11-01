@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { after } from "next/server";
 import { authErrorRo } from "@/lib/auth-errors";
-import { homeFor, safeNext } from "@/lib/roles";
+import { homeFor, needsWaiver, safeNext } from "@/lib/roles";
 import { sendSignupAlert } from "@/lib/signup-alert";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createClient } from "@/lib/supabase/server";
@@ -16,10 +16,18 @@ const CODE = /^\d{6}$/;
 
 const field = (formData: FormData, name: string) => String(formData.get(name) ?? "").trim();
 
+/** Members with a missing parental consent / rules acknowledgement go through /documente first; staff skip it. */
 async function goHome(userId: string, next: string) {
   const supabase = await createClient();
   const { data: profile } = await supabase.from("users").select("role").eq("id", userId).maybeSingle();
-  redirect(safeNext(next) ?? homeFor(profile?.role));
+  const target = safeNext(next) ?? homeFor(profile?.role);
+  if (needsWaiver(profile?.role)) {
+    const { data } = await supabase.rpc("profile_details", { p_user: userId });
+    const d = data?.[0];
+    const done = d?.account_type === "Părinte" ? !!d.waiver_signed : !!d?.rules_accepted_at;
+    if (d && !done) redirect(`/documente?next=${encodeURIComponent(target)}`);
+  }
+  redirect(target);
 }
 
 export async function signIn(_prev: AuthState, formData: FormData): Promise<AuthState> {
@@ -47,6 +55,8 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
   const password = String(formData.get("password") ?? "");
   if (!fullName || !email) return { error: "Completează numele și emailul.", email };
   if (password.length < 8) return { error: "Parola trebuie să aibă cel puțin 8 caractere.", email };
+  const accountType = formData.get("account_type") === "Părinte" ? "Părinte" : formData.get("account_type") === "Sportiv" ? "Sportiv" : null;
+  if (!accountType) return { error: "Alege dacă ești Părinte / Tutore legal sau Sportiv.", email };
   if (formData.get("gdpr") !== "on")
     return { error: "Trebuie să accepți Termenii și Condițiile și Politica de Confidențialitate pentru a crea contul.", email };
 
@@ -54,7 +64,7 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
-    options: { data: { full_name: fullName, gdpr_accepted: true, gdpr_accepted_at: new Date().toISOString() } },
+    options: { data: { full_name: fullName, account_type: accountType, gdpr_accepted: true, gdpr_accepted_at: new Date().toISOString() } },
   });
   if (error) return { error: authErrorRo(error, "Nu am putut crea contul. Încearcă din nou."), email };
   // Supabase returns a user with no identities when the email is already registered.

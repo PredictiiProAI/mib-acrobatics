@@ -94,6 +94,7 @@ export function AuthForm({ mode, next }: { mode: "login" | "signup"; next?: stri
   const isLogin = mode === "login";
   const [gdpr, setGdpr] = useState(false);
   const [gdprError, setGdprError] = useState(false);
+  const [accountType, setAccountType] = useState<"Părinte" | "Sportiv" | null>(null);
 
   if (state?.step === "verify" && state !== dismissed) return <VerifyStep start={state} next={next} onBack={() => setDismissed(state)} />;
 
@@ -102,9 +103,9 @@ export function AuthForm({ mode, next }: { mode: "login" | "signup"; next?: stri
       action={action}
       className="space-y-4"
       onSubmit={(e) => {
-        if (!isLogin && !gdpr) {
+        if (!isLogin && (!gdpr || !accountType)) {
           e.preventDefault();
-          setGdprError(true);
+          if (!gdpr) setGdprError(true);
         }
       }}
     >
@@ -114,7 +115,36 @@ export function AuthForm({ mode, next }: { mode: "login" | "signup"; next?: stri
       </div>
 
       {next && <input type="hidden" name="next" value={next} />}
-      {!isLogin && <Input name="full_name" placeholder="Nume complet" autoComplete="name" required maxLength={120} />}
+      {!isLogin && (
+        <fieldset data-testid="account-type">
+          <legend className="mb-2 text-sm font-bold text-white">Cine ești?</legend>
+          <input type="hidden" name="account_type" value={accountType ?? ""} />
+          <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Cine ești?">
+            {(
+              [
+                ["Părinte", "Părinte / Tutore legal", "Îmi înscriu copilul la club"],
+                ["Sportiv", "Sportiv", "Mă antrenez la club"],
+              ] as const
+            ).map(([value, title, hint]) => (
+              <button
+                key={value}
+                type="button"
+                role="radio"
+                aria-checked={accountType === value}
+                onClick={() => setAccountType(value)}
+                className={`rounded-2xl border px-3 py-3 text-left transition ${
+                  accountType === value ? "border-neon-orange bg-neon-orange/15 text-white" : "border-white/10 bg-black/40 text-white/70 hover:border-neon-orange/50"
+                }`}
+                data-testid={`account-type-${value === "Părinte" ? "parinte" : "sportiv"}`}
+              >
+                <span className="block text-sm font-bold">{title}</span>
+                <span className="mt-0.5 block text-xs text-white/50">{hint}</span>
+              </button>
+            ))}
+          </div>
+        </fieldset>
+      )}
+      {!isLogin && <Input name="full_name" placeholder={accountType === "Părinte" ? "Numele tău complet (părinte)" : "Nume complet"} autoComplete="name" required maxLength={120} />}
       <Input name="email" type="email" placeholder="Email" autoComplete="email" required defaultValue={state?.email} />
       <Input
         name="password"
@@ -171,7 +201,7 @@ export function AuthForm({ mode, next }: { mode: "login" | "signup"; next?: stri
 
       <Notice state={state === dismissed ? undefined : state} />
 
-      <Button type="submit" disabled={pending || (!isLogin && !gdpr)} className="w-full" data-testid="auth-submit">
+      <Button type="submit" disabled={pending || (!isLogin && (!gdpr || !accountType))} className="w-full" data-testid="auth-submit">
         {pending ? <Loader2 className="size-4 animate-spin" /> : isLogin ? "Intră în cont" : "Creează cont"}
       </Button>
 

@@ -11,8 +11,11 @@ import type { ActionResult } from "./posts";
 
 const ROLES: AppRole[] = ["superadmin", "admin", "media", "user"];
 
-/** Role rules live in public.admin_set_role (admin: user <-> media only; superadmin: anything). */
-export async function setUserRole(target: string, role: AppRole): Promise<ActionResult> {
+export type MemberType = "Sportiv" | "Părinte";
+const MIGRATION_0018 = "Rulează migrarea 0018_signup_account_type.sql în Supabase.";
+
+/** Role rules live in public.admin_set_role (admin: user <-> media only; superadmin: anything). Părinte = role user + account_type. */
+export async function setUserRole(target: string, role: AppRole, memberType?: MemberType): Promise<ActionResult> {
   const me = await getSessionUser();
   if (!me || !isStaff(me.role)) return { ok: false, error: "Nu ai acces la gestionarea utilizatorilor." };
   if (!ROLES.includes(role)) return { ok: false, error: "Rol invalid." };
@@ -22,6 +25,13 @@ export async function setUserRole(target: string, role: AppRole): Promise<Action
   const { error } = await supabase.rpc("admin_set_role", { target, new_role: role });
   if (error) {
     return { ok: false, error: error.code === "42501" ? "Nu ai dreptul să atribui acest rol." : "Rolul nu a putut fi schimbat." };
+  }
+  if (role === "user" && memberType) {
+    const { error: typeError } = await supabase.rpc("admin_set_account_type", { target, new_type: memberType });
+    if (typeError) {
+      console.error("admin_set_account_type", typeError.message);
+      return { ok: false, error: typeError.code === "PGRST202" ? MIGRATION_0018 : "Tipul contului nu a putut fi schimbat." };
+    }
   }
   revalidatePath("/dashboard/users");
   return { ok: true };
@@ -36,7 +46,7 @@ function canGrant(me: AppRole, role: AppRole) {
 }
 
 /** Creates a confirmed account via the Admin Auth API, so the staff session stays signed in. */
-export async function createUser(input: { name: string; email: string; password: string; role: AppRole }): Promise<ActionResult> {
+export async function createUser(input: { name: string; email: string; password: string; role: AppRole; memberType?: MemberType }): Promise<ActionResult> {
   const me = await getSessionUser();
   if (!me || !isStaff(me.role)) return { ok: false, error: "Nu ai acces la gestionarea utilizatorilor." };
   const name = input.name.trim().slice(0, 120);
@@ -62,7 +72,10 @@ export async function createUser(input: { name: string; email: string; password:
   }
 
   const id = data.user.id;
-  const { error: profileError } = await admin.from("users").upsert({ id, email, full_name: name, role: input.role }, { onConflict: "id" });
+  const { error: profileError } = await admin.from("users").upsert(
+      { id, email, full_name: name, role: input.role, account_type: input.role === "user" && input.memberType === "Părinte" ? "Părinte" : "Sportiv" },
+      { onConflict: "id" },
+    );
   if (profileError) {
     console.error("createUser profile", profileError.message);
     await admin.auth.admin.deleteUser(id);

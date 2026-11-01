@@ -5,7 +5,7 @@ coach messenger and the Admin/Media Command Center.
 
 ## Setup
 
-1. Supabase → SQL Editor → run `supabase/migrations/0001_init.sql`, then `0002_reactions.sql`, `0003_schedule.sql`, `0004_email_exists.sql`, `0005_profile.sql`, `0006_likes_permissions.sql`, `0007_comments.sql`, `0008_about.sql`, `0009_posts_realtime.sql`, `0010_users_crm.sql`, `0011_app_settings.sql`, `0012_acromib_widgets.sql`, `0013_profile_details.sql`, `0014_gdpr_consent.sql`, `0015_waiver.sql`, `0016_waiver_medical.sql` and `0017_parent_consent_rules.sql` (all idempotent, safe to re-run). It creates the
+1. Supabase → SQL Editor → run `supabase/migrations/0001_init.sql`, then `0002_reactions.sql`, `0003_schedule.sql`, `0004_email_exists.sql`, `0005_profile.sql`, `0006_likes_permissions.sql`, `0007_comments.sql`, `0008_about.sql`, `0009_posts_realtime.sql`, `0010_users_crm.sql`, `0011_app_settings.sql`, `0012_acromib_widgets.sql`, `0013_profile_details.sql`, `0014_gdpr_consent.sql`, `0015_waiver.sql`, `0016_waiver_medical.sql`, `0017_parent_consent_rules.sql` and `0018_signup_account_type.sql` (all idempotent, safe to re-run). It creates the
    tables, RLS policies, role helpers, the `feed_posts` view, Realtime publication entries and the public
    `mib_media` Storage bucket with its policies.
 2. Supabase → Authentication → URL Configuration: set **Site URL** to the production origin and add

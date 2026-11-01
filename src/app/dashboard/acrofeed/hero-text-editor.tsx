@@ -15,7 +15,11 @@ export function HeroTextEditor({ initialText }: { initialText: string }) {
   const [pending, startTransition] = useTransition();
   const [query, setQuery] = useState("");
   const q = foldText(query.trim());
-  const shown = useMemo(() => (q ? SEARCHABLE.filter((t) => t.key.includes(q) || String(t.n) === q) : SEARCHABLE), [q]);
+  const shown = useMemo(() => {
+    if (!q) return SEARCHABLE;
+    const exact = SEARCHABLE.filter((t) => String(t.n) === q);
+    return [...exact, ...SEARCHABLE.filter((t) => String(t.n) !== q && t.key.includes(q))];
+  }, [q]);
   const pick = (t: string) => {
     setText(t);
     setStatus(null);

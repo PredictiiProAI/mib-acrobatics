@@ -3,10 +3,11 @@
 import { Avatar } from "@/components/avatar";
 import { Clock, Heart, MessageCircle, Trash2 } from "lucide-react";
 import Image from "next/image";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useConfirm } from "@/components/confirm-dialog";
 import { RoleBadge } from "@/components/role-badge";
 import { deletePost } from "@/lib/actions/posts";
+import { saveReaction } from "@/lib/likes";
 import type { FeedPost } from "@/lib/posts";
 import { isStaff } from "@/lib/roles";
 import { createClient } from "@/lib/supabase/client";
@@ -21,32 +22,50 @@ const fullDate = new Intl.DateTimeFormat("ro-RO", { dateStyle: "long", timeStyle
 
 export function PostCard({ post, viewer, priority, onDeleted }: { post: FeedPost; viewer: Viewer; priority?: boolean; onDeleted: (id: string) => void }) {
   const [mine, setMine] = useState<ReactionKey | null>(post.my_reaction ?? (post.liked_by_me ? DEFAULT_REACTION : null));
-  const [counts, setCounts] = useState(post.reactions ?? {});
+  const [counts, setCounts] = useState(post.reactions ?? (post.like_count ? { [DEFAULT_REACTION]: post.like_count } : {}));
   const [comments, setComments] = useState(post.comment_count);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [burst, setBurst] = useState(0);
-  const [likeBusy, setLikeBusy] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirm, confirmDialog] = useConfirm();
 
-  async function react(next: ReactionKey | null) {
-    const prev = mine;
-    if (likeBusy || next === prev) return;
-    setLikeBusy(true);
+  // Optimistic: the UI follows every tap at once; a single sync loop then moves the server from its
+  // last confirmed state to the latest wanted one, so fast toggles are never dropped.
+  const confirmed = useRef<ReactionKey | null>(mine);
+  const wanted = useRef<ReactionKey | null>(mine);
+  const syncing = useRef(false);
+
+  async function syncReaction() {
+    if (syncing.current) return;
+    syncing.current = true;
+    const supabase = createClient();
+    while (wanted.current !== confirmed.current) {
+      const target = wanted.current;
+      const error = await saveReaction(supabase, post.id, viewer.id, confirmed.current, target);
+      if (error) {
+        console.error("like", error);
+        const shown = wanted.current;
+        const back = confirmed.current;
+        wanted.current = back;
+        setMine(back);
+        setCounts((c) => applyReaction(c, shown, back));
+        setError("Nu am putut salva reacția. Încearcă din nou.");
+        break;
+      }
+      confirmed.current = target;
+    }
+    syncing.current = false;
+  }
+
+  function react(next: ReactionKey | null) {
+    const prev = wanted.current;
+    if (next === prev) return;
+    wanted.current = next;
+    setError(null);
     setMine(next);
     setCounts((c) => applyReaction(c, prev, next));
-    const likes = createClient().from("likes");
-    const { error } = !next
-      ? await likes.delete().eq("post_id", post.id).eq("user_id", viewer.id)
-      : prev
-        ? await likes.update({ reaction: next }).eq("post_id", post.id).eq("user_id", viewer.id)
-        : await likes.insert({ post_id: post.id, user_id: viewer.id, reaction: next });
-    if (error) {
-      setMine(prev);
-      setCounts((c) => applyReaction(c, next, prev));
-    }
-    setLikeBusy(false);
+    void syncReaction();
   }
 
   const doubleTapLike = () => {

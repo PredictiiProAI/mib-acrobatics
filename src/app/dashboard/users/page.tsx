@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { MarkSeen } from "../mark-seen";
 import { requireRole } from "@/lib/auth";
 import { STAFF_ROLES } from "@/lib/roles";
 import { createClient } from "@/lib/supabase/server";
@@ -22,6 +23,7 @@ export default async function UsersPage() {
 
   return (
     <div className="space-y-8">
+      <MarkSeen section="users" />
       <div>
         <p className="text-xs uppercase tracking-[0.3em] text-neon-green">Comunitate</p>
         <h1 className="mt-2 font-display text-3xl font-black sm:text-4xl">Utilizatori</h1>

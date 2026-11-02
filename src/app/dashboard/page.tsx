@@ -7,6 +7,7 @@ import { getUnreadCount } from "@/lib/messages";
 import { createClient } from "@/lib/supabase/server";
 import { PUBLISHER_ROLES, ROLE_LABEL, isStaff } from "@/lib/roles";
 import { navFor } from "./nav";
+import { seenAt } from "./seen";
 
 export const metadata: Metadata = { title: "Command Center" };
 
@@ -18,26 +19,30 @@ async function count(table: "posts" | "users" | "comments", authorId?: string) {
   return count ?? 0;
 }
 
-async function newSince24h(table: "posts" | "comments") {
+/** Items created in the last 24h that this admin has not seen yet (opening the section resets it). */
+async function newUnseen(table: "posts" | "comments", userId: string) {
   const supabase = await createClient();
-  const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
-  const { count } = await supabase.from(table).select("id", { count: "exact", head: true }).gte("created_at", since);
+  const seen = await seenAt(table, userId);
+  const since = new Date(Math.max(Date.now() - 24 * 3600 * 1000, seen ?? 0)).toISOString();
+  const { count } = await supabase.from(table).select("id", { count: "exact", head: true }).gt("created_at", since);
   return count ?? 0;
 }
 
-/** Members whose required document is missing: parents without the signed consent, athletes without the rules acknowledgement. */
-async function membersMissingDocs() {
+/** Members whose required document is missing (parents without the signed consent, athletes without the rules acknowledgement); after the first visit to Utilizatori, only accounts created since then. */
+async function membersMissingDocs(userId: string) {
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("admin_list_users");
+  const [{ data, error }, seen] = await Promise.all([supabase.rpc("admin_list_users"), seenAt("users", userId)]);
   if (error || !data) return 0;
-  return data.filter((u) => u.role === "user" && (u.account_type === "Părinte" ? !u.waiver_signed : !u.rules_accepted_at)).length;
+  return data.filter(
+    (u) => u.role === "user" && (u.account_type === "Părinte" ? !u.waiver_signed : !u.rules_accepted_at) && (seen === null || Date.parse(u.created_at) > seen),
+  ).length;
 }
 
 const BADGES: Record<string, { load: (uid: string) => Promise<number>; title: (n: number) => string }> = {
   "/dashboard/messages": { load: getUnreadCount, title: (n) => `${n} ${n === 1 ? "mesaj necitit" : "mesaje necitite"}` },
-  "/dashboard/users": { load: membersMissingDocs, title: (n) => `${n} ${n === 1 ? "membru" : "membri"} cu documente lipsă` },
-  "/dashboard/posts": { load: () => newSince24h("posts"), title: (n) => `${n} ${n === 1 ? "postare nouă" : "postări noi"} în ultimele 24h` },
-  "/dashboard/comments": { load: () => newSince24h("comments"), title: (n) => `${n} ${n === 1 ? "comentariu nou" : "comentarii noi"} în ultimele 24h` },
+  "/dashboard/users": { load: membersMissingDocs, title: (n) => `${n} ${n === 1 ? "membru nou" : "membri noi"} cu documente lipsă` },
+  "/dashboard/posts": { load: (uid) => newUnseen("posts", uid), title: (n) => `${n} ${n === 1 ? "postare nouă" : "postări noi"} ` },
+  "/dashboard/comments": { load: (uid) => newUnseen("comments", uid), title: (n) => `${n} ${n === 1 ? "comentariu nou" : "comentarii noi"} ` },
 };
 
 async function CardBadge({ href, userId }: { href: string; userId: string }) {

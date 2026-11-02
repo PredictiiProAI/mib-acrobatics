@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { MarkSeen } from "../mark-seen";
 import { X } from "lucide-react";
 import Link from "next/link";
 import { requireRole } from "@/lib/auth";
@@ -25,6 +26,7 @@ export default async function CommentsModerationPage({ searchParams }: PageProps
 
   return (
     <div className="space-y-8">
+      <MarkSeen section="comments" />
       <div>
         <p className="text-xs uppercase tracking-[0.3em] text-neon-green">Moderare</p>
         <h1 className="mt-2 font-display text-3xl font-black sm:text-4xl">Comentarii recente</h1>

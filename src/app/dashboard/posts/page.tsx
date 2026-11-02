@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { MarkSeen } from "../mark-seen";
 import { CloudUpload, X } from "lucide-react";
 import Link from "next/link";
 import { ButtonLink } from "@/components/ui";
@@ -28,6 +29,7 @@ export default async function PostsPage({ searchParams }: PageProps<"/dashboard/
 
   return (
     <div className="space-y-8">
+      <MarkSeen section="posts" />
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-xs uppercase tracking-[0.3em] text-neon-green">{staff ? "Moderare" : "Conținutul tău"}</p>

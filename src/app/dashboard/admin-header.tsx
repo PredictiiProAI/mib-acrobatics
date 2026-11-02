@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { Logo } from "@/components/logo";
 import type { AppRole } from "@/lib/supabase/database.types";
 import { navFor } from "./nav";
-import { ThemeToggle } from "./theme-toggle";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const tap = "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl font-bold transition active:scale-95";
 

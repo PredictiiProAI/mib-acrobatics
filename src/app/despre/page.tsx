@@ -163,7 +163,7 @@ export default async function AboutPage() {
                       ) : (
                         <span className="grid size-full place-items-center bg-neon-orange/10 font-display text-6xl font-black text-neon-orange">{m.name[0]?.toUpperCase()}</span>
                       )}
-                      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/80 to-transparent" />
+                      <div className="theme-dark pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/80 to-transparent" />
                     </div>
                     <div className="p-5">
                       <h3 className="font-display text-xl font-extrabold">{m.name}</h3>

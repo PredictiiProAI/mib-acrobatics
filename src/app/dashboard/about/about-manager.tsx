@@ -271,7 +271,7 @@ export function GalleryManager({ images }: { images: GalleryImage[] }) {
         {images.map((img, i) => (
           <li key={img.id} className="group relative aspect-[4/3] overflow-hidden rounded-2xl bg-graphite ring-1 ring-white/10" data-testid="gallery-item">
             <Image src={img.image_url} alt="" fill sizes="(min-width: 1024px) 240px, 45vw" className="object-cover" />
-            <div className="absolute inset-x-0 bottom-0 flex justify-end gap-0.5 bg-gradient-to-t from-black/80 to-transparent p-2">
+            <div className="theme-dark absolute inset-x-0 bottom-0 flex justify-end gap-0.5 bg-gradient-to-t from-black/80 to-transparent p-2">
               <MoveButtons table="gallery_images" id={img.id} first={i === 0} last={i === images.length - 1} busy={pending} run={run} />
               <button type="button" className={`${iconBtn} hover:!bg-red-500/20 hover:!text-red-300`} disabled={pending} onClick={() => remove(img)} aria-label="Șterge fotografia" data-testid="gallery-delete">
                 <Trash2 className="size-4" />

@@ -16,7 +16,7 @@ export function PostTile({ post }: { post: FeedPost }) {
           className="object-cover transition duration-500 group-hover:scale-105"
         />
       )}
-      {post.media_type === "video" && <Play className="absolute right-3 top-3 size-5 fill-white/80 text-white/80" />}
+      {post.media_type === "video" && <Play className="theme-dark absolute right-3 top-3 size-5 fill-white/80 text-white/80" />}
       <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent p-4">
         {post.caption && <p className="line-clamp-2 text-sm">{post.caption}</p>}
         <div className="mt-2 flex items-center gap-4 text-xs text-white/60">

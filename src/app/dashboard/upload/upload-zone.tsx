@@ -243,7 +243,7 @@ export function UploadZone({ userId }: { userId: string }) {
                     // eslint-disable-next-line @next/next/no-img-element -- local blob preview
                     <img src={item.preview} alt={item.file.name} className="size-full object-cover" />
                   )}
-                  <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-black/60 px-2.5 py-1 text-xs backdrop-blur">
+                  <span className="theme-dark absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-black/60 px-2.5 py-1 text-xs backdrop-blur">
                     {item.type === "video" ? <Film className="size-3.5" /> : <ImageIcon className="size-3.5" />}
                     {formatBytes(item.file.size)}
                   </span>
@@ -251,14 +251,14 @@ export function UploadZone({ userId }: { userId: string }) {
                     <button
                       type="button"
                       onClick={() => remove(item.id)}
-                      className="absolute right-3 top-3 rounded-full bg-black/60 p-1.5 text-white/80 backdrop-blur hover:text-white"
+                      className="theme-dark absolute right-3 top-3 rounded-full bg-black/60 p-1.5 text-white/80 backdrop-blur hover:text-white"
                       aria-label="Elimină"
                     >
                       <X className="size-4" />
                     </button>
                   )}
                   {(item.status === "uploading" || item.status === "saving") && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/60 backdrop-blur-sm">
+                    <div className="theme-dark absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/60 backdrop-blur-sm">
                       <Loader2 className="size-8 animate-spin text-neon-orange" />
                       <p className="text-sm font-semibold">
                         {item.status === "saving" ? "Se publică…" : `${Math.round(item.progress * 100)}%`}
@@ -269,7 +269,7 @@ export function UploadZone({ userId }: { userId: string }) {
                     </div>
                   )}
                   {item.status === "done" && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/60 backdrop-blur-sm">
+                    <div className="theme-dark absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/60 backdrop-blur-sm">
                       <CheckCircle2 className="size-10 text-neon-green" />
                       <p className="text-sm font-semibold text-neon-green">Publicat</p>
                     </div>

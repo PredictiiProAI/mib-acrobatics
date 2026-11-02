@@ -32,8 +32,8 @@
   --c-card-shadow: 0 0 #0000;
 }
 
-/* Admin light mode (set on <html> only while inside /dashboard): white/black utilities flip, brand accents stay. */
-html[data-admin-theme="light"] {
+/* Light mode (<html data-theme="light">, toggled per device): white/black utilities flip, brand accents stay. */
+html[data-theme="light"] {
   color-scheme: light;
   --c-fg: #18181b;
   --c-bg: #ffffff;
@@ -44,14 +44,48 @@ html[data-admin-theme="light"] {
   --c-text: #18181b;
   --c-card-shadow: 0 1px 2px rgb(24 24 27 / 0.06), 0 8px 24px -12px rgb(24 24 27 / 0.22);
 }
-html[data-admin-theme="light"] .glass {
+html[data-theme="light"] .glass {
   background: rgb(255 255 255 / 0.85);
   border-color: rgb(24 24 27 / 0.08);
   box-shadow: 0 1px 2px rgb(24 24 27 / 0.05), 0 10px 30px -14px rgb(24 24 27 / 0.25);
 }
 /* Neon green text is unreadable on white; icons/backgrounds keep the neon. */
-html[data-admin-theme="light"] .text-neon-green {
+html[data-theme="light"] .text-neon-green {
   color: #16a34a;
+}
+/* Pastel status text (built for black) gets its deeper shade on white. */
+html[data-theme="light"] .text-red-300,
+html[data-theme="light"] .text-red-400,
+html[data-theme="light"] .text-rose-300 {
+  color: #dc2626;
+}
+html[data-theme="light"] .text-amber-300 {
+  color: #b45309;
+}
+html[data-theme="light"] .text-emerald-300 {
+  color: #047857;
+}
+html[data-theme="light"] .text-sky-300 {
+  color: #0369a1;
+}
+html[data-theme="light"] .text-fuchsia-300 {
+  color: #a21caf;
+}
+html[data-theme="light"] .text-violet-300 {
+  color: #6d28d9;
+}
+
+/* Media overlays (video controls, photo gradients, lightbox) and the white print document keep the original palette in both themes. */
+.theme-dark {
+  color-scheme: dark;
+  --c-fg: #ffffff;
+  --c-bg: #000000;
+  --c-ink: #000000;
+  --c-carbon: #0d0e11;
+  --c-graphite: #16181d;
+  --c-surface: #161616;
+  --c-text: #ededf0;
+  --c-card-shadow: 0 0 #0000;
 }
 
 body {

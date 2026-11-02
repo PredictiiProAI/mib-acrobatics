@@ -83,7 +83,7 @@ export default async function WaiverDocumentPage({ params }: { params: Promise<{
       </div>
 
       <article
-        className="overflow-hidden rounded-2xl bg-white text-[14px] leading-relaxed text-[#111827] shadow-2xl print:rounded-none print:text-[11.5px] print:shadow-none"
+        className="theme-dark overflow-hidden rounded-2xl bg-white text-[14px] leading-relaxed text-[#111827] shadow-2xl print:rounded-none print:text-[11.5px] print:shadow-none"
         data-testid="waiver-document"
       >
         <div className="h-1.5 bg-gradient-to-r from-[#ff6a00] via-[#ff6a00] to-[#39ff14]" />

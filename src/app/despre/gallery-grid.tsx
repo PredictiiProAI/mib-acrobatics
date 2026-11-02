@@ -40,7 +40,7 @@ export function GalleryGrid({ images }: { images: GalleryImage[] }) {
       </div>
 
       {open !== null && images[open] && (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-black/90 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="Galerie Foto" onClick={() => setOpen(null)}>
+        <div className="theme-dark fixed inset-0 z-50 grid place-items-center bg-black/90 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="Galerie Foto" onClick={() => setOpen(null)}>
           <div className="relative h-[80svh] w-full max-w-5xl" onClick={(e) => e.stopPropagation()}>
             <Image src={images[open].image_url} alt={`Sala MIB Acrobatics, fotografia ${open + 1}`} fill sizes="100vw" className="object-contain" />
           </div>

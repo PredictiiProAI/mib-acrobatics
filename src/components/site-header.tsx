@@ -1,4 +1,5 @@
 import { Logo } from "@/components/logo";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { ButtonLink } from "@/components/ui";
 
 export const SITE_NAV = [
@@ -24,7 +25,8 @@ export function SiteHeader({ current }: { current?: string }) {
             </a>
           ))}
         </nav>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
+          <ThemeToggle compact />
           <ButtonLink href="/login" variant="ghost">
             Login
           </ButtonLink>

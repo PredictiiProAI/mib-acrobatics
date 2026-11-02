@@ -69,7 +69,7 @@ export function AutoplayVideo({ src, onDoubleClick }: { src: string; onDoubleCli
         onDoubleClick={(e) => e.stopPropagation()}
         aria-label={muted ? "Pornește sunetul" : "Oprește sunetul"}
         aria-pressed={!muted}
-        className="absolute bottom-3 right-3 z-10 rounded-full bg-black/60 p-3 text-white backdrop-blur transition hover:bg-black/80"
+        className="theme-dark absolute bottom-3 right-3 z-10 rounded-full bg-black/60 p-3 text-white backdrop-blur transition hover:bg-black/80"
       >
         {muted ? <VolumeX className="size-5" /> : <Volume2 className="size-5" />}
       </button>

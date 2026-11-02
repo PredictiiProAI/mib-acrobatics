@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { signOut } from "@/app/(auth)/actions";
 import { Logo } from "@/components/logo";
 import { RoleBadge } from "@/components/role-badge";
+import { ThemeToggle } from "@/components/theme-toggle";
 import type { AppRole } from "@/lib/supabase/database.types";
 
 type Item = { href: string; label: string; icon: LucideIcon; badge?: number };
@@ -70,6 +71,7 @@ export function HeaderNav({
           </nav>
 
           <div className="ml-auto flex items-center gap-2">
+            <ThemeToggle compact />
             <Link
               href="/profil"
               aria-label="Profilul meu"

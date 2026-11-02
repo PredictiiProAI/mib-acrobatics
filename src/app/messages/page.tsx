@@ -12,7 +12,7 @@ export default async function MessagesPage({ searchParams }: PageProps<"/message
   const coachName = coach?.full_name ?? "Antrenor";
 
   return (
-    <section className="glass flex h-[calc(100svh-7.5rem-env(safe-area-inset-top))] md:h-[calc(100svh-6.5rem)] flex-col overflow-hidden rounded-3xl">
+    <section className="glass flex h-[calc(100svh-3.5rem-1px-env(safe-area-inset-bottom))] flex-col overflow-hidden max-md:-mx-4 max-md:-mt-4 max-md:border-0! max-md:pt-[env(safe-area-inset-top)] md:h-[calc(100svh-6.5rem)] md:rounded-3xl">
       <header className="flex items-center gap-3 border-b border-white/5 px-4 py-3">
         <span className="relative grid size-10 place-items-center rounded-full bg-gradient-to-br from-neon-orange to-neon-green font-black text-onaccent">
           {coachName[0]?.toUpperCase()}

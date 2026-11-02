@@ -104,10 +104,10 @@ export function PostCard({ post, viewer, priority, onDeleted }: { post: FeedPost
 
   return (
     <article
-      className={`mx-auto w-full max-w-xl overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-graphite/90 to-carbon/90 shadow-[0_20px_60px_-30px_rgb(255_106_0/0.5)] transition hover:border-neon-orange/25 hover:shadow-neon ${deleting ? "pointer-events-none opacity-50" : ""}`}
+      className={`-mx-4 w-[calc(100%+2rem)] overflow-hidden border-y border-white/10 md:mx-auto md:w-full md:max-w-xl md:rounded-3xl md:border-x bg-gradient-to-b from-graphite/90 to-carbon/90 shadow-[0_20px_60px_-30px_rgb(255_106_0/0.5)] transition hover:border-neon-orange/25 hover:shadow-neon ${deleting ? "pointer-events-none opacity-50" : ""}`}
       data-testid="post-card"
     >
-      <header className="flex items-center gap-3 px-5 py-4">
+      <header className="flex items-center gap-3 px-4 py-3 md:px-5 md:py-4">
         <Avatar name={author} url={post.author_avatar} className="size-11" textClassName="text-base" />
         <div className="min-w-0 flex-1">
           <p className="flex items-center gap-2">
@@ -127,12 +127,12 @@ export function PostCard({ post, viewer, priority, onDeleted }: { post: FeedPost
         )}
       </header>
 
-      <div className="px-3">
-        <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-black ring-1 ring-white/5" onDoubleClick={post.media_type === "image" ? doubleTapLike : undefined}>
+      <div className="md:px-3">
+        <div className="relative aspect-[4/5] overflow-hidden bg-black md:rounded-2xl md:ring-1 md:ring-white/5" onDoubleClick={post.media_type === "image" ? doubleTapLike : undefined}>
           {post.media_type === "video" ? (
             <AutoplayVideo src={post.media_url} onDoubleClick={doubleTapLike} />
           ) : (
-            <Image src={post.media_url} alt={post.caption ?? `Postare de ${author}`} fill priority={priority} sizes="(min-width: 640px) 552px, 100vw" className="object-cover" />
+            <Image src={post.media_url} alt={post.caption ?? `Postare de ${author}`} fill priority={priority} sizes="(min-width: 768px) 552px, 100vw" className="object-cover" />
           )}
           {burst > 0 && (
             <Heart
@@ -143,16 +143,16 @@ export function PostCard({ post, viewer, priority, onDeleted }: { post: FeedPost
         </div>
       </div>
 
-      {post.caption && <p className="whitespace-pre-wrap break-words px-5 pt-4 text-[15px] leading-relaxed text-white/90">{post.caption}</p>}
-      {error && <p className="px-5 pt-3 text-xs text-red-300">{error}</p>}
-      <ReactionSummary counts={counts} mine={mine} className="px-5 pt-3" />
+      {post.caption && <p className="whitespace-pre-wrap break-words px-4 pt-4 md:px-5 text-[15px] leading-relaxed text-white/90">{post.caption}</p>}
+      {error && <p className="px-4 pt-3 md:px-5 text-xs text-red-300">{error}</p>}
+      <ReactionSummary counts={counts} mine={mine} className="px-4 pt-3 md:px-5" />
 
       <footer className="mt-4 flex items-center gap-2 border-t border-white/5 px-3 py-3">
         <div className="flex-1">
           <ReactionTrigger
             mine={mine}
             onReact={react}
-            className={`group inline-flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-bold transition ${
+            className={`group inline-flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-bold transition active:scale-95 ${
               mine ? "bg-neon-orange/15 text-neon-orange ring-1 ring-neon-orange/40" : "bg-white/[0.04] text-white/80 hover:bg-white/[0.08] hover:text-white"
             }`}
           >
@@ -170,7 +170,7 @@ export function PostCard({ post, viewer, priority, onDeleted }: { post: FeedPost
           onClick={toggleComments}
           aria-expanded={commentsOpen}
           data-testid="comments-toggle"
-          className={`group inline-flex flex-1 items-center justify-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-bold transition ${
+          className={`group inline-flex flex-1 items-center justify-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-bold transition active:scale-95 ${
             commentsOpen ? "bg-neon-green/10 text-neon-green ring-1 ring-neon-green/30" : "bg-white/[0.04] text-white/80 hover:bg-white/[0.08] hover:text-white"
           }`}
         >

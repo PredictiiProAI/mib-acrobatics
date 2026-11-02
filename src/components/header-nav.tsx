@@ -54,7 +54,7 @@ export function HeaderNav({
   return (
     <>
       <div className="h-[env(safe-area-inset-top)] md:hidden" />
-      <header className="sticky top-0 z-30 hidden border-b border-white/5 bg-ink/70 backdrop-blur-md md:block">
+      <header className="sticky top-0 z-30 hidden border-b border-white/10 bg-ink/70 backdrop-blur-md backdrop-saturate-150 md:block">
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-neon-orange/50 to-transparent" />
         <div className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4">
           <Logo href="/" />
@@ -102,7 +102,7 @@ export function HeaderNav({
         </div>
       </header>
 
-      <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-white/10 bg-ink/70 pb-[env(safe-area-inset-bottom)] backdrop-blur-md md:hidden" aria-label="Navigare mobilă" data-testid="bottom-nav">
+      <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-white/10 bg-ink/70 pb-[env(safe-area-inset-bottom)] backdrop-blur-md backdrop-saturate-150 md:hidden" aria-label="Navigare mobilă" data-testid="bottom-nav">
         <ul className="mx-auto flex max-w-md">
           {tabs.map(({ href, label, icon: Icon, badge }) => (
             <li key={href} className="flex-1">

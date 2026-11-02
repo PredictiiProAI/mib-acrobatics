@@ -30,7 +30,7 @@ export function InboxList({ conversations }: { conversations: Conversation[] }) 
   const list = q ? conversations.filter((c) => c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q)) : conversations;
 
   return (
-    <aside className={`glass min-h-0 flex-col overflow-hidden rounded-3xl md:flex md:w-80 ${inThread ? "hidden" : "flex"}`}>
+    <aside className={`glass min-h-0 flex-1 flex-col overflow-hidden max-md:-mx-4 max-md:border-0! max-md:pb-[env(safe-area-inset-bottom)] md:flex md:w-80 md:flex-none md:rounded-3xl ${inThread ? "hidden" : "flex"}`}>
       <div className="border-b border-white/5 p-3">
         <label className="flex items-center gap-2 rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm focus-within:border-neon-orange/70">
           <Search className="size-4 text-white/40" />
@@ -49,7 +49,7 @@ export function InboxList({ conversations }: { conversations: Conversation[] }) 
             <li key={c.userId}>
               <Link
                 href={`/dashboard/messages/${c.userId}`}
-                className={`flex items-center gap-3 border-l-2 px-4 py-3 transition ${active ? "border-neon-orange bg-neon-orange/10" : "border-transparent hover:bg-white/5"}`}
+                className={`flex min-h-16 items-center gap-3 border-l-2 px-4 py-3 transition active:bg-white/10 ${active ? "border-neon-orange bg-neon-orange/10" : "border-transparent hover:bg-white/5"}`}
               >
                 <span className="grid size-10 shrink-0 place-items-center rounded-full bg-gradient-to-br from-neon-orange to-neon-green font-black text-onaccent">
                   {c.name[0]?.toUpperCase()}

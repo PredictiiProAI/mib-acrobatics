@@ -20,7 +20,7 @@ export function AdminHeader({ role, roleLabel }: { role: AppRole; roleLabel: str
     .sort((a, b) => b.href.length - a.href.length)[0];
 
   return (
-    <header className="sticky top-0 z-30 border-b border-white/10 bg-ink/85 pt-[env(safe-area-inset-top)] backdrop-blur-xl" data-testid="admin-header">
+    <header className="sticky top-0 z-30 border-b border-white/10 bg-ink/70 pt-[env(safe-area-inset-top)] backdrop-blur-md backdrop-saturate-150" data-testid="admin-header">
       <div className="mx-auto flex h-16 w-full max-w-6xl items-center gap-2 px-3 sm:px-5">
         {home ? (
           <>

@@ -44,7 +44,7 @@ export function SiteHeader({ current }: { current?: string }) {
           </ButtonLink>
         </div>
       </div>
-      <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-white/10 bg-ink/70 pb-[env(safe-area-inset-bottom)] backdrop-blur-md md:hidden" aria-label="Navigare mobilă" data-testid="bottom-nav">
+      <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-white/10 bg-ink/70 pb-[env(safe-area-inset-bottom)] backdrop-blur-md backdrop-saturate-150 md:hidden" aria-label="Navigare mobilă" data-testid="bottom-nav">
         <ul className="mx-auto flex max-w-md">
           {VISITOR_TABS.map(({ href, label, icon: Icon }) => (
             <li key={href} className="flex-1">

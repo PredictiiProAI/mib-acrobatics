@@ -28,6 +28,7 @@ import { getLatestPublicPosts } from "@/lib/posts";
 import { groupSchedule, todayIsoDay } from "@/lib/schedule";
 import { getSchedule } from "@/lib/schedule.server";
 import { isStaff } from "@/lib/roles";
+import { InstallAppButton } from "@/components/install-app-button";
 import logoMark from "../../public/mib-logo.png";
 
 const HERO_VIDEO = process.env.NEXT_PUBLIC_HERO_VIDEO_URL || "/hero-placeholder.mp4";
@@ -104,6 +105,7 @@ export default async function LandingPage() {
             <ButtonLink href="#program" variant="ghost" className="px-7 py-3.5 text-base">
               <CalendarDays className="size-5" /> Vezi programul
             </ButtonLink>
+            <InstallAppButton className="px-7 py-3.5 text-base" />
           </div>
         </div>
       </section>

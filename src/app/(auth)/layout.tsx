@@ -1,3 +1,4 @@
+import { InstallAppButton } from "@/components/install-app-button";
 import { Logo } from "@/components/logo";
 
 export default function AuthLayout({ children }: LayoutProps<"/">) {
@@ -7,6 +8,7 @@ export default function AuthLayout({ children }: LayoutProps<"/">) {
         <Logo size="lg" />
       </div>
       <div className="glass w-full max-w-md rounded-3xl p-8">{children}</div>
+      <InstallAppButton className="mt-6 w-full max-w-md" />
     </main>
   );
 }

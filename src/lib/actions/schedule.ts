@@ -72,3 +72,58 @@ export async function deleteScheduleEntry(id: string): Promise<ActionResult> {
   revalidateSchedule();
   return { ok: true };
 }
+
+export type GroupInput = {
+  ids: string[];
+  group_name: string;
+  age_range: string;
+  level: ScheduleLevel;
+  badge_color: BadgeColor;
+  sort_order: number;
+};
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const validIds = (ids: unknown) => Array.isArray(ids) && ids.length > 0 && ids.length <= 200 && ids.every((id) => typeof id === "string" && UUID.test(id));
+
+/** Renames / restyles every training hour of one group at once. */
+export async function saveScheduleGroup(input: GroupInput): Promise<ActionResult> {
+  const me = await getSessionUser();
+  if (!me || !isStaff(me.role)) return { ok: false, error: "Doar antrenorii pot modifica programul." };
+  if (!validIds(input.ids)) return { ok: false, error: "Grupă invalidă." };
+  const group_name = input.group_name.trim().slice(0, 80);
+  if (!group_name) return { ok: false, error: "Completează numele grupei." };
+  if (!LEVELS.includes(input.level) || !BADGE_COLORS.includes(input.badge_color)) return { ok: false, error: "Nivel sau culoare invalidă." };
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("schedule")
+    .update({
+      group_name,
+      age_range: input.age_range.trim().slice(0, 40) || null,
+      level: input.level,
+      badge_color: input.badge_color,
+      sort_order: Number.isFinite(input.sort_order) ? Math.round(input.sort_order) : 0,
+    })
+    .in("id", input.ids);
+  if (error) {
+    console.error("saveScheduleGroup", error.message);
+    return { ok: false, error: "Grupa nu a putut fi salvată." };
+  }
+  revalidateSchedule();
+  return { ok: true };
+}
+
+/** Deletes a whole group, i.e. all of its weekly training hours. */
+export async function deleteScheduleGroup(ids: string[]): Promise<ActionResult> {
+  const me = await getSessionUser();
+  if (!me || !isStaff(me.role)) return { ok: false, error: "Doar antrenorii pot modifica programul." };
+  if (!validIds(ids)) return { ok: false, error: "Grupă invalidă." };
+  const supabase = await createClient();
+  const { error } = await supabase.from("schedule").delete().in("id", ids);
+  if (error) {
+    console.error("deleteScheduleGroup", error.message);
+    return { ok: false, error: "Grupa nu a putut fi ștearsă." };
+  }
+  revalidateSchedule();
+  return { ok: true };
+}

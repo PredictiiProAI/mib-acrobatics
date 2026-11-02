@@ -4,7 +4,7 @@ import { Clock, Loader2, Pencil, Plus, Trash2, X } from "lucide-react";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { createPortal } from "react-dom";
 import { useConfirm } from "@/components/confirm-dialog";
-import { deleteScheduleEntry, saveScheduleEntry, type ScheduleInput } from "@/lib/actions/schedule";
+import { deleteScheduleEntry, deleteScheduleGroup, saveScheduleEntry, saveScheduleGroup, type GroupInput, type ScheduleInput } from "@/lib/actions/schedule";
 import {
   BADGE_COLORS,
   BADGE_STYLE,
@@ -47,6 +47,7 @@ const field = "w-full rounded-xl border border-white/10 bg-black/50 px-3.5 py-2.
 
 export function ScheduleManager({ rows }: { rows: ScheduleRow[] }) {
   const [editing, setEditing] = useState<ScheduleInput | null>(null);
+  const [editingGroup, setEditingGroup] = useState<GroupInput | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const [confirm, confirmDialog] = useConfirm();
@@ -66,6 +67,24 @@ export function ScheduleManager({ rows }: { rows: ScheduleRow[] }) {
       if (!res.ok) setError(res.error);
     });
   }
+
+  async function removeGroup(g: (typeof groups)[number]) {
+    const n = g.sessions.length;
+    const ok = await confirm({
+      title: `Ștergi grupa „${g.name}”?`,
+      description: `Grupa și ${n === 1 ? "ora ei" : `toate cele ${n} ore ale ei`} vor dispărea din program. Acțiunea nu poate fi anulată.`,
+      confirmLabel: "Șterge grupa",
+    });
+    if (!ok) return;
+    startTransition(async () => {
+      setError(null);
+      const res = await deleteScheduleGroup(g.sessions.map((s) => s.id));
+      if (!res.ok) setError(res.error);
+    });
+  }
+
+  const editGroup = (g: (typeof groups)[number]) =>
+    setEditingGroup({ ids: g.sessions.map((s) => s.id), group_name: g.name, age_range: g.ageRange ?? "", level: g.level, badge_color: g.color, sort_order: g.sortOrder });
 
   const newForGroup = (g?: (typeof groups)[number], day?: number) =>
     setEditing({
@@ -138,10 +157,20 @@ export function ScheduleManager({ rows }: { rows: ScheduleRow[] }) {
       </section>
 
       <section>
-        <h2 className="font-display text-lg font-extrabold">Grupe</h2>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="font-display text-lg font-extrabold">Grupe</h2>
+          <button
+            type="button"
+            onClick={() => newForGroup()}
+            data-testid="add-group"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-neon-orange/50 px-3.5 py-2 text-sm font-bold text-neon-orange transition hover:bg-neon-orange/10"
+          >
+            <Plus className="size-4" /> Adaugă grupă
+          </button>
+        </div>
         <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           {groups.map((g) => (
-            <div key={g.name} className="glass rounded-2xl p-4">
+            <div key={g.name} className="glass min-w-0 rounded-2xl p-4" data-testid="group-card">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <p className="truncate font-semibold">{g.name}</p>
@@ -149,7 +178,26 @@ export function ScheduleManager({ rows }: { rows: ScheduleRow[] }) {
                     {LEVEL_LABEL[g.level]} · {g.sessions.length} {g.sessions.length === 1 ? "oră" : "ore"} / săptămână
                   </p>
                 </div>
-                {g.ageRange && <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold ring-1 ${BADGE_STYLE[g.color].badge}`}>{g.ageRange}</span>}
+                <div className="flex shrink-0 items-center gap-1">
+                  {g.ageRange && <span className={`rounded-full px-2.5 py-1 text-xs font-bold ring-1 ${BADGE_STYLE[g.color].badge}`}>{g.ageRange}</span>}
+                  <button
+                    type="button"
+                    onClick={() => editGroup(g)}
+                    aria-label={`Editează grupa ${g.name}`}
+                    className="rounded-lg p-2 text-white/50 transition hover:bg-neon-orange/15 hover:text-neon-orange"
+                  >
+                    <Pencil className="size-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => removeGroup(g)}
+                    aria-label={`Șterge grupa ${g.name}`}
+                    data-testid="delete-group"
+                    className="rounded-lg p-2 text-white/50 transition hover:bg-red-500/10 hover:text-red-300"
+                  >
+                    <Trash2 className="size-4" />
+                  </button>
+                </div>
               </div>
               <div className="mt-3 flex flex-wrap gap-1.5">
                 {g.sessions.map((s) => (
@@ -176,7 +224,20 @@ export function ScheduleManager({ rows }: { rows: ScheduleRow[] }) {
         </div>
       </section>
 
-      {editing && <EntryForm initial={editing} groupNames={groups.map((g) => g.name)} groups={groups} onClose={() => setEditing(null)} />}
+      {editing && (
+        <EntryForm
+          initial={editing}
+          groupNames={groups.map((g) => g.name)}
+          groups={groups}
+          onClose={() => setEditing(null)}
+          onDelete={(id) => {
+            const row = rows.find((r) => r.id === id);
+            setEditing(null);
+            if (row) remove(row);
+          }}
+        />
+      )}
+      {editingGroup && <GroupForm initial={editingGroup} onClose={() => setEditingGroup(null)} />}
       {confirmDialog}
     </div>
   );
@@ -187,11 +248,13 @@ function EntryForm({
   groupNames,
   groups,
   onClose,
+  onDelete,
 }: {
   initial: ScheduleInput;
   groupNames: string[];
   groups: ReturnType<typeof groupSchedule>;
   onClose: () => void;
+  onDelete: (id: string) => void;
 }) {
   const [form, setForm] = useState(initial);
   const [error, setError] = useState<string | null>(null);
@@ -230,7 +293,7 @@ function EntryForm({
         className="relative max-h-[92svh] w-full max-w-lg animate-[sheet-up_.2s_ease-out] overflow-y-auto rounded-3xl border border-neon-orange/40 bg-carbon/95 p-6 shadow-neon backdrop-blur-xl"
       >
         <div className="flex items-center justify-between">
-          <h2 className="font-display text-xl font-extrabold">{form.id ? "Editează ora" : "Adaugă oră"}</h2>
+          <h2 className="font-display text-xl font-extrabold">{form.id ? "Editează ora" : initial.group_name ? "Adaugă oră" : "Adaugă oră / grupă nouă"}</h2>
           <button type="button" onClick={onClose} aria-label="Închide" className="rounded-full p-1.5 text-white/60 hover:bg-white/5 hover:text-white">
             <X className="size-5" />
           </button>
@@ -302,6 +365,114 @@ function EntryForm({
             <span className="text-xs font-semibold text-white/60">Notă (opțional)</span>
             <input value={form.notes} onChange={(e) => set("notes", e.target.value)} placeholder="ex. sala mare" maxLength={200} className={field} name="notes" />
           </label>
+        </div>
+
+        {error && <p className="mt-4 text-sm text-red-300">{error}</p>}
+        <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          {form.id && (
+            <button
+              type="button"
+              onClick={() => onDelete(form.id!)}
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-red-500/30 px-5 py-2.5 text-sm font-semibold text-red-300 hover:bg-red-500/10 sm:mr-auto"
+            >
+              <Trash2 className="size-4" /> Șterge ora
+            </button>
+          )}
+          <button type="button" onClick={onClose} className="rounded-xl border border-white/10 px-5 py-2.5 text-sm font-semibold text-white/80 hover:border-white/25 hover:text-white">
+            Anulează
+          </button>
+          <button
+            type="submit"
+            disabled={pending}
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-neon-orange px-5 py-2.5 text-sm font-bold text-black shadow-neon transition hover:shadow-neon-lg disabled:opacity-60"
+          >
+            {pending && <Loader2 className="size-4 animate-spin" />} Salvează
+          </button>
+        </div>
+      </form>
+    </div>,
+    document.body,
+  );
+}
+
+function GroupForm({ initial, onClose }: { initial: GroupInput; onClose: () => void }) {
+  const [form, setForm] = useState(initial);
+  const [error, setError] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
+  const set = <K extends keyof GroupInput>(key: K, value: GroupInput[K]) => setForm((f) => ({ ...f, [key]: value }));
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  function submit() {
+    startTransition(async () => {
+      setError(null);
+      const res = await saveScheduleGroup(form);
+      if (res.ok) onClose();
+      else setError(res.error);
+    });
+  }
+
+  return createPortal(
+    <div className="fixed inset-0 z-[90] flex items-end justify-center p-4 sm:items-center" role="dialog" aria-modal="true" aria-label="Editează grupa" data-testid="group-form">
+      <button type="button" aria-label="Închide" tabIndex={-1} onClick={onClose} className="absolute inset-0 animate-[fade-in_.15s_ease-out] bg-black/80 backdrop-blur-sm" />
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          submit();
+        }}
+        className="relative max-h-[92svh] w-full max-w-lg animate-[sheet-up_.2s_ease-out] overflow-y-auto rounded-3xl border border-neon-orange/40 bg-carbon/95 p-6 shadow-neon backdrop-blur-xl"
+      >
+        <div className="flex items-center justify-between">
+          <h2 className="font-display text-xl font-extrabold">Editează grupa</h2>
+          <button type="button" onClick={onClose} aria-label="Închide" className="rounded-full p-1.5 text-white/60 hover:bg-white/5 hover:text-white">
+            <X className="size-5" />
+          </button>
+        </div>
+        <p className="mt-1 text-xs text-white/50">Se aplică tuturor celor {form.ids.length} {form.ids.length === 1 ? "oră" : "ore"} ale grupei.</p>
+
+        <div className="mt-5 grid gap-4 sm:grid-cols-2">
+          <label className="space-y-1.5 sm:col-span-2">
+            <span className="text-xs font-semibold text-white/60">Nume grupă</span>
+            <input required value={form.group_name} onChange={(e) => set("group_name", e.target.value)} maxLength={80} className={field} name="group_name" />
+          </label>
+          <label className="space-y-1.5">
+            <span className="text-xs font-semibold text-white/60">Vârstă</span>
+            <input value={form.age_range} onChange={(e) => set("age_range", e.target.value)} placeholder="ex. 5–7 ani" maxLength={40} className={field} name="age_range" />
+          </label>
+          <label className="space-y-1.5">
+            <span className="text-xs font-semibold text-white/60">Nivel</span>
+            <select value={form.level} onChange={(e) => set("level", e.target.value as GroupInput["level"])} className={field} name="level">
+              {LEVELS.map((l) => (
+                <option key={l} value={l} className="bg-graphite">
+                  {LEVEL_LABEL[l]}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="space-y-1.5">
+            <span className="text-xs font-semibold text-white/60">Ordine afișare</span>
+            <input type="number" value={form.sort_order} onChange={(e) => set("sort_order", Number(e.target.value))} className={field} name="sort_order" />
+          </label>
+          <div className="space-y-1.5 sm:col-span-2">
+            <span className="text-xs font-semibold text-white/60">Culoare etichetă</span>
+            <div className="flex flex-wrap gap-2">
+              {BADGE_COLORS.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => set("badge_color", c)}
+                  aria-pressed={form.badge_color === c}
+                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold ring-1 transition ${BADGE_STYLE[c].badge} ${form.badge_color === c ? "scale-105 shadow-neon-sm ring-2" : "opacity-60 hover:opacity-100"}`}
+                >
+                  <span className={`size-2 rounded-full ${BADGE_STYLE[c].dot}`} /> {BADGE_STYLE[c].label}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
         {error && <p className="mt-4 text-sm text-red-300">{error}</p>}

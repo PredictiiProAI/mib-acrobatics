@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, House, LogOut } from "lucide-react";
+import { ArrowLeft, House, LogOut, UserRound } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Logo } from "@/components/logo";
@@ -30,6 +30,13 @@ export function AdminHeader({ role, roleLabel }: { role: AppRole; roleLabel: str
               <p className="truncate text-xs text-neon-green">{roleLabel}</p>
             </div>
             <ThemeToggle />
+            <Link
+              href="/profil"
+              aria-label="Profilul meu"
+              className={`${tap} size-11 shrink-0 border border-white/10 bg-black/40 text-white/80 hover:border-neon-green/60 hover:text-neon-green`}
+            >
+              <UserRound className="size-5" />
+            </Link>
             <Link
               href="/feed"
               data-testid="admin-exit"

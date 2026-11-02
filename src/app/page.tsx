@@ -19,6 +19,8 @@ import {
 import Image from "next/image";
 import { AppHeader } from "@/components/app-header";
 import { ScheduleGrid } from "@/components/schedule-grid";
+import { Logo } from "@/components/logo";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { SiteFooter, SiteHeader } from "@/components/site-header";
 import { PostTile } from "@/components/post-tile";
 import { ButtonLink } from "@/components/ui";
@@ -54,7 +56,7 @@ function SectionTitle({ eyebrow, children, text }: { eyebrow: string; children: 
   return (
     <div>
       <p className="text-xs font-semibold uppercase tracking-[0.3em] text-neon-green">{eyebrow}</p>
-      <h2 className="mt-3 font-display text-3xl font-black uppercase sm:text-4xl">{children}</h2>
+      <h2 className="mt-3 font-display text-2xl font-black uppercase sm:text-3xl md:text-4xl">{children}</h2>
       {text && <p className="mt-3 max-w-2xl text-white/60">{text}</p>}
     </div>
   );
@@ -67,45 +69,52 @@ export default async function LandingPage() {
   return (
     <>
       {user && <AppHeader user={user} />}
-      <main className={`flex-1 ${user ? "pb-20 lg:pb-0" : ""}`}>
+      <main className="flex-1 pb-20 md:pb-0">
       <section className="relative isolate flex min-h-[92svh] flex-col overflow-hidden">
         <video className="absolute inset-0 -z-20 size-full object-cover" src={HERO_VIDEO} autoPlay muted loop playsInline preload="auto" aria-hidden />
         <div className="absolute inset-0 -z-10 bg-gradient-to-b from-black/70 via-black/55 to-ink" />
 
-        {!user && <SiteHeader current="/" />}
+        {user ? (
+          <div className="flex items-center justify-between px-5 pt-4 md:hidden">
+            <Logo href="/" />
+            <ThemeToggle />
+          </div>
+        ) : (
+          <SiteHeader current="/" />
+        )}
 
         <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col justify-center px-5 pb-20">
           <p className="mb-4 inline-flex w-fit items-center gap-2 rounded-full border border-neon-green/40 bg-neon-green/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.25em] text-neon-green">
             <span className="size-1.5 animate-pulse rounded-full bg-neon-green" /> Club de acrobatică
           </p>
-          <h1 className="font-display text-5xl font-black uppercase leading-[0.95] tracking-tight sm:text-7xl lg:text-8xl">
+          <h1 className="font-display text-3xl font-black uppercase leading-[0.95] tracking-tight sm:text-4xl md:text-5xl lg:text-6xl">
             Sfidează
             <br />
             <span className="text-gradient">gravitația.</span>
           </h1>
-          <p className="mt-6 max-w-xl text-lg text-white/70">
+          <p className="mt-5 max-w-xl text-base text-white/70 sm:text-lg">
             MIB Acrobatics este locul unde curajul devine tehnică. Urmărește antrenamentele, reacționează la cele mai tari momente și vorbește direct cu
             antrenorul.
           </p>
-          <div className="mt-10 flex flex-wrap gap-3">
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             {user ? (
-              <ButtonLink href="/feed" className="px-7 py-3.5 text-base">
+              <ButtonLink href="/feed" className="w-full px-7 py-3.5 text-base active:scale-95 sm:w-auto">
                 Deschide AcroMib <ArrowRight className="size-5" />
               </ButtonLink>
             ) : (
               <>
-                <ButtonLink href="/signup" className="px-7 py-3.5 text-base">
+                <ButtonLink href="/signup" className="w-full px-7 py-3.5 text-base active:scale-95 sm:w-auto">
                   Creează Cont <ArrowRight className="size-5" />
                 </ButtonLink>
-                <ButtonLink href="/login" variant="ghost" className="px-7 py-3.5 text-base">
+                <ButtonLink href="/login" variant="ghost" className="w-full px-7 py-3.5 text-base active:scale-95 sm:w-auto">
                   Login
                 </ButtonLink>
               </>
             )}
-            <ButtonLink href="#program" variant="ghost" className="px-7 py-3.5 text-base">
+            <ButtonLink href="#program" variant="ghost" className="w-full px-7 py-3.5 text-base active:scale-95 sm:w-auto">
               <CalendarDays className="size-5" /> Vezi programul
             </ButtonLink>
-            <InstallAppButton className="px-7 py-3.5 text-base" />
+            <InstallAppButton className="w-full px-7 py-3.5 text-base active:scale-95 sm:w-auto" />
           </div>
         </div>
       </section>

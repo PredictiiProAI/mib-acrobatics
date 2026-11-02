@@ -6,7 +6,7 @@ export default async function ScheduleLayout({ children }: LayoutProps<"/schedul
   return (
     <>
       <AppHeader user={user} />
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 pb-28 pt-6 lg:pb-10">{children}</main>
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 pb-28 pt-6 md:pb-10">{children}</main>
     </>
   );
 }

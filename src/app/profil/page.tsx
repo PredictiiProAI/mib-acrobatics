@@ -1,3 +1,6 @@
+import { LogOut } from "lucide-react";
+import { signOut } from "@/app/(auth)/actions";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { BackButton } from "@/components/back-button";
 import type { Metadata } from "next";
 import { RoleBadge } from "@/components/role-badge";
@@ -25,7 +28,20 @@ export default async function ProfilePage() {
 
   return (
     <div className="space-y-6">
-      <BackButton fallback="/feed" className="lg:hidden" />
+      <div className="flex items-center justify-between gap-3 md:hidden">
+        <BackButton fallback="/feed" />
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <form action={signOut}>
+            <button type="submit" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-white/10 px-3 text-sm font-semibold text-white/70 transition hover:text-red-300 active:scale-95" data-testid="mobile-signout">
+              <LogOut className="size-4" /> Ieși
+            </button>
+          </form>
+        </div>
+      </div>
+      <div className="hidden md:block lg:hidden">
+        <BackButton fallback="/feed" />
+      </div>
       <header>
         <p className="text-xs font-bold uppercase tracking-[0.3em] text-neon-green">Cont</p>
         <h1 className="mt-1 font-display text-3xl font-black text-white">Profilul meu</h1>

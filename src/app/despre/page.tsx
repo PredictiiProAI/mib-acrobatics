@@ -69,7 +69,7 @@ export default async function AboutPage() {
   return (
     <>
       {user && <AppHeader user={user} />}
-      <main className={`flex-1 ${user ? "pb-20 lg:pb-0" : ""}`}>
+      <main className="flex-1 pb-20 md:pb-0">
         <section className="relative isolate overflow-hidden">
           <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(50rem_30rem_at_70%_0%,rgb(255_106_0/0.28),transparent_65%),radial-gradient(40rem_25rem_at_0%_100%,rgb(57_255_20/0.18),transparent_60%)]" />
           {!user && <SiteHeader current="/despre" />}
@@ -77,24 +77,24 @@ export default async function AboutPage() {
             <p className="inline-flex items-center gap-2 rounded-full border border-neon-orange/40 bg-neon-orange/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.25em] text-neon-orange">
               <Brain className="size-3.5" /> Despre Noi
             </p>
-            <h1 className="mt-5 max-w-4xl font-display text-4xl font-black uppercase leading-[0.95] tracking-tight sm:text-6xl lg:text-7xl">
+            <h1 className="mt-5 max-w-4xl font-display text-3xl font-black uppercase leading-[0.95] tracking-tight sm:text-4xl md:text-5xl lg:text-6xl">
               Creștere armonioasă,{" "}
               <span className="text-gradient">fizică și mentală.</span>
             </h1>
-            <p className="mt-6 max-w-2xl text-lg text-white/70">
+            <p className="mt-5 max-w-2xl text-base text-white/70 sm:text-lg">
               La MIB, copiii își descoperă corpul în mișcare: postură corectă,
               forță, coordonare și curaj, într-un mediu sigur, cu antrenori
               dedicați. Suntem un laborator tehnic deschis pentru elevii din{" "}
               {PARTNER_SCHOOLS} școli partenere.
             </p>
-            <div className="mt-10 flex flex-wrap gap-3">
-              <ButtonLink href="#demo" className="px-7 py-3.5 text-base">
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              <ButtonLink href="#demo" className="w-full px-7 py-3.5 text-base active:scale-95 sm:w-auto">
                 Înscrie copilul <ArrowRight className="size-5" />
               </ButtonLink>
               <ButtonLink
                 href="/#program"
                 variant="ghost"
-                className="px-7 py-3.5 text-base"
+                className="w-full px-7 py-3.5 text-base active:scale-95 sm:w-auto"
               >
                 <CalendarDays className="size-5" /> Vezi programul
               </ButtonLink>

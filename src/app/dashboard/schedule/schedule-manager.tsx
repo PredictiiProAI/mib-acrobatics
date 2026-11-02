@@ -4,6 +4,7 @@ import { Clock, Loader2, Pencil, Plus, Trash2, X } from "lucide-react";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { createPortal } from "react-dom";
 import { useConfirm } from "@/components/confirm-dialog";
+import { TimePicker } from "@/components/time-picker";
 import { deleteScheduleEntry, deleteScheduleGroup, saveScheduleEntry, saveScheduleGroup, type GroupInput, type ScheduleInput } from "@/lib/actions/schedule";
 import {
   BADGE_COLORS,
@@ -323,14 +324,14 @@ function EntryForm({
               ))}
             </select>
           </label>
-          <label className="space-y-1.5">
+          <div className="space-y-1.5">
             <span className="text-xs font-semibold text-white/60">Început</span>
-            <input required type="time" value={form.start_time} onChange={(e) => set("start_time", e.target.value)} className={field} name="start_time" />
-          </label>
-          <label className="space-y-1.5">
+            <TimePicker value={form.start_time} onChange={(v) => set("start_time", v)} label="Ora de început" name="start_time" />
+          </div>
+          <div className="space-y-1.5">
             <span className="text-xs font-semibold text-white/60">Final</span>
-            <input required type="time" value={form.end_time} onChange={(e) => set("end_time", e.target.value)} className={field} name="end_time" />
-          </label>
+            <TimePicker value={form.end_time} onChange={(v) => set("end_time", v)} label="Ora de final" name="end_time" />
+          </div>
           <label className="space-y-1.5">
             <span className="text-xs font-semibold text-white/60">Nivel</span>
             <select value={form.level} onChange={(e) => set("level", e.target.value as ScheduleInput["level"])} className={field} name="level">

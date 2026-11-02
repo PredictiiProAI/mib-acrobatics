@@ -32,7 +32,7 @@ export default async function SchedulePage() {
               <Pencil className="size-4" /> Editează programul
             </ButtonLink>
           ) : (
-            <ButtonLink href="/messages" variant="ghost">
+            <ButtonLink href="/messages/antrenor" variant="ghost">
               <MessageSquare className="size-4" /> Scrie antrenorului
             </ButtonLink>
           )}

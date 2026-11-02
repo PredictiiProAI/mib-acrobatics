@@ -1,41 +1,21 @@
 import type { Metadata } from "next";
-import { ChatThread } from "@/components/chat/chat-thread";
-import { requireUser } from "@/lib/auth";
-import { getCoach, getThread, THREAD_PAGE_SIZE } from "@/lib/messages";
+import { MessageSquare } from "lucide-react";
+import { redirect } from "next/navigation";
+import { COACH_THREAD } from "@/lib/messages";
 
 export const metadata: Metadata = { title: "Mesaje" };
 
 export default async function MessagesPage({ searchParams }: PageProps<"/messages">) {
   const { draft } = await searchParams;
-  const user = await requireUser("/messages");
-  const [coach, messages] = await Promise.all([getCoach(), getThread(user.id)]);
-  const coachName = coach?.full_name ?? "Antrenor";
+  if (typeof draft === "string") redirect(`/messages/${COACH_THREAD}?draft=${encodeURIComponent(draft.slice(0, 500))}`);
 
   return (
-    <section className="glass flex h-[calc(100svh-3.5rem-1px-env(safe-area-inset-bottom))] flex-col overflow-hidden max-md:-mx-4 max-md:-mt-4 max-md:border-0! max-md:pt-[env(safe-area-inset-top)] md:h-[calc(100svh-6.5rem)] md:rounded-3xl">
-      <header className="flex items-center gap-3 border-b border-white/5 px-4 py-3">
-        <span className="relative grid size-10 place-items-center rounded-full bg-gradient-to-br from-neon-orange to-neon-green font-black text-onaccent">
-          {coachName[0]?.toUpperCase()}
-        </span>
-        <div>
-          <p className="font-semibold">{coachName}</p>
-          <p className="text-xs text-neon-green">Antrenor MIB Acrobatics</p>
-        </div>
-      </header>
-      {coach ? (
-        <ChatThread
-          viewerId={user.id}
-          threadUserId={user.id}
-          recipientId={coach.id}
-          initialMessages={messages}
-          pageSize={THREAD_PAGE_SIZE}
-          peerName={coachName}
-          initialText={typeof draft === "string" ? draft.slice(0, 500) : ""}
-          emptyHint="Ai o întrebare despre antrenamente? Scrie-i direct antrenorului."
-        />
-      ) : (
-        <p className="flex flex-1 items-center justify-center p-8 text-center text-white/50">Antrenorul nu este încă disponibil pentru mesaje.</p>
-      )}
+    <section className="glass hidden flex-1 flex-col items-center justify-center gap-3 rounded-3xl p-8 text-center md:flex">
+      <span className="grid size-16 place-items-center rounded-2xl bg-neon-orange/10 text-neon-orange">
+        <MessageSquare className="size-8" />
+      </span>
+      <h1 className="font-display text-2xl font-black">Mesaje</h1>
+      <p className="max-w-sm text-sm text-white/55">Alege o conversație din stânga sau apasă „Mesaj nou” ca să scrii antrenorului sau unui coleg.</p>
     </section>
   );
 }

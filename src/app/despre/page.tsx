@@ -61,7 +61,7 @@ export default async function AboutPage() {
     ? "/signup?next=/messages"
     : isStaff(user.role)
       ? "/dashboard/messages"
-      : `/messages?draft=${encodeURIComponent(DEMO_TEXT)}`;
+      : `/messages/antrenor?draft=${encodeURIComponent(DEMO_TEXT)}`;
   const whatsapp = WHATSAPP_NUMBER
     ? `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(DEMO_TEXT)}`
     : null;

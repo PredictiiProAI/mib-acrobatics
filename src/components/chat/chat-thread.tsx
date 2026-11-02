@@ -21,8 +21,9 @@ function dayLabel(iso: string) {
 }
 
 /**
- * One conversation between a member (`threadUserId`) and the coaching staff.
- * Staff view: everything not sent by the member is outgoing. Member view: own messages are outgoing.
+ * Staff view (no `counterpartIds`): the conversation between a member (`threadUserId`) and the coaching staff;
+ * everything not sent by the member is outgoing.
+ * Member view (`counterpartIds`): messages between the viewer and those users; own messages are outgoing.
  */
 export function ChatThread({
   viewerId,
@@ -33,6 +34,7 @@ export function ChatThread({
   peerName,
   emptyHint,
   initialText = "",
+  counterpartIds,
 }: {
   viewerId: string;
   threadUserId: string;
@@ -42,6 +44,7 @@ export function ChatThread({
   peerName: string;
   emptyHint: string;
   initialText?: string;
+  counterpartIds?: string[];
 }) {
   const router = useRouter();
   const [supabase] = useState(createClient);
@@ -52,13 +55,18 @@ export function ChatThread({
   const [error, setError] = useState<string | null>(null);
   const scroller = useRef<HTMLDivElement>(null);
   const stickToBottom = useRef(true);
-  const staffView = viewerId !== threadUserId;
+  const staffView = !counterpartIds && viewerId !== threadUserId;
   const isOutgoing = (m: Message) => (staffView ? m.sender_id !== threadUserId : m.sender_id === viewerId);
+  const counterpartKey = counterpartIds?.join(",") ?? "";
 
   useEffect(() => {
-    const inThread = (m: Message) => m.sender_id === threadUserId || m.receiver_id === threadUserId;
+    const others = counterpartKey ? counterpartKey.split(",") : null;
+    const inThread = (m: Message) =>
+      others
+        ? (m.sender_id === viewerId && others.includes(m.receiver_id)) || (m.receiver_id === viewerId && others.includes(m.sender_id))
+        : m.sender_id === threadUserId || m.receiver_id === threadUserId;
     const channel = supabase
-      .channel(`dm:${threadUserId}:${viewerId}`)
+      .channel(`dm:${threadUserId}:${viewerId}:${counterpartKey}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "direct_messages" }, (payload) => {
         const m = payload.new as Message;
         if (!inThread(m)) return;
@@ -73,7 +81,7 @@ export function ChatThread({
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [supabase, threadUserId, viewerId]);
+  }, [supabase, threadUserId, viewerId, counterpartKey]);
 
   // Mark incoming messages addressed to me as read while the thread is open.
   useEffect(() => {
@@ -105,7 +113,11 @@ export function ChatThread({
     const { data } = await supabase
       .from("direct_messages")
       .select("*")
-      .or(`sender_id.eq.${threadUserId},receiver_id.eq.${threadUserId}`)
+      .or(
+        counterpartKey
+          ? `and(sender_id.eq.${viewerId},receiver_id.in.(${counterpartKey})),and(sender_id.in.(${counterpartKey}),receiver_id.eq.${viewerId})`
+          : `sender_id.eq.${threadUserId},receiver_id.eq.${threadUserId}`,
+      )
       .lt("created_at", first.created_at)
       .order("created_at", { ascending: false })
       .limit(pageSize);

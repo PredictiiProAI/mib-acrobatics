@@ -3,18 +3,30 @@
 import { Search } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import type { Conversation } from "@/lib/messages";
 import { ROLE_LABEL } from "@/lib/roles";
 import { createClient } from "@/lib/supabase/client";
 import { timeAgo } from "@/lib/time";
 
-export function InboxList({ conversations }: { conversations: Conversation[] }) {
+export function InboxList({
+  conversations,
+  basePath,
+  emptyText,
+  action,
+  className = "",
+}: {
+  conversations: Conversation[];
+  basePath: string;
+  emptyText: string;
+  action?: ReactNode;
+  className?: string;
+}) {
   const pathname = usePathname();
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [supabase] = useState(createClient);
-  const inThread = pathname !== "/dashboard/messages";
+  const inThread = pathname !== basePath;
 
   useEffect(() => {
     const channel = supabase
@@ -30,25 +42,26 @@ export function InboxList({ conversations }: { conversations: Conversation[] }) 
   const list = q ? conversations.filter((c) => c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q)) : conversations;
 
   return (
-    <aside className={`glass min-h-0 flex-1 flex-col overflow-hidden max-md:-mx-4 max-md:border-0! max-md:pb-[env(safe-area-inset-bottom)] md:flex md:w-80 md:flex-none md:rounded-3xl ${inThread ? "hidden" : "flex"}`}>
-      <div className="border-b border-white/5 p-3">
-        <label className="flex items-center gap-2 rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm focus-within:border-neon-orange/70">
+    <aside className={`glass min-h-0 flex-1 flex-col overflow-hidden max-md:-mx-4 max-md:border-0! md:flex md:w-80 md:flex-none md:rounded-3xl ${inThread ? "hidden" : "flex"} ${className}`}>
+      <div className="flex items-center gap-2 border-b border-white/5 p-3">
+        <label className="flex min-w-0 flex-1 items-center gap-2 rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm focus-within:border-neon-orange/70">
           <Search className="size-4 text-white/40" />
           <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Caută conversații…" className="w-full bg-transparent outline-none placeholder:text-white/30" />
         </label>
+        {action}
       </div>
       <ul className="flex-1 overflow-y-auto" data-testid="inbox-list">
         {list.length === 0 && (
           <li className="p-6 text-center text-sm text-white/50">
-            {conversations.length ? "Nicio conversație găsită." : "Încă nu ți-a scris nimeni. Poți începe o conversație din Utilizatori."}
+            {conversations.length ? "Nicio conversație găsită." : emptyText}
           </li>
         )}
         {list.map((c) => {
-          const active = pathname === `/dashboard/messages/${c.userId}`;
+          const active = pathname === `${basePath}/${c.userId}`;
           return (
             <li key={c.userId}>
               <Link
-                href={`/dashboard/messages/${c.userId}`}
+                href={`${basePath}/${c.userId}`}
                 className={`flex min-h-16 items-center gap-3 border-l-2 px-4 py-3 transition active:bg-white/10 ${active ? "border-neon-orange bg-neon-orange/10" : "border-transparent hover:bg-white/5"}`}
               >
                 <span className="grid size-10 shrink-0 place-items-center rounded-full bg-gradient-to-br from-neon-orange to-neon-green font-black text-onaccent">

@@ -76,7 +76,7 @@ export function AvatarUploader({ userId, name, url }: { userId: string; name: st
           onClick={() => input.current?.click()}
           disabled={busy}
           aria-label="Schimbă poza de profil"
-          className="absolute bottom-1 right-1 grid size-10 place-items-center rounded-full border-2 border-black bg-neon-orange text-black transition hover:brightness-110 disabled:opacity-60"
+          className="absolute bottom-1 right-1 grid size-10 place-items-center rounded-full border-2 border-black bg-neon-orange text-onaccent transition hover:brightness-110 disabled:opacity-60"
           data-testid="avatar-edit"
         >
           {busy ? <Loader2 className="size-4 animate-spin" /> : <Camera className="size-4" />}

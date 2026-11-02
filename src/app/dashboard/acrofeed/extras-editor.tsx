@@ -77,7 +77,7 @@ export function AnnouncementEditor({ initial }: { initial: Announcement }) {
             role="radio"
             aria-checked={a.tone === t.value}
             onClick={() => update({ tone: t.value })}
-            className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${a.tone === t.value ? "bg-neon-orange text-black" : "bg-white/5 text-white/70 hover:text-white"}`}
+            className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${a.tone === t.value ? "bg-neon-orange text-onaccent" : "bg-white/5 text-white/70 hover:text-white"}`}
           >
             {t.label}
           </button>

@@ -102,7 +102,7 @@ export function WaiverCard({ submissions, parent, autoOpen }: Props) {
           <button
             type="button"
             onClick={() => setOpen("new")}
-            className="mt-4 inline-flex items-center gap-2 rounded-2xl bg-neon-orange px-5 py-3 text-sm font-bold text-black transition hover:bg-neon-green"
+            className="mt-4 inline-flex items-center gap-2 rounded-2xl bg-neon-orange px-5 py-3 text-sm font-bold text-onaccent transition hover:bg-neon-green"
             data-testid="waiver-open"
           >
             <FileSignature className="size-4" /> Completează Acordul Parental
@@ -145,7 +145,7 @@ export function RulesCard({ acceptedAt: initial }: { acceptedAt: string | null }
       <ul className="mt-4 space-y-3">
         {RULES.map((r) => (
           <li key={r} className="flex items-start gap-3 text-sm leading-relaxed text-white/85">
-            <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-neon-green text-[11px] font-black text-black" aria-hidden>
+            <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-neon-green text-[11px] font-black text-onaccent" aria-hidden>
               ✓
             </span>
             {r}
@@ -162,7 +162,7 @@ export function RulesCard({ acceptedAt: initial }: { acceptedAt: string | null }
             type="button"
             onClick={accept}
             disabled={pending}
-            className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-neon-orange px-5 py-3.5 text-sm font-black text-black transition hover:bg-neon-green disabled:opacity-60 sm:w-auto"
+            className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-neon-orange px-5 py-3.5 text-sm font-black text-onaccent transition hover:bg-neon-green disabled:opacity-60 sm:w-auto"
             data-testid="rules-accept"
           >
             {pending ? <Loader2 className="size-4 animate-spin" /> : <ShieldCheck className="size-4" />} {RULES_ACCEPT}
@@ -390,7 +390,7 @@ function WaiverModal({ edit, parent, onClose }: { edit?: WaiverSubmission; paren
           <button
             type="submit"
             disabled={pending || !complete}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#ff6a00] px-5 py-3.5 text-sm font-black text-black transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#ff6a00] px-5 py-3.5 text-sm font-black text-onaccent transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
             data-testid="waiver-submit"
           >
             {pending ? <Loader2 className="size-4 animate-spin" /> : <FileSignature className="size-4" />} {edit ? "Salvează și Semnează din nou" : "Trimite și Semnează"}

@@ -81,26 +81,26 @@ export function InstallAppButton({ className = "" }: { className?: string }) {
               </div>
               <ol className="mt-5 space-y-4 text-sm text-white/80">
                 <li className="flex gap-3">
-                  <span className="grid size-7 shrink-0 place-items-center rounded-full bg-neon-orange text-xs font-black text-black">1</span>
+                  <span className="grid size-7 shrink-0 place-items-center rounded-full bg-neon-orange text-xs font-black text-onaccent">1</span>
                   <span>
                     Apasă butonul <Share className="inline size-4 align-text-bottom text-neon-green" aria-label="Distribuie" /> <b>Distribuie</b> din bara Safari (jos sau sus).
                   </span>
                 </li>
                 <li className="flex gap-3">
-                  <span className="grid size-7 shrink-0 place-items-center rounded-full bg-neon-orange text-xs font-black text-black">2</span>
+                  <span className="grid size-7 shrink-0 place-items-center rounded-full bg-neon-orange text-xs font-black text-onaccent">2</span>
                   <span>
                     Derulează și alege <SquarePlus className="inline size-4 align-text-bottom text-neon-green" aria-hidden /> <b>Adaugă pe ecranul principal</b> (Add to Home Screen).
                   </span>
                 </li>
                 <li className="flex gap-3">
-                  <span className="grid size-7 shrink-0 place-items-center rounded-full bg-neon-orange text-xs font-black text-black">3</span>
+                  <span className="grid size-7 shrink-0 place-items-center rounded-full bg-neon-orange text-xs font-black text-onaccent">3</span>
                   <span>
                     Apasă <b>Adaugă</b>. Iconul AcroMIB apare pe ecran și aplicația se deschide pe tot ecranul, ca o aplicație normală.
                   </span>
                 </li>
               </ol>
               <p className="mt-5 text-xs text-white/45">Dacă nu vezi opțiunea, deschide site-ul în Safari.</p>
-              <button type="button" onClick={() => setHelp(false)} className="mt-5 w-full rounded-xl bg-neon-orange px-5 py-3 text-sm font-bold text-black shadow-neon">
+              <button type="button" onClick={() => setHelp(false)} className="mt-5 w-full rounded-xl bg-neon-orange px-5 py-3 text-sm font-bold text-onaccent shadow-neon">
                 Am înțeles
               </button>
             </div>

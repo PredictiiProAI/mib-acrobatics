@@ -217,7 +217,7 @@ export default async function AboutPage() {
                     href={whatsapp}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-neon-green px-7 py-4 text-base font-semibold text-black transition hover:brightness-110"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-neon-green px-7 py-4 text-base font-semibold text-onaccent transition hover:brightness-110"
                   >
                     WhatsApp
                   </a>

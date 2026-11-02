@@ -450,7 +450,7 @@ function UserPanel({ user, onClose }: { user: Row; onClose: () => void }) {
                   </p>
                   <Link
                     href={`/declaratie/${w.id}`}
-                    className="mt-3 inline-flex items-center gap-1.5 rounded-xl bg-neon-orange px-3 py-2 text-xs font-bold text-black hover:bg-neon-green"
+                    className="mt-3 inline-flex items-center gap-1.5 rounded-xl bg-neon-orange px-3 py-2 text-xs font-bold text-onaccent hover:bg-neon-green"
                     data-testid="waiver-document-link"
                   >
                     <Eye className="size-3.5" /> Vezi / Printează PDF
@@ -715,7 +715,7 @@ export function UsersTable({ me, users }: { me: Me; users: Row[] }) {
               type="button"
               onClick={() => setFilter(r)}
               data-testid={`filter-${r}`}
-              className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${filter === r ? "bg-neon-orange text-black" : "bg-white/5 text-white/60 hover:text-black"}`}
+              className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${filter === r ? "bg-neon-orange text-onaccent" : "bg-white/5 text-white/60 hover:text-onaccent"}`}
             >
               {r === "all"
                 ? `Toți (${users.length})`

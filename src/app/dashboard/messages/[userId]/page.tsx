@@ -27,7 +27,7 @@ export default async function ThreadPage({ params }: PageProps<"/dashboard/messa
         <Link href="/dashboard/messages" className="rounded-xl p-1.5 text-white/60 hover:bg-white/5 hover:text-white md:hidden" aria-label="Înapoi">
           <ArrowLeft className="size-5" />
         </Link>
-        <span className="grid size-10 place-items-center rounded-full bg-gradient-to-br from-neon-orange to-neon-green font-black text-black">
+        <span className="grid size-10 place-items-center rounded-full bg-gradient-to-br from-neon-orange to-neon-green font-black text-onaccent">
           {name[0]?.toUpperCase()}
         </span>
         <div className="min-w-0">

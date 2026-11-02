@@ -270,7 +270,7 @@ export function CommentsSection({
           type="submit"
           disabled={!text.trim()}
           aria-label="Trimite comentariul"
-          className="grid size-10 shrink-0 place-items-center rounded-full bg-neon-orange text-black transition hover:brightness-110 disabled:opacity-40"
+          className="grid size-10 shrink-0 place-items-center rounded-full bg-neon-orange text-onaccent transition hover:brightness-110 disabled:opacity-40"
         >
           <Send className="size-4" />
         </button>

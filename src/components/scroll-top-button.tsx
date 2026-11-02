@@ -20,7 +20,7 @@ export function ScrollTopButton({ threshold = 600 }: { threshold?: number }) {
       aria-hidden={!visible}
       data-testid="scroll-top"
       onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-      className={`fixed bottom-24 right-4 z-40 grid size-12 place-items-center rounded-full bg-neon-green text-black shadow-[0_0_20px_rgb(57_255_20/0.45)] transition-all duration-300 hover:scale-110 active:scale-95 lg:bottom-8 lg:right-8 ${
+      className={`fixed bottom-24 right-4 z-40 grid size-12 place-items-center rounded-full bg-neon-green text-onaccent shadow-[0_0_20px_rgb(57_255_20/0.45)] transition-all duration-300 hover:scale-110 active:scale-95 lg:bottom-8 lg:right-8 ${
         visible ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-4 opacity-0"
       }`}
     >

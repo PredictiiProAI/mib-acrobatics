@@ -5,8 +5,8 @@ const base =
   "inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition disabled:opacity-50 disabled:pointer-events-none";
 
 const variants = {
-  primary: "bg-neon-orange text-black font-bold hover:brightness-110 glow-orange",
-  accent: "bg-neon-green text-black font-bold hover:brightness-110 glow-green",
+  primary: "bg-neon-orange text-onaccent font-bold hover:brightness-110 glow-orange",
+  accent: "bg-neon-green text-onaccent font-bold hover:brightness-110 glow-green",
   ghost: "glass text-white hover:border-neon-orange/50 hover:shadow-neon-sm",
 };
 

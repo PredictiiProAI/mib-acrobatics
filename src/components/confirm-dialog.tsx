@@ -81,7 +81,7 @@ function ConfirmDialog({ title, description, confirmLabel = "Confirmă", cancelL
             type="button"
             onClick={() => onClose(true)}
             className={`rounded-xl px-5 py-2.5 text-sm font-bold transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-carbon ${
-              danger ? "bg-red-500 text-white focus-visible:ring-red-400" : "bg-neon-orange text-black shadow-neon focus-visible:ring-neon-orange"
+              danger ? "bg-red-500 text-white focus-visible:ring-red-400" : "bg-neon-orange text-onaccent shadow-neon focus-visible:ring-neon-orange"
             }`}
           >
             {confirmLabel}

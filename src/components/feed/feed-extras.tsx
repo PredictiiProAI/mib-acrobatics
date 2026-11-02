@@ -4,7 +4,7 @@ import type { Announcement, AnnouncementTone, QuickLink } from "@/lib/acrofeed";
 const TONE_STYLE: Record<AnnouncementTone, { box: string; icon: typeof Info }> = {
   important: { box: "border-neon-orange/50 bg-neon-orange/10 text-white [&_svg]:text-neon-orange", icon: Megaphone },
   success: { box: "border-neon-green/50 bg-neon-green/10 text-white [&_svg]:text-neon-green", icon: BadgeCheck },
-  urgent: { box: "border-neon-orange bg-neon-orange font-semibold text-black shadow-neon [&_svg]:text-black", icon: Siren },
+  urgent: { box: "border-neon-orange bg-neon-orange font-semibold text-onaccent shadow-neon [&_svg]:text-onaccent", icon: Siren },
   info: { box: "border-white/15 bg-white/[0.04] text-white/85 [&_svg]:text-white/70", icon: Info },
 };
 

@@ -49,10 +49,10 @@ export function GalleryGrid({ images }: { images: GalleryImage[] }) {
           </button>
           {images.length > 1 && (
             <>
-              <button type="button" onClick={(e) => (e.stopPropagation(), step(-1))} aria-label="Fotografia anterioară" className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white hover:bg-neon-orange hover:text-black">
+              <button type="button" onClick={(e) => (e.stopPropagation(), step(-1))} aria-label="Fotografia anterioară" className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white hover:bg-neon-orange hover:text-onaccent">
                 <ChevronLeft className="size-6" />
               </button>
-              <button type="button" onClick={(e) => (e.stopPropagation(), step(1))} aria-label="Fotografia următoare" className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white hover:bg-neon-orange hover:text-black">
+              <button type="button" onClick={(e) => (e.stopPropagation(), step(1))} aria-label="Fotografia următoare" className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white hover:bg-neon-orange hover:text-onaccent">
                 <ChevronRight className="size-6" />
               </button>
             </>

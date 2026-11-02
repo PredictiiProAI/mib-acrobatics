@@ -15,7 +15,7 @@ const card = "glass rounded-3xl p-6 sm:p-8";
 const field =
   "w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-[15px] outline-none placeholder:text-white/30 focus:border-neon-orange/70";
 const primaryBtn =
-  "inline-flex items-center justify-center gap-2 rounded-xl bg-neon-orange px-5 py-3 font-bold text-black shadow-neon transition hover:brightness-110 hover:shadow-neon-lg disabled:opacity-40";
+  "inline-flex items-center justify-center gap-2 rounded-xl bg-neon-orange px-5 py-3 font-bold text-onaccent shadow-neon transition hover:brightness-110 hover:shadow-neon-lg disabled:opacity-40";
 const iconBtn = "grid size-9 place-items-center rounded-xl text-white/60 transition hover:bg-white/5 hover:text-white disabled:opacity-30";
 
 function checkFile(file: File) {

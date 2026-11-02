@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { Logo } from "@/components/logo";
 import type { AppRole } from "@/lib/supabase/database.types";
 import { navFor } from "./nav";
+import { ThemeToggle } from "./theme-toggle";
 
 const tap = "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl font-bold transition active:scale-95";
 
@@ -28,6 +29,7 @@ export function AdminHeader({ role, roleLabel }: { role: AppRole; roleLabel: str
               <p className="truncate font-display text-sm font-extrabold uppercase tracking-wider">Command Center</p>
               <p className="truncate text-xs text-neon-green">{roleLabel}</p>
             </div>
+            <ThemeToggle />
             <Link
               href="/feed"
               data-testid="admin-exit"
@@ -42,11 +44,12 @@ export function AdminHeader({ role, roleLabel }: { role: AppRole; roleLabel: str
             <Link
               href={inThread ? "/dashboard/messages" : "/dashboard"}
               data-testid="admin-back"
-              className={`${tap} shrink-0 bg-neon-orange px-4 text-sm text-black shadow-neon-sm hover:brightness-110`}
+              className={`${tap} shrink-0 bg-neon-orange px-4 text-sm text-onaccent shadow-neon-sm hover:brightness-110`}
             >
               <ArrowLeft className="size-5" /> Înapoi
             </Link>
             <p className="min-w-0 flex-1 truncate px-1 text-center font-display text-base font-extrabold sm:text-lg">{section?.label ?? "Admin"}</p>
+            <ThemeToggle />
             <Link
               href="/feed"
               aria-label="Acasă — AcroMib"

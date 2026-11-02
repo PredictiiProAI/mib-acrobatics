@@ -48,7 +48,7 @@ export function PillarCards() {
             }`}
           >
             <div className={`pointer-events-none absolute -right-10 -top-10 size-40 rounded-full blur-3xl transition ${open ? "bg-neon-orange/35" : "bg-neon-orange/10"}`} />
-            <span className={`grid size-14 place-items-center rounded-2xl ring-1 transition ${open ? "bg-neon-orange text-black ring-neon-orange" : "bg-neon-orange/10 text-neon-orange ring-neon-orange/25"}`}>
+            <span className={`grid size-14 place-items-center rounded-2xl ring-1 transition ${open ? "bg-neon-orange text-onaccent ring-neon-orange" : "bg-neon-orange/10 text-neon-orange ring-neon-orange/25"}`}>
               <Icon className="size-7" />
             </span>
             <h3 className="mt-6 font-display text-2xl font-black">{title}</h3>

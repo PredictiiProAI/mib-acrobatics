@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
+import { Suspense } from "react";
 import { requireRole, publicName } from "@/lib/auth";
 import { getUnreadCount } from "@/lib/messages";
 import { createClient } from "@/lib/supabase/server";
@@ -17,20 +18,77 @@ async function count(table: "posts" | "users" | "comments", authorId?: string) {
   return count ?? 0;
 }
 
+async function newSince24h(table: "posts" | "comments") {
+  const supabase = await createClient();
+  const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
+  const { count } = await supabase.from(table).select("id", { count: "exact", head: true }).gte("created_at", since);
+  return count ?? 0;
+}
+
+/** Members whose required document is missing: parents without the signed consent, athletes without the rules acknowledgement. */
+async function membersMissingDocs() {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("admin_list_users");
+  if (error || !data) return 0;
+  return data.filter((u) => u.role === "user" && (u.account_type === "Părinte" ? !u.waiver_signed : !u.rules_accepted_at)).length;
+}
+
+const BADGES: Record<string, { load: (uid: string) => Promise<number>; title: (n: number) => string }> = {
+  "/dashboard/messages": { load: getUnreadCount, title: (n) => `${n} ${n === 1 ? "mesaj necitit" : "mesaje necitite"}` },
+  "/dashboard/users": { load: membersMissingDocs, title: (n) => `${n} ${n === 1 ? "membru" : "membri"} cu documente lipsă` },
+  "/dashboard/posts": { load: () => newSince24h("posts"), title: (n) => `${n} ${n === 1 ? "postare nouă" : "postări noi"} în ultimele 24h` },
+  "/dashboard/comments": { load: () => newSince24h("comments"), title: (n) => `${n} ${n === 1 ? "comentariu nou" : "comentarii noi"} în ultimele 24h` },
+};
+
+async function CardBadge({ href, userId }: { href: string; userId: string }) {
+  const badge = BADGES[href];
+  const n = await badge.load(userId).catch(() => 0);
+  if (n <= 0) return null;
+  return (
+    <span
+      role="status"
+      aria-label={badge.title(n)}
+      title={badge.title(n)}
+      data-testid="card-badge"
+      className="absolute -right-1.5 -top-1.5 z-10 inline-grid h-7 min-w-7 animate-[pop-in_.25s_ease-out] place-items-center rounded-full bg-neon-orange px-2 text-xs font-black tabular-nums text-onaccent shadow-[0_0_0_3px_var(--color-ink),0_0_14px_rgb(255_106_0/0.6)]"
+    >
+      {n > 99 ? "99+" : n}
+    </span>
+  );
+}
+
+async function Stats({ staff, userId }: { staff: boolean; userId: string }) {
+  const stats = staff
+    ? await Promise.all([count("posts"), count("users"), count("comments")]).then(([p, u, c]) => [
+        { label: "Postări", value: p },
+        { label: "Utilizatori", value: u },
+        { label: "Comentarii", value: c },
+      ])
+    : [{ label: "Postările mele", value: await count("posts", userId) }];
+  return <StatGrid stats={stats} />;
+}
+
+function StatGrid({ stats }: { stats: { label: string; value: number | null }[] }) {
+  return (
+    <div className={`grid gap-3 ${stats.length === 3 ? "grid-cols-3" : "grid-cols-1 sm:max-w-xs"}`}>
+      {stats.map((s) => (
+        <div key={s.label} className="rounded-2xl border border-white/5 bg-surface px-3 py-3 shadow-card sm:p-5">
+          <p className="truncate text-xs text-white/50 sm:text-sm">{s.label}</p>
+          {s.value === null ? (
+            <div className="mt-2 h-7 w-10 animate-pulse rounded-lg bg-white/10 sm:h-10" />
+          ) : (
+            <p className="mt-1 font-display text-2xl font-black text-neon-orange sm:text-4xl">{s.value}</p>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default async function DashboardPage() {
   const user = await requireRole(PUBLISHER_ROLES, "/dashboard");
   const staff = isStaff(user.role);
-  const [stats, unread] = await Promise.all([
-    staff
-      ? Promise.all([count("posts"), count("users"), count("comments")]).then(([p, u, c]) => [
-          { label: "Postări", value: p },
-          { label: "Utilizatori", value: u },
-          { label: "Comentarii", value: c },
-        ])
-      : count("posts", user.id).then((v) => [{ label: "Postările mele", value: v }]),
-    staff ? getUnreadCount(user.id) : Promise.resolve(0),
-  ]);
-  const badges: Record<string, number> = { "/dashboard/messages": unread };
+  const statsFallback = (staff ? ["Postări", "Utilizatori", "Comentarii"] : ["Postările mele"]).map((label) => ({ label, value: null }));
 
   return (
     <div className="space-y-6">
@@ -44,14 +102,9 @@ export default async function DashboardPage() {
         </p>
       </div>
 
-      <div className={`grid gap-3 ${stats.length === 3 ? "grid-cols-3" : "grid-cols-1 sm:max-w-xs"}`}>
-        {stats.map((s) => (
-          <div key={s.label} className="rounded-2xl border border-white/5 bg-[#161616] px-3 py-3 sm:p-5">
-            <p className="truncate text-xs text-white/50 sm:text-sm">{s.label}</p>
-            <p className="mt-1 font-display text-2xl font-black text-neon-orange sm:text-4xl">{s.value}</p>
-          </div>
-        ))}
-      </div>
+      <Suspense fallback={<StatGrid stats={statsFallback} />}>
+        <Stats staff={staff} userId={user.id} />
+      </Suspense>
 
       <nav aria-label="Secțiuni admin" className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4" data-testid="admin-grid">
         {navFor(user.role).map(({ label, href, icon: Icon, desc }) => (
@@ -59,9 +112,9 @@ export default async function DashboardPage() {
             key={label}
             href={href}
             data-testid="admin-card"
-            className="group relative flex min-h-32 flex-col justify-between gap-3 rounded-2xl border border-white/10 bg-[#161616] p-4 transition duration-150 hover:-translate-y-0.5 hover:border-neon-orange/70 hover:shadow-neon-sm focus-visible:border-neon-green focus-visible:outline-none active:scale-[0.97] active:border-neon-green"
+            className="group relative flex min-h-32 flex-col justify-between gap-3 rounded-2xl border border-white/10 bg-surface p-4 shadow-card transition duration-150 hover:-translate-y-0.5 hover:border-neon-orange/70 hover:shadow-neon-sm focus-visible:border-neon-green focus-visible:outline-none active:scale-[0.97] active:border-neon-green"
           >
-            <span className="grid size-11 place-items-center rounded-xl bg-neon-orange/10 text-neon-orange transition group-hover:bg-neon-orange group-hover:text-black group-active:bg-neon-green group-active:text-black">
+            <span className="grid size-11 place-items-center rounded-xl bg-neon-orange/10 text-neon-orange transition group-hover:bg-neon-orange group-hover:text-onaccent group-active:bg-neon-green group-active:text-onaccent">
               <Icon className="size-6" />
             </span>
             <span>
@@ -71,10 +124,10 @@ export default async function DashboardPage() {
               </span>
               <span className="mt-1 block text-xs leading-snug text-white/50">{desc}</span>
             </span>
-            {(badges[href] ?? 0) > 0 && (
-              <span className="absolute right-3 top-3 inline-grid min-w-6 place-items-center rounded-full bg-neon-green px-1.5 py-0.5 text-xs font-black text-black">
-                {badges[href]}
-              </span>
+            {staff && BADGES[href] && (
+              <Suspense fallback={null}>
+                <CardBadge href={href} userId={user.id} />
+              </Suspense>
             )}
           </Link>
         ))}

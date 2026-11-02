@@ -192,12 +192,12 @@ export function ChatThread({
                   data-testid={out ? "msg-out" : "msg-in"}
                   className={`max-w-[80%] rounded-2xl px-4 py-2 text-sm shadow-lg ${
                     out
-                      ? "rounded-br-md bg-neon-orange text-black shadow-neon-orange/10"
+                      ? "rounded-br-md bg-neon-orange text-onaccent shadow-neon-orange/10"
                       : "rounded-bl-md border border-white/10 bg-white/[0.06] text-white"
                   } ${m.pending ? "opacity-60" : ""}`}
                 >
                   <p className="whitespace-pre-wrap break-words">{m.content}</p>
-                  <p className={`mt-0.5 flex items-center justify-end gap-1 text-[10px] ${out ? "text-black/60" : "text-white/40"}`}>
+                  <p className={`mt-0.5 flex items-center justify-end gap-1 text-[10px] ${out ? "text-onaccent/60" : "text-white/40"}`}>
                     <span suppressHydrationWarning>{timeFmt.format(new Date(m.created_at))}</span>
                     {out && m.id === lastOutgoing?.id && !m.pending && (m.read_at ? <CheckCheck className="size-3.5" aria-label="Văzut" /> : <Check className="size-3.5" aria-label="Trimis" />)}
                   </p>
@@ -235,7 +235,7 @@ export function ChatThread({
           type="submit"
           disabled={!text.trim()}
           aria-label="Trimite"
-          className="rounded-xl bg-neon-orange p-2.5 text-black transition hover:brightness-110 disabled:opacity-40"
+          className="rounded-xl bg-neon-orange p-2.5 text-onaccent transition hover:brightness-110 disabled:opacity-40"
         >
           <Send className="size-5" />
         </button>

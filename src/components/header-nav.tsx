@@ -13,7 +13,7 @@ type Item = { href: string; label: string; icon: LucideIcon; badge?: number };
 
 function Badge({ n }: { n: number }) {
   return (
-    <span data-testid="unread-badge" className="grid min-w-5 place-items-center rounded-full bg-neon-green px-1 text-[10px] font-black leading-5 text-black">
+    <span data-testid="unread-badge" className="grid min-w-5 place-items-center rounded-full bg-neon-green px-1 text-[10px] font-black leading-5 text-onaccent">
       {n > 99 ? "99+" : n}
     </span>
   );

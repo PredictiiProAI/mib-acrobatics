@@ -100,7 +100,7 @@ export function ScheduleManager({ rows }: { rows: ScheduleRow[] }) {
         <button
           type="button"
           onClick={() => newForGroup()}
-          className="inline-flex items-center gap-2 rounded-xl bg-neon-orange px-5 py-2.5 text-sm font-bold text-black shadow-neon transition hover:shadow-neon-lg"
+          className="inline-flex items-center gap-2 rounded-xl bg-neon-orange px-5 py-2.5 text-sm font-bold text-onaccent shadow-neon transition hover:shadow-neon-lg"
         >
           <Plus className="size-4" /> Adaugă oră
         </button>
@@ -385,7 +385,7 @@ function EntryForm({
           <button
             type="submit"
             disabled={pending}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-neon-orange px-5 py-2.5 text-sm font-bold text-black shadow-neon transition hover:shadow-neon-lg disabled:opacity-60"
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-neon-orange px-5 py-2.5 text-sm font-bold text-onaccent shadow-neon transition hover:shadow-neon-lg disabled:opacity-60"
           >
             {pending && <Loader2 className="size-4 animate-spin" />} Salvează
           </button>
@@ -484,7 +484,7 @@ function GroupForm({ initial, onClose }: { initial: GroupInput; onClose: () => v
           <button
             type="submit"
             disabled={pending}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-neon-orange px-5 py-2.5 text-sm font-bold text-black shadow-neon transition hover:shadow-neon-lg disabled:opacity-60"
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-neon-orange px-5 py-2.5 text-sm font-bold text-onaccent shadow-neon transition hover:shadow-neon-lg disabled:opacity-60"
           >
             {pending && <Loader2 className="size-4 animate-spin" />} Salvează
           </button>

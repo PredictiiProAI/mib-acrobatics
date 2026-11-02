@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Exo_2, Geist } from "next/font/google";
+import { ADMIN_THEME_SCRIPT } from "./dashboard/theme-toggle";
 import "./globals.css";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin", "latin-ext"] });
@@ -16,7 +17,10 @@ export const viewport: Viewport = { themeColor: "#000000", colorScheme: "dark" }
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="ro" className={`${geistSans.variable} ${exo.variable} h-full antialiased`}>
+    <html lang="ro" className={`${geistSans.variable} ${exo.variable} h-full antialiased`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: ADMIN_THEME_SCRIPT }} />
+      </head>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );

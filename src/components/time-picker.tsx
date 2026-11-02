@@ -139,7 +139,7 @@ export function TimePicker({
         createPortal(
           <div className="fixed inset-0 z-[100] flex items-end justify-center sm:items-center sm:p-4" role="dialog" aria-modal="true" aria-label={`Alege ora — ${label}`} data-testid="time-picker">
             <button type="button" aria-label="Anulează" tabIndex={-1} onClick={() => setOpen(false)} className="absolute inset-0 animate-[fade-in_.15s_ease-out] bg-black/75 backdrop-blur-sm" />
-            <div className="relative w-full max-w-sm animate-[sheet-up_.2s_ease-out] rounded-t-3xl border border-white/10 bg-[#161616] px-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] pt-3 shadow-neon sm:rounded-3xl sm:pb-5">
+            <div className="relative w-full max-w-sm animate-[sheet-up_.2s_ease-out] rounded-t-3xl border border-white/10 bg-surface px-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] pt-3 shadow-neon sm:rounded-3xl sm:pb-5">
               <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-white/15 sm:hidden" />
               <div className="flex items-center justify-between">
                 <div>
@@ -161,8 +161,8 @@ export function TimePicker({
                   className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 rounded-2xl border border-neon-orange/50 bg-neon-orange/10"
                   style={{ height: ROW }}
                 />
-                <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 z-20 h-16 rounded-t-2xl bg-gradient-to-b from-[#161616] to-transparent" />
-                <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-16 rounded-b-2xl bg-gradient-to-t from-[#161616] to-transparent" />
+                <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 z-20 h-16 rounded-t-2xl bg-gradient-to-b from-surface to-transparent" />
+                <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-16 rounded-b-2xl bg-gradient-to-t from-surface to-transparent" />
                 <Wheel items={HOURS} value={h} onChange={setH} label="Ore" />
                 <span aria-hidden className="z-10 self-center font-display text-3xl font-black text-neon-orange">
                   :
@@ -178,7 +178,7 @@ export function TimePicker({
                     onClick={() => setM(q)}
                     aria-pressed={m === q}
                     className={`min-h-11 rounded-xl text-sm font-bold tabular-nums transition active:scale-95 ${
-                      m === q ? "bg-neon-green text-black" : "border border-white/10 bg-black/40 text-white/70 hover:border-neon-green/50 hover:text-neon-green"
+                      m === q ? "bg-neon-green text-onaccent" : "border border-white/10 bg-black/40 text-white/70 hover:border-neon-green/50 hover:text-neon-green"
                     }`}
                   >
                     :{pad(q)}
@@ -201,7 +201,7 @@ export function TimePicker({
                     onChange(`${pad(h)}:${pad(m)}`);
                     setOpen(false);
                   }}
-                  className="min-h-12 rounded-xl bg-neon-orange text-sm font-black text-black shadow-neon transition hover:brightness-110 active:scale-95"
+                  className="min-h-12 rounded-xl bg-neon-orange text-sm font-black text-onaccent shadow-neon transition hover:brightness-110 active:scale-95"
                 >
                   Setează
                 </button>

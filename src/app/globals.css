@@ -1,9 +1,15 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-ink: #000000;
-  --color-carbon: #0d0e11;
-  --color-graphite: #16181d;
+  --color-ink: var(--c-ink);
+  --color-carbon: var(--c-carbon);
+  --color-graphite: var(--c-graphite);
+  --color-surface: var(--c-surface);
+  --color-white: var(--c-fg);
+  --color-black: var(--c-bg);
+  /* Text on orange/green buttons: stays black in both themes. */
+  --color-onaccent: #000000;
+  --shadow-card: var(--c-card-shadow);
   --color-neon-orange: #ff6a00;
   --color-neon-green: #39ff14;
   /* Soft neon orange glows */
@@ -16,11 +22,41 @@
 
 :root {
   color-scheme: dark;
+  --c-fg: #ffffff;
+  --c-bg: #000000;
+  --c-ink: #000000;
+  --c-carbon: #0d0e11;
+  --c-graphite: #16181d;
+  --c-surface: #161616;
+  --c-text: #ededf0;
+  --c-card-shadow: 0 0 #0000;
+}
+
+/* Admin light mode (set on <html> only while inside /dashboard): white/black utilities flip, brand accents stay. */
+html[data-admin-theme="light"] {
+  color-scheme: light;
+  --c-fg: #18181b;
+  --c-bg: #ffffff;
+  --c-ink: #f4f4f5;
+  --c-carbon: #ffffff;
+  --c-graphite: #f4f4f5;
+  --c-surface: #ffffff;
+  --c-text: #18181b;
+  --c-card-shadow: 0 1px 2px rgb(24 24 27 / 0.06), 0 8px 24px -12px rgb(24 24 27 / 0.22);
+}
+html[data-admin-theme="light"] .glass {
+  background: rgb(255 255 255 / 0.85);
+  border-color: rgb(24 24 27 / 0.08);
+  box-shadow: 0 1px 2px rgb(24 24 27 / 0.05), 0 10px 30px -14px rgb(24 24 27 / 0.25);
+}
+/* Neon green text is unreadable on white; icons/backgrounds keep the neon. */
+html[data-admin-theme="light"] .text-neon-green {
+  color: #16a34a;
 }
 
 body {
   background: var(--color-ink);
-  color: #ededf0;
+  color: var(--c-text);
   font-family: var(--font-geist-sans), system-ui, sans-serif;
 }
 

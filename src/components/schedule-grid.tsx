@@ -25,7 +25,7 @@ export function ScheduleGrid({ groups, today, className = "", children }: { grou
                 <li key={s.id} className="flex items-center justify-between gap-3 py-2.5 text-sm">
                   <span className={`inline-flex items-center gap-2 font-semibold ${isToday ? "text-neon-orange" : "text-white/85"}`}>
                     <CalendarDays className="size-4 text-white/40" /> {dayLabel(s.day_of_week)}
-                    {isToday && <span className="rounded-full bg-neon-orange px-1.5 py-0.5 text-[9px] font-black uppercase text-black shadow-neon-sm">azi</span>}
+                    {isToday && <span className="rounded-full bg-neon-orange px-1.5 py-0.5 text-[9px] font-black uppercase text-onaccent shadow-neon-sm">azi</span>}
                   </span>
                   <span className="text-right text-white/60">
                     <span className="inline-flex items-center gap-1.5">

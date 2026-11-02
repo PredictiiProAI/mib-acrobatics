@@ -7,7 +7,7 @@ export default async function MessagesLayout({ children }: LayoutProps<"/dashboa
   const user = await requireRole(STAFF_ROLES, "/dashboard/messages");
   const conversations = await getInbox(user.id);
   return (
-    <div className="flex h-[calc(100svh-12rem)] min-h-[28rem] gap-4 md:h-[calc(100svh-5rem)]">
+    <div className="flex h-[calc(100svh-8.5rem)] min-h-[28rem] gap-4 md:h-[calc(100svh-9rem)]">
       <InboxList conversations={conversations} />
       {children}
     </div>

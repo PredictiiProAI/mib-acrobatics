@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowLeft } from "lucide-react";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 /** Mobile "Înapoi": history back when possible, otherwise the fallback route. */
 export function BackButton({ fallback, className = "" }: { fallback: string; className?: string }) {
@@ -16,11 +16,4 @@ export function BackButton({ fallback, className = "" }: { fallback: string; cla
       <ArrowLeft className="size-4" /> Înapoi
     </button>
   );
-}
-
-/** Dashboard sub-pages on mobile (conversations have their own back arrow). */
-export function DashboardBack() {
-  const pathname = usePathname();
-  if (pathname === "/dashboard" || pathname.startsWith("/dashboard/messages/")) return null;
-  return <BackButton fallback="/dashboard" className="mb-5 md:hidden" />;
 }

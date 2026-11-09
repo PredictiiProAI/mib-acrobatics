@@ -1,12 +1,12 @@
 "use client";
 
 import { Avatar } from "@/components/avatar";
-import { Loader2, Send, Trash2, ChevronUp } from "lucide-react";
+import { Loader2, Send, Trash2, ChevronUp, Heart } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useConfirm } from "@/components/confirm-dialog";
 import { RoleBadge } from "@/components/role-badge";
 import { deleteComment } from "@/lib/actions/posts";
-import { countReactions, reactionInfo, type ReactionKey } from "@/lib/reactions";
+import { countReactions, DEFAULT_REACTION, reactionInfo, type ReactionKey } from "@/lib/reactions";
 import { isStaff } from "@/lib/roles";
 import type { AppRole } from "@/lib/supabase/database.types";
 import { createClient } from "@/lib/supabase/client";
@@ -61,6 +61,7 @@ export function CommentsSection({
   const [comments, setComments] = useState<CommentRow[] | null>(null);
   const [text, setText] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [burst, setBurst] = useState<{ id: string; n: number } | null>(null);
   const listRef = useRef<HTMLUListElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const idsRef = useRef<Set<string>>(new Set());
@@ -179,6 +180,11 @@ export function CommentsSection({
     }
   }
 
+  function heartComment(c: CommentRow) {
+    setBurst((b) => ({ id: c.id, n: (b?.n ?? 0) + 1 }));
+    if (!c.reactions.some((r) => r.user_id === viewer.id)) reactToComment(c, DEFAULT_REACTION);
+  }
+
   const canDelete = (c: CommentRow) => !c.pending && (c.user_id === viewer.id || isStaff(viewer.role));
 
   return (
@@ -198,7 +204,16 @@ export function CommentsSection({
             <li key={c.id} className={`group flex gap-2.5 py-2 ${c.pending ? "opacity-60" : ""}`} data-testid="comment">
               <Avatar name={name} url={c.author?.avatar_url} className="size-9" />
               <div className="min-w-0 flex-1">
-                <div className="inline-block max-w-full rounded-2xl rounded-tl-md bg-white/[0.06] px-3.5 py-2 ring-1 ring-white/5">
+                <div
+                  className="relative inline-block max-w-full rounded-2xl rounded-tl-md bg-white/[0.06] px-3.5 py-2 ring-1 ring-white/5"
+                  onDoubleClick={c.pending ? undefined : () => heartComment(c)}
+                >
+                  {burst?.id === c.id && (
+                    <Heart
+                      key={burst.n}
+                      className="pointer-events-none absolute left-1/2 top-1/2 size-10 -translate-x-1/2 -translate-y-1/2 animate-[heart-pop_.8s_ease-out_forwards] fill-neon-orange text-neon-orange"
+                    />
+                  )}
                   <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
                     <span className="text-sm font-semibold" data-testid="comment-author">
                       {name}
@@ -213,21 +228,6 @@ export function CommentsSection({
                   <span className="text-white/40" title={fullDate.format(new Date(c.created_at))} suppressHydrationWarning data-testid="comment-time">
                     {c.pending ? "Se trimite…" : timeAgo(c.created_at)}
                   </span>
-                  {!c.pending && (
-                    <ReactionTrigger
-                      mine={mine}
-                      onReact={(next) => reactToComment(c, next)}
-                      className={`inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 font-semibold transition ${mine ? "text-neon-orange" : "text-white/50 hover:text-white"}`}
-                    >
-                      {mineInfo ? (
-                        <>
-                          <span className="text-sm leading-none">{mineInfo.emoji}</span> {mineInfo.label}
-                        </>
-                      ) : (
-                        "Reacționează"
-                      )}
-                    </ReactionTrigger>
-                  )}
                   <ReactionSummary counts={countReactions(c.reactions)} mine={mine} />
                   {canDelete(c) && (
                     <button
@@ -241,6 +241,20 @@ export function CommentsSection({
                   )}
                 </div>
               </div>
+              {!c.pending && (
+                <ReactionTrigger
+                  mine={mine}
+                  onReact={(next) => reactToComment(c, next)}
+                  label="Îmi place"
+                  className={`grid size-10 shrink-0 place-items-center self-center rounded-full transition active:scale-90 ${mine ? "text-neon-orange" : "text-white/45 hover:text-white"}`}
+                >
+                  {mineInfo && mine !== DEFAULT_REACTION ? (
+                    <span className="text-lg leading-none">{mineInfo.emoji}</span>
+                  ) : (
+                    <Heart className={`size-[18px] ${mine ? "fill-neon-orange" : ""}`} data-testid="comment-heart" />
+                  )}
+                </ReactionTrigger>
+              )}
             </li>
           );
         })}

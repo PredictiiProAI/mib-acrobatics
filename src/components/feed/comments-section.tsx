@@ -228,7 +228,7 @@ export function CommentsSection({
                   <span className="text-white/40" title={fullDate.format(new Date(c.created_at))} suppressHydrationWarning data-testid="comment-time">
                     {c.pending ? "Se trimite…" : timeAgo(c.created_at)}
                   </span>
-                  <ReactionSummary counts={countReactions(c.reactions)} mine={mine} />
+                  <ReactionSummary counts={countReactions(c.reactions)} mine={mine} source={{ kind: "comment", id: c.id }} />
                   {canDelete(c) && (
                     <button
                       type="button"

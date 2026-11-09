@@ -1,7 +1,12 @@
 "use client";
 
-import { SmilePlus } from "lucide-react";
+import { Loader2, SmilePlus, X } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
+import { Avatar } from "@/components/avatar";
+import { RoleBadge } from "@/components/role-badge";
+import type { AppRole } from "@/lib/supabase/database.types";
+import { createClient } from "@/lib/supabase/client";
 import { REACTIONS, type ReactionCounts, type ReactionKey, DEFAULT_REACTION, reactionInfo } from "@/lib/reactions";
 
 const HOVER_OPEN_MS = 350;
@@ -168,27 +173,157 @@ export function ReactionTrigger({
   );
 }
 
-/** Mini counter pills (❤️ 5 🔥 2), most used first; the viewer's reaction is highlighted. */
-export function ReactionSummary({ counts, mine, className = "" }: { counts: ReactionCounts; mine: ReactionKey | null; className?: string }) {
+export type ReactionSource = { kind: "post" | "comment"; id: string };
+
+type Reactor = {
+  user_id: string;
+  reaction: ReactionKey;
+  user: { full_name: string | null; display_name: string | null; avatar_url: string | null; role: AppRole } | null;
+};
+
+/** Mini counter pills (❤️ 5 🔥 2), most used first; the viewer's reaction is highlighted. With `source`, tapping them lists who reacted. */
+export function ReactionSummary({
+  counts,
+  mine,
+  className = "",
+  source,
+}: {
+  counts: ReactionCounts;
+  mine: ReactionKey | null;
+  className?: string;
+  source?: ReactionSource;
+}) {
+  const [open, setOpen] = useState(false);
   const entries = REACTIONS.map((r) => ({ ...r, n: counts[r.key] ?? 0 }))
     .filter((r) => r.n > 0)
     .sort((a, b) => b.n - a.n);
   if (!entries.length) return null;
+  const pills = entries.map((r) => (
+    <span
+      key={r.key}
+      title={r.label}
+      data-testid="reaction-pill"
+      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold ${
+        mine === r.key ? "bg-neon-orange/15 text-neon-orange ring-1 ring-neon-orange/40" : "bg-white/[0.06] text-white/75 ring-1 ring-white/10"
+      }`}
+    >
+      <span className="text-sm leading-none">{r.emoji}</span>
+      {r.n}
+    </span>
+  ));
+  if (!source) {
+    return (
+      <div className={`flex flex-wrap gap-1.5 ${className}`} data-testid="reaction-summary">
+        {pills}
+      </div>
+    );
+  }
   return (
-    <div className={`flex flex-wrap gap-1.5 ${className}`} data-testid="reaction-summary">
-      {entries.map((r) => (
-        <span
-          key={r.key}
-          title={r.label}
-          data-testid="reaction-pill"
-          className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold ${
-            mine === r.key ? "bg-neon-orange/15 text-neon-orange ring-1 ring-neon-orange/40" : "bg-white/[0.06] text-white/75 ring-1 ring-white/10"
-          }`}
-        >
-          <span className="text-sm leading-none">{r.emoji}</span>
-          {r.n}
-        </span>
-      ))}
-    </div>
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        aria-label="Vezi cine a reacționat"
+        data-testid="reaction-summary"
+        className={`flex flex-wrap gap-1.5 text-left transition active:scale-95 ${className}`}
+      >
+        {pills}
+      </button>
+      {open && <ReactorsSheet source={source} onClose={() => setOpen(false)} />}
+    </>
+  );
+}
+
+function ReactorsSheet({ source, onClose }: { source: ReactionSource; onClose: () => void }) {
+  const [supabase] = useState(createClient);
+  const [rows, setRows] = useState<Reactor[] | null>(null);
+  const [failed, setFailed] = useState(false);
+  const [tab, setTab] = useState<ReactionKey | "all">("all");
+  const { kind, id } = source;
+
+  useEffect(() => {
+    let active = true;
+    const fields = "user_id, reaction, created_at, user:users(full_name, display_name, avatar_url, role)";
+    const query =
+      kind === "post"
+        ? supabase.from("likes").select(fields).eq("post_id", id)
+        : supabase.from("comment_reactions").select(fields).eq("comment_id", id);
+    query.order("created_at", { ascending: false }).then(({ data, error }) => {
+      if (!active) return;
+      if (error) setFailed(true);
+      else setRows((data ?? []) as unknown as Reactor[]);
+    });
+    return () => {
+      active = false;
+    };
+  }, [kind, id, supabase]);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  const tabs = REACTIONS.map((r) => ({ ...r, n: rows?.filter((x) => x.reaction === r.key).length ?? 0 })).filter((r) => r.n > 0);
+  const list = rows?.filter((r) => tab === "all" || r.reaction === tab) ?? [];
+  const tabClass = (active: boolean) =>
+    `inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-sm font-bold transition active:scale-95 ${
+      active ? "bg-neon-orange text-onaccent" : "bg-white/[0.06] text-white/75 hover:bg-white/10"
+    }`;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[60] flex items-end justify-center sm:items-center sm:p-6" role="dialog" aria-modal="true" aria-label="Reacții" data-testid="reactors-sheet">
+      <button type="button" aria-label="Închide" tabIndex={-1} onClick={onClose} className="absolute inset-0 animate-[fade-in_.15s_ease-out] bg-black/70 backdrop-blur-sm" />
+      <div className="relative flex max-h-[75svh] w-full max-w-md animate-[sheet-up_.2s_ease-out] flex-col rounded-t-3xl border border-white/10 bg-surface pb-[env(safe-area-inset-bottom)] shadow-neon sm:rounded-3xl sm:pb-0">
+        <header className="flex items-center gap-3 px-4 pb-2 pt-3">
+          <h2 className="flex-1 font-display text-lg font-black">Reacții</h2>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Închide"
+            className="grid size-11 place-items-center rounded-xl text-white/60 transition hover:bg-white/5 hover:text-white active:scale-95"
+          >
+            <X className="size-5" />
+          </button>
+        </header>
+        {rows && rows.length > 0 && (
+          <div className="flex gap-2 overflow-x-auto px-4 pb-3" role="tablist">
+            <button type="button" role="tab" aria-selected={tab === "all"} onClick={() => setTab("all")} className={tabClass(tab === "all")}>
+              Toate {rows.length}
+            </button>
+            {tabs.map((r) => (
+              <button key={r.key} type="button" role="tab" aria-selected={tab === r.key} aria-label={`${r.label} ${r.n}`} onClick={() => setTab(r.key)} className={tabClass(tab === r.key)}>
+                <span className="text-base leading-none">{r.emoji}</span> {r.n}
+              </button>
+            ))}
+          </div>
+        )}
+        <ul className="flex-1 overflow-y-auto overscroll-contain border-t border-white/5 pb-2" data-testid="reactors-list">
+          {!rows && !failed && (
+            <li className="flex justify-center py-8">
+              <Loader2 className="size-6 animate-spin text-neon-orange" />
+            </li>
+          )}
+          {failed && <li className="p-6 text-center text-sm text-red-300">Reacțiile nu au putut fi încărcate.</li>}
+          {rows && list.length === 0 && <li className="p-6 text-center text-sm text-white/50">Nicio reacție încă.</li>}
+          {list.map((r) => {
+            const name = r.user?.display_name || r.user?.full_name || "Utilizator";
+            return (
+              <li key={r.user_id} className="flex items-center gap-3 px-4 py-2.5" data-testid="reactor">
+                <span className="relative shrink-0">
+                  <Avatar name={name} url={r.user?.avatar_url} className="size-11" />
+                  <span className="absolute -bottom-1 -right-1 grid size-6 place-items-center rounded-full bg-surface text-sm leading-none ring-2 ring-surface">
+                    {reactionInfo(r.reaction).emoji}
+                  </span>
+                </span>
+                <span className="min-w-0 flex-1 truncate text-sm font-semibold">{name}</span>
+                {r.user && <RoleBadge role={r.user.role} />}
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    </div>,
+    document.body,
   );
 }

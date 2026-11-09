@@ -17,13 +17,20 @@ export const reactionInfo = (key: ReactionKey) => REACTIONS.find((r) => r.key ==
 
 export const totalReactions = (counts: ReactionCounts) => Object.values(counts).reduce((a, n) => a + (n ?? 0), 0);
 
-/** Counts after the viewer switches from `prev` to `next` (null = no reaction). */
-export function applyReaction(counts: ReactionCounts, prev: ReactionKey | null, next: ReactionKey | null): ReactionCounts {
+/** Counts after the viewer's reactions go from `prev` to `next`. */
+export function applyReactions(counts: ReactionCounts, prev: ReactionKey[], next: ReactionKey[]): ReactionCounts {
   const out = { ...counts };
-  if (prev) out[prev] = Math.max(0, (out[prev] ?? 0) - 1);
-  if (next) out[next] = (out[next] ?? 0) + 1;
+  for (const k of prev) if (!next.includes(k)) out[k] = Math.max(0, (out[k] ?? 0) - 1);
+  for (const k of next) if (!prev.includes(k)) out[k] = (out[k] ?? 0) + 1;
   return out;
 }
+
+export const toggleReaction = (list: ReactionKey[], key: ReactionKey) => (list.includes(key) ? list.filter((k) => k !== key) : [...list, key]);
+
+export const sameReactions = (a: ReactionKey[], b: ReactionKey[]) => a.length === b.length && a.every((k) => b.includes(k));
+
+/** In picker order (👍 ❤️ 🔥 👏 🤸). */
+export const sortReactions = (list: ReactionKey[]) => REACTIONS.filter((r) => list.includes(r.key)).map((r) => r.key);
 
 export function countReactions(rows: { reaction: ReactionKey }[]): ReactionCounts {
   return rows.reduce<ReactionCounts>((acc, r) => ({ ...acc, [r.reaction]: (acc[r.reaction] ?? 0) + 1 }), {});

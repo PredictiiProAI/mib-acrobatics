@@ -6,7 +6,8 @@ import { useEffect, useRef, useState } from "react";
 import { useConfirm } from "@/components/confirm-dialog";
 import { RoleBadge } from "@/components/role-badge";
 import { deleteComment } from "@/lib/actions/posts";
-import { countReactions, DEFAULT_REACTION, reactionInfo, type ReactionKey } from "@/lib/reactions";
+import { saveReactions } from "@/lib/likes";
+import { countReactions, DEFAULT_REACTION, reactionInfo, sameReactions, sortReactions, type ReactionKey } from "@/lib/reactions";
 import { isStaff } from "@/lib/roles";
 import type { AppRole } from "@/lib/supabase/database.types";
 import { createClient } from "@/lib/supabase/client";
@@ -65,6 +66,7 @@ export function CommentsSection({
   const listRef = useRef<HTMLUListElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const idsRef = useRef<Set<string>>(new Set());
+  const reactionQueue = useRef(new Map<string, Promise<void>>());
   const [supabase] = useState(createClient);
   const [confirm, confirmDialog] = useConfirm();
 
@@ -154,35 +156,34 @@ export function CommentsSection({
     setComments((list) => list?.filter((c) => c.id !== id) ?? list);
   }
 
-  const setMyReaction = (commentId: string, next: ReactionKey | null) =>
+  const myReactions = (c: CommentRow) => sortReactions(c.reactions.filter((r) => r.user_id === viewer.id).map((r) => r.reaction));
+  const setMyReactions = (commentId: string, next: ReactionKey[]) =>
     setComments(
       (list) =>
         list?.map((c) =>
           c.id === commentId
-            ? { ...c, reactions: [...c.reactions.filter((r) => r.user_id !== viewer.id), ...(next ? [{ user_id: viewer.id, reaction: next }] : [])] }
+            ? { ...c, reactions: [...c.reactions.filter((r) => r.user_id !== viewer.id), ...next.map((reaction) => ({ user_id: viewer.id, reaction }))] }
             : c,
         ) ?? list,
     );
 
-  async function reactToComment(c: CommentRow, next: ReactionKey | null) {
-    const prev = c.reactions.find((r) => r.user_id === viewer.id)?.reaction ?? null;
-    if (prev === next) return;
-    setMyReaction(c.id, next);
-    const table = supabase.from("comment_reactions");
-    const { error } = !next
-      ? await table.delete().eq("comment_id", c.id).eq("user_id", viewer.id)
-      : prev
-        ? await table.update({ reaction: next }).eq("comment_id", c.id).eq("user_id", viewer.id)
-        : await table.insert({ comment_id: c.id, user_id: viewer.id, reaction: next });
-    if (error) {
-      setMyReaction(c.id, prev);
-      setError("Reacția nu a putut fi salvată.");
-    }
+  // Optimistic; saves for the same comment run one after another so fast taps stay in order.
+  function reactToComment(c: CommentRow, next: ReactionKey[]) {
+    const prev = myReactions(c);
+    if (sameReactions(prev, next)) return;
+    setMyReactions(c.id, next);
+    const run = (reactionQueue.current.get(c.id) ?? Promise.resolve()).then(async () => {
+      const { error, saved } = await saveReactions(supabase, { kind: "comment", id: c.id }, viewer.id, prev, next);
+      if (error) setError("Reacția nu a putut fi salvată.");
+      if (error || !sameReactions(saved, next)) setMyReactions(c.id, saved);
+    });
+    reactionQueue.current.set(c.id, run);
   }
 
   function heartComment(c: CommentRow) {
     setBurst((b) => ({ id: c.id, n: (b?.n ?? 0) + 1 }));
-    if (!c.reactions.some((r) => r.user_id === viewer.id)) reactToComment(c, DEFAULT_REACTION);
+    const mine = myReactions(c);
+    if (!mine.includes(DEFAULT_REACTION)) reactToComment(c, [...mine, DEFAULT_REACTION]);
   }
 
   const canDelete = (c: CommentRow) => !c.pending && (c.user_id === viewer.id || isStaff(viewer.role));
@@ -198,8 +199,7 @@ export function CommentsSection({
         {comments?.length === 0 && <li className="py-4 text-center text-sm text-white/50">Niciun comentariu încă. Fii primul care comentează.</li>}
         {comments?.map((c) => {
           const name = c.author?.display_name || c.author?.full_name || "Utilizator";
-          const mine = c.reactions.find((r) => r.user_id === viewer.id)?.reaction ?? null;
-          const mineInfo = mine ? reactionInfo(mine) : null;
+          const mine = myReactions(c);
           return (
             <li key={c.id} className={`group flex gap-2.5 py-2 ${c.pending ? "opacity-60" : ""}`} data-testid="comment">
               <Avatar name={name} url={c.author?.avatar_url} className="size-9" />
@@ -249,12 +249,12 @@ export function CommentsSection({
                   align="right"
                   rootClassName="shrink-0 self-center"
                   pickerClassName="grid size-9 place-items-center rounded-full text-white/45 transition hover:text-white active:scale-90 [&_svg]:size-[18px]"
-                  className={`grid size-9 place-items-center rounded-full transition active:scale-90 ${mine ? "text-neon-orange" : "text-white/45 hover:text-white"}`}
+                  className={`grid size-9 place-items-center rounded-full transition active:scale-90 ${mine.length ? "text-neon-orange" : "text-white/45 hover:text-white"}`}
                 >
-                  {mineInfo && mine !== DEFAULT_REACTION ? (
-                    <span className="text-lg leading-none">{mineInfo.emoji}</span>
+                  {mine.length && !mine.includes(DEFAULT_REACTION) ? (
+                    <span className="text-lg leading-none">{reactionInfo(mine[0]).emoji}</span>
                   ) : (
-                    <Heart className={`size-[18px] ${mine ? "fill-neon-orange" : ""}`} data-testid="comment-heart" />
+                    <Heart className={`size-[18px] ${mine.length ? "fill-neon-orange" : ""}`} data-testid="comment-heart" />
                   )}
                 </ReactionTrigger>
               )}

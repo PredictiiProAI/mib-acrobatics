@@ -212,6 +212,7 @@ export type Database = {
           reactions: Partial<Record<ReactionKey, number>>;
           my_reaction: ReactionKey | null;
           author_avatar: string | null;
+          my_reactions?: ReactionKey[] | null;
         };
         Relationships: Rel[];
       };

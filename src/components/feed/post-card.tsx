@@ -7,11 +7,11 @@ import { useRef, useState } from "react";
 import { useConfirm } from "@/components/confirm-dialog";
 import { RoleBadge } from "@/components/role-badge";
 import { deletePost } from "@/lib/actions/posts";
-import { saveReaction } from "@/lib/likes";
+import { saveReactions } from "@/lib/likes";
 import type { FeedPost } from "@/lib/posts";
 import { isStaff } from "@/lib/roles";
 import { createClient } from "@/lib/supabase/client";
-import { applyReaction, DEFAULT_REACTION, reactionInfo, totalReactions, type ReactionKey } from "@/lib/reactions";
+import { applyReactions, DEFAULT_REACTION, reactionInfo, sameReactions, sortReactions, totalReactions, type ReactionKey } from "@/lib/reactions";
 import { timeAgo } from "@/lib/time";
 import { AutoplayVideo } from "./autoplay-video";
 import { CommentsSection } from "./comments-section";
@@ -21,7 +21,9 @@ import type { Viewer } from "./types";
 const fullDate = new Intl.DateTimeFormat("ro-RO", { dateStyle: "long", timeStyle: "short" });
 
 export function PostCard({ post, viewer, priority, onDeleted }: { post: FeedPost; viewer: Viewer; priority?: boolean; onDeleted: (id: string) => void }) {
-  const [mine, setMine] = useState<ReactionKey | null>(post.my_reaction ?? (post.liked_by_me ? DEFAULT_REACTION : null));
+  const [mine, setMine] = useState<ReactionKey[]>(() =>
+    sortReactions(post.my_reactions ?? (post.my_reaction ? [post.my_reaction] : post.liked_by_me ? [DEFAULT_REACTION] : [])),
+  );
   const [counts, setCounts] = useState(post.reactions ?? (post.like_count ? { [DEFAULT_REACTION]: post.like_count } : {}));
   const [comments, setComments] = useState(post.comment_count);
   const [commentsOpen, setCommentsOpen] = useState(false);
@@ -38,49 +40,51 @@ export function PostCard({ post, viewer, priority, onDeleted }: { post: FeedPost
 
   // Optimistic: the UI follows every tap at once; a single sync loop then moves the server from its
   // last confirmed state to the latest wanted one, so fast toggles are never dropped.
-  const confirmed = useRef<ReactionKey | null>(mine);
-  const wanted = useRef<ReactionKey | null>(mine);
+  const confirmed = useRef<ReactionKey[]>(mine);
+  const wanted = useRef<ReactionKey[]>(mine);
   const syncing = useRef(false);
 
   async function syncReaction() {
     if (syncing.current) return;
     syncing.current = true;
     const supabase = createClient();
-    while (wanted.current !== confirmed.current) {
+    while (!sameReactions(wanted.current, confirmed.current)) {
       const target = wanted.current;
-      const error = await saveReaction(supabase, post.id, viewer.id, confirmed.current, target);
+      const { error, saved } = await saveReactions(supabase, { kind: "post", id: post.id }, viewer.id, confirmed.current, target);
+      confirmed.current = saved;
+      const shown = wanted.current;
+      if (error || (!sameReactions(saved, target) && shown === target)) {
+        // Show what the server really has (rolled back, or a single reaction on the old schema).
+        wanted.current = saved;
+        setMine(sortReactions(saved));
+        setCounts((c) => applyReactions(c, shown, saved));
+      }
       if (error) {
         console.error("like", error);
-        const shown = wanted.current;
-        const back = confirmed.current;
-        wanted.current = back;
-        setMine(back);
-        setCounts((c) => applyReaction(c, shown, back));
         setError("Nu am putut salva reacția. Încearcă din nou.");
         break;
       }
-      confirmed.current = target;
     }
     syncing.current = false;
   }
 
-  function react(next: ReactionKey | null) {
+  function react(next: ReactionKey[]) {
     const prev = wanted.current;
-    if (next === prev) return;
+    if (sameReactions(prev, next)) return;
     wanted.current = next;
     setError(null);
-    setMine(next);
-    setCounts((c) => applyReaction(c, prev, next));
+    setMine(sortReactions(next));
+    setCounts((c) => applyReactions(c, prev, next));
     void syncReaction();
   }
 
   const doubleTapLike = () => {
     setBurst((b) => b + 1);
-    if (!mine) react(DEFAULT_REACTION);
+    if (!wanted.current.includes(DEFAULT_REACTION)) react([...wanted.current, DEFAULT_REACTION]);
   };
 
   const total = totalReactions(counts);
-  const mineInfo = mine ? reactionInfo(mine) : null;
+  const mineInfo = mine.map(reactionInfo);
 
   async function remove() {
     const ok = await confirm({
@@ -155,16 +159,18 @@ export function PostCard({ post, viewer, priority, onDeleted }: { post: FeedPost
             rootClassName="gap-1.5"
             pickerClassName="grid size-11 shrink-0 place-items-center rounded-2xl bg-white/[0.04] text-white/70 transition hover:bg-white/[0.08] hover:text-neon-orange active:scale-95"
             className={`group inline-flex min-w-0 flex-1 items-center justify-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-bold transition active:scale-95 ${
-              mine ? "bg-neon-orange/15 text-neon-orange ring-1 ring-neon-orange/40" : "bg-white/[0.04] text-white/80 hover:bg-white/[0.08] hover:text-white"
+              mine.length ? "bg-neon-orange/15 text-neon-orange ring-1 ring-neon-orange/40" : "bg-white/[0.04] text-white/80 hover:bg-white/[0.08] hover:text-white"
             }`}
           >
-            {mineInfo ? (
-              <span className="animate-[pop-in_.2s_ease-out] text-lg leading-none">{mineInfo.emoji}</span>
+            {mineInfo.length ? (
+              <span key={mine.join()} className="animate-[pop-in_.2s_ease-out] whitespace-nowrap text-lg leading-none tracking-tight">
+                {mineInfo.map((r) => r.emoji).join("")}
+              </span>
             ) : (
               <Heart className="size-5 transition group-hover:text-neon-orange" />
             )}
             <span data-testid="like-count">{total}</span>
-            <span className="font-medium">{mineInfo ? mineInfo.label : total === 1 ? "reacție" : "reacții"}</span>
+            <span className="truncate font-medium">{mineInfo.length === 1 ? mineInfo[0].label : total === 1 ? "reacție" : "reacții"}</span>
           </ReactionTrigger>
         </div>
         <button

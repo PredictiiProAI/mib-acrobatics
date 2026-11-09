@@ -7,7 +7,7 @@ import { Avatar } from "@/components/avatar";
 import { RoleBadge } from "@/components/role-badge";
 import type { AppRole } from "@/lib/supabase/database.types";
 import { createClient } from "@/lib/supabase/client";
-import { REACTIONS, type ReactionCounts, type ReactionKey, DEFAULT_REACTION, reactionInfo } from "@/lib/reactions";
+import { REACTIONS, type ReactionCounts, type ReactionKey, DEFAULT_REACTION, reactionInfo, sortReactions, toggleReaction } from "@/lib/reactions";
 
 const HOVER_OPEN_MS = 350;
 const HOVER_CLOSE_MS = 300;
@@ -15,8 +15,8 @@ const LONG_PRESS_MS = 450;
 const BAR_WIDTH = 222;
 
 /**
- * Messenger-style reaction trigger: tap/click toggles the default reaction, hovering (mouse)
- * or long-pressing (touch) opens the bar with every reaction. `pickerClassName` adds a smiley button that opens the bar on tap.
+ * Messenger-style reaction trigger: tap/click adds the default reaction (or removes all of the viewer's), hovering (mouse)
+ * or long-pressing (touch) opens the bar where each reaction toggles on its own, so several can be combined. `pickerClassName` adds a smiley button that opens the bar on tap.
  */
 export function ReactionTrigger({
   mine,
@@ -28,8 +28,8 @@ export function ReactionTrigger({
   pickerClassName,
   rootClassName = "",
 }: {
-  mine: ReactionKey | null;
-  onReact: (next: ReactionKey | null) => void;
+  mine: ReactionKey[];
+  onReact: (next: ReactionKey[]) => void;
   children: ReactNode;
   className?: string;
   align?: "left" | "center" | "right";
@@ -85,10 +85,10 @@ export function ReactionTrigger({
 
   useEffect(() => clear, []);
 
+  // The bar stays open so more reactions can be added; tapping outside closes it.
   const pick = (key: ReactionKey) => {
     clear();
-    setOpen(false);
-    onReact(key === mine ? null : key);
+    onReact(sortReactions(toggleReaction(mine, key)));
   };
 
   return (
@@ -112,11 +112,11 @@ export function ReactionTrigger({
               type="button"
               title={r.label}
               aria-label={r.label}
-              aria-pressed={mine === r.key}
+              aria-pressed={mine.includes(r.key)}
               onClick={() => pick(r.key)}
               style={{ animationDelay: `${i * 25}ms` }}
               className={`grid size-10 animate-[pop-in_.2s_ease-out_both] place-items-center rounded-full text-2xl transition duration-150 hover:-translate-y-1.5 hover:scale-125 ${
-                mine === r.key ? "bg-neon-orange/20 ring-1 ring-neon-orange/50" : "hover:bg-white/5"
+                mine.includes(r.key) ? "bg-neon-orange/20 ring-1 ring-neon-orange/50" : "hover:bg-white/5"
               }`}
             >
               {r.emoji}
@@ -126,9 +126,9 @@ export function ReactionTrigger({
       )}
       <button
         type="button"
-        aria-label={mine ? `Retrage reacția ${reactionInfo(mine).label}` : label}
-        aria-pressed={!!mine}
-        data-reaction={mine ?? ""}
+        aria-label={mine.length ? `Retrage ${mine.length === 1 ? `reacția ${reactionInfo(mine[0]).label}` : "reacțiile"}` : label}
+        aria-pressed={mine.length > 0}
+        data-reaction={mine.join(" ")}
         onPointerDown={(e) => {
           if (e.pointerType === "mouse") return;
           longPressed.current = false;
@@ -148,7 +148,7 @@ export function ReactionTrigger({
           }
           clear();
           setOpen(false);
-          onReact(mine ? null : DEFAULT_REACTION);
+          onReact(mine.length ? [] : [DEFAULT_REACTION]);
         }}
         className={`select-none [-webkit-touch-callout:none] ${className}`}
       >
@@ -181,7 +181,7 @@ type Reactor = {
   user: { full_name: string | null; display_name: string | null; avatar_url: string | null; role: AppRole } | null;
 };
 
-/** Mini counter pills (❤️ 5 🔥 2), most used first; the viewer's reaction is highlighted. With `source`, tapping them lists who reacted. */
+/** Mini counter pills (❤️ 5 🔥 2), most used first; the viewer's reactions are highlighted. With `source`, tapping them lists who reacted. */
 export function ReactionSummary({
   counts,
   mine,
@@ -189,7 +189,7 @@ export function ReactionSummary({
   source,
 }: {
   counts: ReactionCounts;
-  mine: ReactionKey | null;
+  mine: ReactionKey[];
   className?: string;
   source?: ReactionSource;
 }) {
@@ -204,7 +204,7 @@ export function ReactionSummary({
       title={r.label}
       data-testid="reaction-pill"
       className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold ${
-        mine === r.key ? "bg-neon-orange/15 text-neon-orange ring-1 ring-neon-orange/40" : "bg-white/[0.06] text-white/75 ring-1 ring-white/10"
+        mine.includes(r.key) ? "bg-neon-orange/15 text-neon-orange ring-1 ring-neon-orange/40" : "bg-white/[0.06] text-white/75 ring-1 ring-white/10"
       }`}
     >
       <span className="text-sm leading-none">{r.emoji}</span>
@@ -265,7 +265,14 @@ function ReactorsSheet({ source, onClose }: { source: ReactionSource; onClose: (
   }, [onClose]);
 
   const tabs = REACTIONS.map((r) => ({ ...r, n: rows?.filter((x) => x.reaction === r.key).length ?? 0 })).filter((r) => r.n > 0);
-  const list = rows?.filter((r) => tab === "all" || r.reaction === tab) ?? [];
+  // "Toate" shows each person once, with all of their reactions.
+  const list: (Reactor & { reactions: ReactionKey[] })[] = [];
+  for (const r of rows ?? []) {
+    if (tab !== "all" && r.reaction !== tab) continue;
+    const seen = list.find((x) => x.user_id === r.user_id);
+    if (seen) seen.reactions.push(r.reaction);
+    else list.push({ ...r, reactions: [r.reaction] });
+  }
   const tabClass = (active: boolean) =>
     `inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-sm font-bold transition active:scale-95 ${
       active ? "bg-neon-orange text-onaccent" : "bg-white/[0.06] text-white/75 hover:bg-white/10"
@@ -310,13 +317,11 @@ function ReactorsSheet({ source, onClose }: { source: ReactionSource; onClose: (
             const name = r.user?.display_name || r.user?.full_name || "Utilizator";
             return (
               <li key={r.user_id} className="flex items-center gap-3 px-4 py-2.5" data-testid="reactor">
-                <span className="relative shrink-0">
-                  <Avatar name={name} url={r.user?.avatar_url} className="size-11" />
-                  <span className="absolute -bottom-1 -right-1 grid size-6 place-items-center rounded-full bg-surface text-sm leading-none ring-2 ring-surface">
-                    {reactionInfo(r.reaction).emoji}
-                  </span>
-                </span>
+                <Avatar name={name} url={r.user?.avatar_url} className="size-11 shrink-0" />
                 <span className="min-w-0 flex-1 truncate text-sm font-semibold">{name}</span>
+                <span className="shrink-0 text-lg leading-none tracking-tight" data-testid="reactor-emojis">
+                  {sortReactions(r.reactions).map((k) => reactionInfo(k).emoji).join("")}
+                </span>
                 {r.user && <RoleBadge role={r.user.role} />}
               </li>
             );

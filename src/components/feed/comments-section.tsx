@@ -246,7 +246,10 @@ export function CommentsSection({
                   mine={mine}
                   onReact={(next) => reactToComment(c, next)}
                   label="Îmi place"
-                  className={`grid size-10 shrink-0 place-items-center self-center rounded-full transition active:scale-90 ${mine ? "text-neon-orange" : "text-white/45 hover:text-white"}`}
+                  align="right"
+                  rootClassName="shrink-0 self-center"
+                  pickerClassName="grid size-9 place-items-center rounded-full text-white/45 transition hover:text-white active:scale-90 [&_svg]:size-[18px]"
+                  className={`grid size-9 place-items-center rounded-full transition active:scale-90 ${mine ? "text-neon-orange" : "text-white/45 hover:text-white"}`}
                 >
                   {mineInfo && mine !== DEFAULT_REACTION ? (
                     <span className="text-lg leading-none">{mineInfo.emoji}</span>

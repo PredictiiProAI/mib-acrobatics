@@ -152,7 +152,9 @@ export function PostCard({ post, viewer, priority, onDeleted }: { post: FeedPost
           <ReactionTrigger
             mine={mine}
             onReact={react}
-            className={`group inline-flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-bold transition active:scale-95 ${
+            rootClassName="gap-1.5"
+            pickerClassName="grid size-11 shrink-0 place-items-center rounded-2xl bg-white/[0.04] text-white/70 transition hover:bg-white/[0.08] hover:text-neon-orange active:scale-95"
+            className={`group inline-flex min-w-0 flex-1 items-center justify-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-bold transition active:scale-95 ${
               mine ? "bg-neon-orange/15 text-neon-orange ring-1 ring-neon-orange/40" : "bg-white/[0.04] text-white/80 hover:bg-white/[0.08] hover:text-white"
             }`}
           >

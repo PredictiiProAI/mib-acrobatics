@@ -1,15 +1,17 @@
 "use client";
 
+import { SmilePlus } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { REACTIONS, type ReactionCounts, type ReactionKey, DEFAULT_REACTION, reactionInfo } from "@/lib/reactions";
 
 const HOVER_OPEN_MS = 350;
 const HOVER_CLOSE_MS = 300;
 const LONG_PRESS_MS = 450;
+const BAR_WIDTH = 222;
 
 /**
  * Messenger-style reaction trigger: tap/click toggles the default reaction, hovering (mouse)
- * or long-pressing (touch) opens the bar with every reaction.
+ * or long-pressing (touch) opens the bar with every reaction. `pickerClassName` adds a smiley button that opens the bar on tap.
  */
 export function ReactionTrigger({
   mine,
@@ -18,23 +20,35 @@ export function ReactionTrigger({
   className = "",
   align = "left",
   label = "Reacționează",
+  pickerClassName,
+  rootClassName = "",
 }: {
   mine: ReactionKey | null;
   onReact: (next: ReactionKey | null) => void;
   children: ReactNode;
   className?: string;
-  align?: "left" | "center";
+  align?: "left" | "center" | "right";
   label?: string;
+  pickerClassName?: string;
+  rootClassName?: string;
 }) {
   const [open, setOpenState] = useState(false);
-  const [below, setBelow] = useState(false);
+  const [pos, setPos] = useState<{ top: number; below: boolean; left?: number; right?: number }>({ top: 0, below: false });
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const longPressed = useRef(false);
   const root = useRef<HTMLDivElement>(null);
 
-  // Flip the bar under the trigger when there is no room above it (e.g. first comment in a scroll list).
+  // The bar is `fixed` so scrollable comment lists can't clip it; it flips under the trigger near the top of the screen.
   const setOpen = (v: boolean) => {
-    if (v) setBelow((root.current?.getBoundingClientRect().top ?? 999) < 90);
+    const r = root.current?.getBoundingClientRect();
+    if (v && r) {
+      const below = r.top < 90;
+      const top = below ? r.bottom + 8 : r.top - 8;
+      const vw = window.innerWidth;
+      if (align === "right") setPos({ top, below, right: Math.max(8, vw - r.right) });
+      else if (align === "center") setPos({ top, below, left: Math.min(Math.max(8, r.left + r.width / 2 - BAR_WIDTH / 2), vw - BAR_WIDTH - 8) });
+      else setPos({ top, below, left: Math.min(Math.max(8, r.left), vw - BAR_WIDTH - 8) });
+    }
     setOpenState(v);
   };
 
@@ -51,11 +65,16 @@ export function ReactionTrigger({
     if (!open) return;
     const onDown = (e: PointerEvent) => !root.current?.contains(e.target as Node) && setOpenState(false);
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpenState(false);
+    const close = () => setOpenState(false);
     document.addEventListener("pointerdown", onDown);
     document.addEventListener("keydown", onKey);
+    document.addEventListener("scroll", close, { capture: true, passive: true });
+    window.addEventListener("resize", close);
     return () => {
       document.removeEventListener("pointerdown", onDown);
       document.removeEventListener("keydown", onKey);
+      document.removeEventListener("scroll", close, { capture: true });
+      window.removeEventListener("resize", close);
     };
   }, [open]);
 
@@ -70,7 +89,7 @@ export function ReactionTrigger({
   return (
     <div
       ref={root}
-      className="relative"
+      className={`relative flex items-center ${rootClassName}`}
       onPointerEnter={(e) => e.pointerType === "mouse" && later(() => setOpen(true), HOVER_OPEN_MS)}
       onPointerLeave={(e) => e.pointerType === "mouse" && later(() => setOpen(false), HOVER_CLOSE_MS)}
     >
@@ -79,9 +98,8 @@ export function ReactionTrigger({
           role="toolbar"
           aria-label="Alege o reacție"
           data-testid="reaction-bar"
-          className={`absolute z-20 flex ${below ? "top-full mt-2" : "bottom-full mb-2"} animate-[pop-in_.16s_ease-out] items-center gap-0.5 rounded-full border border-white/10 bg-carbon/95 p-1.5 shadow-[0_10px_40px_-8px_rgb(0_0_0/0.8),0_0_24px_-6px_rgb(255_106_0/0.5)] backdrop-blur-xl ${
-            align === "center" ? "left-1/2 -translate-x-1/2" : "left-0"
-          }`}
+          style={{ top: pos.top, left: pos.left, right: pos.right }}
+          className={`fixed z-50 flex ${pos.below ? "" : "-translate-y-full"} animate-[pop-in_.16s_ease-out] items-center gap-0.5 rounded-full border border-white/10 bg-carbon/95 p-1.5 shadow-[0_10px_40px_-8px_rgb(0_0_0/0.8),0_0_24px_-6px_rgb(255_106_0/0.5)] backdrop-blur-xl`}
         >
           {REACTIONS.map((r, i) => (
             <button
@@ -131,6 +149,21 @@ export function ReactionTrigger({
       >
         {children}
       </button>
+      {pickerClassName && (
+        <button
+          type="button"
+          aria-label="Alege o reacție"
+          aria-expanded={open}
+          data-testid="reaction-picker"
+          onClick={() => {
+            clear();
+            setOpen(!open);
+          }}
+          className={`select-none ${pickerClassName}`}
+        >
+          <SmilePlus className="size-5" />
+        </button>
+      )}
     </div>
   );
 }

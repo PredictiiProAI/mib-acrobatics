@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronRight, Loader2, SmilePlus, X } from "lucide-react";
+import { Loader2, SmilePlus, X } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Avatar } from "@/components/avatar";
@@ -194,7 +194,7 @@ export function ReactionSummary({
   mine: ReactionKey[];
   className?: string;
   source?: ReactionSource;
-  /** Larger tap target with a "Vezi cine a reacționat" label (post cards). */
+  /** Post cards: larger tap target with the total ("5 reacții") next to the emojis. */
   hint?: boolean;
 }) {
   const [open, setOpen] = useState(false);
@@ -233,9 +233,8 @@ export function ReactionSummary({
       >
         {pills}
         {hint && (
-          <span className="inline-flex items-center gap-0.5 pl-1 text-xs font-semibold text-white/60">
-            Vezi cine a reacționat
-            <ChevronRight className="size-3.5" />
+          <span className="pl-1 text-sm font-semibold text-white/70" data-testid="like-count">
+            {entries.reduce((s, r) => s + r.n, 0)} {entries.reduce((s, r) => s + r.n, 0) === 1 ? "reacție" : "reacții"}
           </span>
         )}
       </button>

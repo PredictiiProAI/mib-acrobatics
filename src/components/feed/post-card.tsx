@@ -12,7 +12,7 @@ import { saveReactions } from "@/lib/likes";
 import type { FeedPost } from "@/lib/posts";
 import { isStaff } from "@/lib/roles";
 import { createClient } from "@/lib/supabase/client";
-import { applyReactions, DEFAULT_REACTION, reactionInfo, sameReactions, sortReactions, totalReactions, type ReactionKey } from "@/lib/reactions";
+import { applyReactions, DEFAULT_REACTION, reactionInfo, sameReactions, sortReactions, type ReactionKey } from "@/lib/reactions";
 import { timeAgo } from "@/lib/time";
 import { AutoplayVideo } from "./autoplay-video";
 import { CommentsSection } from "./comments-section";
@@ -84,7 +84,6 @@ export function PostCard({ post, viewer, priority, onDeleted }: { post: FeedPost
     if (!wanted.current.includes(DEFAULT_REACTION)) react([...wanted.current, DEFAULT_REACTION]);
   };
 
-  const total = totalReactions(counts);
   const mineInfo = mine.map(reactionInfo);
 
   async function remove() {
@@ -170,8 +169,7 @@ export function PostCard({ post, viewer, priority, onDeleted }: { post: FeedPost
             ) : (
               <Heart className="size-5 transition group-hover:text-neon-orange" />
             )}
-            <span data-testid="like-count">{total}</span>
-            <span className="truncate font-medium">{mineInfo.length === 1 ? mineInfo[0].label : total === 1 ? "reacție" : "reacții"}</span>
+            <span className="truncate font-medium">{mineInfo.length === 1 ? mineInfo[0].label : mineInfo.length ? "Reacțiile tale" : "Reacționează"}</span>
           </ReactionTrigger>
         </div>
         <button

@@ -150,7 +150,7 @@ export function PostCard({ post, viewer, priority, onDeleted }: { post: FeedPost
 
       {post.caption && <p className="whitespace-pre-wrap break-words px-4 pt-4 md:px-5 text-[15px] leading-relaxed text-white/90">{post.caption}</p>}
       {error && <p className="px-4 pt-3 md:px-5 text-xs text-red-300">{error}</p>}
-      <ReactionSummary counts={counts} mine={mine} source={{ kind: "post", id: post.id }} className="mx-4 mt-3 md:mx-5" />
+      <ReactionSummary counts={counts} mine={mine} source={{ kind: "post", id: post.id }} hint className="mx-4 mt-2 md:mx-5" />
 
       <footer className="mt-4 flex items-center gap-2 border-t border-white/5 px-3 py-3">
         <div className="flex-1">

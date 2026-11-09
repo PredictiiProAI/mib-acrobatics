@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2, SmilePlus, X } from "lucide-react";
+import { ChevronRight, Loader2, SmilePlus, X } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Avatar } from "@/components/avatar";
@@ -188,11 +188,14 @@ export function ReactionSummary({
   mine,
   className = "",
   source,
+  hint = false,
 }: {
   counts: ReactionCounts;
   mine: ReactionKey[];
   className?: string;
   source?: ReactionSource;
+  /** Larger tap target with a "Vezi cine a reacționat" label (post cards). */
+  hint?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const entries = REACTIONS.map((r) => ({ ...r, n: counts[r.key] ?? 0 }))
@@ -226,9 +229,15 @@ export function ReactionSummary({
         onClick={() => setOpen(true)}
         aria-label="Vezi cine a reacționat"
         data-testid="reaction-summary"
-        className={`flex flex-wrap gap-1.5 text-left transition active:scale-95 ${className}`}
+        className={`flex flex-wrap items-center gap-1.5 text-left transition active:scale-95 ${hint ? "min-h-11 rounded-2xl pr-2" : ""} ${className}`}
       >
         {pills}
+        {hint && (
+          <span className="inline-flex items-center gap-0.5 pl-1 text-xs font-semibold text-white/60">
+            Vezi cine a reacționat
+            <ChevronRight className="size-3.5" />
+          </span>
+        )}
       </button>
       {open && <ReactorsSheet source={source} onClose={() => setOpen(false)} />}
     </>

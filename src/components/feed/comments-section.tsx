@@ -5,6 +5,7 @@ import { Loader2, Send, Trash2, ChevronUp, Heart } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useConfirm } from "@/components/confirm-dialog";
 import { RoleBadge } from "@/components/role-badge";
+import { badgeRole } from "@/lib/roles";
 import { deleteComment } from "@/lib/actions/posts";
 import { saveReactions } from "@/lib/likes";
 import { countReactions, DEFAULT_REACTION, reactionInfo, sameReactions, sortReactions, type ReactionKey } from "@/lib/reactions";
@@ -21,13 +22,14 @@ type CommentRow = {
   content: string;
   created_at: string;
   user_id: string;
-  author: { full_name: string | null; display_name?: string | null; avatar_url?: string | null; role: AppRole } | null;
+  author: { full_name: string | null; display_name?: string | null; avatar_url?: string | null; role: AppRole; shown_as_coach?: boolean | null } | null;
   reactions: ReactionRow[];
   pending?: boolean;
 };
 
 // Full select first; the plain one keeps comments working if 0002/0005 (reactions, avatars) haven't been run.
 const SELECTS = [
+  "id, content, created_at, user_id, author:users!comments_user_id_fkey(full_name, display_name, avatar_url, role, shown_as_coach), reactions:comment_reactions(user_id, reaction)",
   "id, content, created_at, user_id, author:users!comments_user_id_fkey(full_name, display_name, avatar_url, role), reactions:comment_reactions(user_id, reaction)",
   "id, content, created_at, user_id, author:users!comments_user_id_fkey(full_name, role)",
 ];
@@ -132,7 +134,7 @@ export function CommentsSection({
       content,
       created_at: new Date().toISOString(),
       user_id: viewer.id,
-      author: { full_name: viewer.name, display_name: viewer.name, avatar_url: viewer.avatarUrl, role: viewer.role },
+      author: { full_name: viewer.name, display_name: viewer.name, avatar_url: viewer.avatarUrl, role: viewer.badgeRole ?? viewer.role },
       reactions: [],
       pending: true,
     };
@@ -218,7 +220,7 @@ export function CommentsSection({
                     <span className="text-sm font-semibold" data-testid="comment-author">
                       {name}
                     </span>
-                    {c.author && <RoleBadge role={c.author.role} />}
+                    {c.author && <RoleBadge role={badgeRole(c.author.role, c.author.shown_as_coach)} />}
                   </div>
                   <p className="mt-0.5 whitespace-pre-wrap break-words text-[15px] leading-snug text-white/90" data-testid="comment-text">
                     {c.content}

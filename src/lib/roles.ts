@@ -12,16 +12,16 @@ export const needsWaiver = (role: AppRole | null | undefined) => role === "user"
 /** Where a user lands after login: publishers go to the command center, everyone else to the feed. */
 export const homeFor = (role: AppRole | null | undefined) => (canPublish(role) ? "/dashboard" : "/feed");
 
-/** Public label: Super Admin accounts are shown as coaches; their rights stay superadmin (see ADMIN_ROLE_LABEL in the users CRM). */
 export const ROLE_LABEL: Record<AppRole, string> = {
-  superadmin: "Antrenor",
+  superadmin: "Admin",
   admin: "Antrenor",
   media: "Media",
   user: "Sportiv",
 };
 
-/** Role names in the users CRM, where the permission level must be told apart. */
-export const ADMIN_ROLE_LABEL: Record<AppRole, string> = { ...ROLE_LABEL, superadmin: "Antrenor · Super Admin" };
+/** Role shown on badges: a Super Admin flagged `shown_as_coach` appears as Antrenor but keeps superadmin rights. */
+export const badgeRole = (role: AppRole, shownAsCoach?: boolean | null): AppRole =>
+  role === "superadmin" && shownAsCoach ? "admin" : role;
 
 /** Only allow same-origin relative paths as post-login targets. */
 export function safeNext(next: string | null | undefined): string | null {

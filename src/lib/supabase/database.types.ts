@@ -35,6 +35,7 @@ export type Database = {
           level: TrainingLevel | null;
           avatar_url: string | null;
           account_type?: AccountType;
+          shown_as_coach?: boolean;
         };
         Insert: never;
         Update: {
@@ -213,6 +214,7 @@ export type Database = {
           my_reaction: ReactionKey | null;
           author_avatar: string | null;
           my_reactions?: ReactionKey[] | null;
+          author_shown_as_coach?: boolean | null;
         };
         Relationships: Rel[];
       };

@@ -102,7 +102,7 @@ export default async function DashboardPage() {
           Salut, <span className="text-gradient">{publicName(user)}</span>
         </h1>
         <p className="mt-1 text-sm text-white/60">
-          Rol: <span className="text-neon-orange">{ROLE_LABEL[user.role]}</span>
+          Rol: <span className="text-neon-orange">{ROLE_LABEL[user.badgeRole]}</span>
           {staff ? " — alege o secțiune de administrat." : " — poți încărca media și gestiona postările tale."}
         </p>
       </div>

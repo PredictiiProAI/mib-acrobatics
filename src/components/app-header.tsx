@@ -10,7 +10,7 @@ export async function AppHeader({ user }: { user: SessionUser }) {
     <HeaderNav
       name={publicName(user)}
       avatarUrl={user.avatarUrl}
-      role={user.role}
+      role={user.badgeRole}
       dashboard={canPublish(user.role) ? { href: "/dashboard", label: isStaff(user.role) ? "Admin" : "Dashboard" } : null}
       messagesHref={isStaff(user.role) ? "/dashboard/messages" : "/messages"}
       unread={unread}

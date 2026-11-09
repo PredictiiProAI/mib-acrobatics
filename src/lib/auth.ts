@@ -4,9 +4,9 @@ import { redirect } from "next/navigation";
 import { createClient } from "./supabase/server";
 import { isSupabaseConfigured } from "./supabase/env";
 import type { AppRole } from "./supabase/database.types";
-import { homeFor } from "./roles";
+import { badgeRole, homeFor } from "./roles";
 
-export type SessionUser = { id: string; email: string; role: AppRole; fullName: string | null; displayName: string | null; avatarUrl: string | null };
+export type SessionUser = { id: string; email: string; role: AppRole; badgeRole: AppRole; fullName: string | null; displayName: string | null; avatarUrl: string | null };
 
 /** Current user verified with the Auth server (getUser), plus their role from public.users. */
 /** Name shown across the app: display name, then full name, then the email prefix. */
@@ -21,11 +21,16 @@ export const getSessionUser = cache(async (): Promise<SessionUser | null> => {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return null;
-  const { data: profile } = await supabase.from("users").select("role, full_name, display_name, avatar_url").eq("id", user.id).maybeSingle();
+  const [{ data: profile }, { data: label }] = await Promise.all([
+    supabase.from("users").select("role, full_name, display_name, avatar_url").eq("id", user.id).maybeSingle(),
+    // Optional column (0021_role_display.sql); a missing column just means "no label override".
+    supabase.from("users").select("shown_as_coach").eq("id", user.id).maybeSingle(),
+  ]);
   return {
     id: user.id,
     email: user.email ?? "",
     role: profile?.role ?? "user",
+    badgeRole: badgeRole(profile?.role ?? "user", label?.shown_as_coach),
     fullName: profile?.full_name ?? (user.user_metadata?.full_name as string | undefined) ?? null,
     displayName: profile?.display_name || null,
     avatarUrl: profile?.avatar_url ?? null,

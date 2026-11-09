@@ -65,7 +65,7 @@ export default async function ProfilePage() {
             <p className="truncate text-sm text-white/60">{user.email}</p>
           </div>
           <div className="flex flex-wrap justify-center gap-2">
-            <RoleBadge role={user.role} />
+            <RoleBadge role={user.badgeRole} />
             {profile?.level && (
               <span className="rounded-full bg-neon-green/10 px-2.5 py-0.5 text-xs font-bold text-neon-green ring-1 ring-neon-green/40">{LEVEL_LABEL[profile.level]}</span>
             )}

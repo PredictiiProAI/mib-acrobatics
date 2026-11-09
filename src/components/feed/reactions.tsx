@@ -5,6 +5,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Avatar } from "@/components/avatar";
 import { RoleBadge } from "@/components/role-badge";
+import { badgeRole } from "@/lib/roles";
 import type { AppRole } from "@/lib/supabase/database.types";
 import { createClient } from "@/lib/supabase/client";
 import { REACTIONS, type ReactionCounts, type ReactionKey, DEFAULT_REACTION, reactionInfo, sortReactions, toggleReaction } from "@/lib/reactions";
@@ -178,7 +179,7 @@ export type ReactionSource = { kind: "post" | "comment"; id: string };
 type Reactor = {
   user_id: string;
   reaction: ReactionKey;
-  user: { full_name: string | null; display_name: string | null; avatar_url: string | null; role: AppRole } | null;
+  user: { full_name: string | null; display_name: string | null; avatar_url: string | null; role: AppRole; shown_as_coach?: boolean | null } | null;
 };
 
 /** Mini counter pills (❤️ 5 🔥 2), most used first; the viewer's reactions are highlighted. With `source`, tapping them lists who reacted. */
@@ -243,16 +244,21 @@ function ReactorsSheet({ source, onClose }: { source: ReactionSource; onClose: (
 
   useEffect(() => {
     let active = true;
-    const fields = "user_id, reaction, created_at, user:users(full_name, display_name, avatar_url, role)";
-    const query =
-      kind === "post"
-        ? supabase.from("likes").select(fields).eq("post_id", id)
-        : supabase.from("comment_reactions").select(fields).eq("comment_id", id);
-    query.order("created_at", { ascending: false }).then(({ data, error }) => {
+    const load = (userFields: string) => {
+      const fields = `user_id, reaction, created_at, user:users(${userFields})`;
+      const query =
+        kind === "post"
+          ? supabase.from("likes").select(fields).eq("post_id", id)
+          : supabase.from("comment_reactions").select(fields).eq("comment_id", id);
+      return query.order("created_at", { ascending: false });
+    };
+    (async () => {
+      let res = await load("full_name, display_name, avatar_url, role, shown_as_coach");
+      if (res.error) res = await load("full_name, display_name, avatar_url, role");
       if (!active) return;
-      if (error) setFailed(true);
-      else setRows((data ?? []) as unknown as Reactor[]);
-    });
+      if (res.error) setFailed(true);
+      else setRows((res.data ?? []) as unknown as Reactor[]);
+    })();
     return () => {
       active = false;
     };
@@ -322,7 +328,7 @@ function ReactorsSheet({ source, onClose }: { source: ReactionSource; onClose: (
                 <span className="shrink-0 text-lg leading-none tracking-tight" data-testid="reactor-emojis">
                   {sortReactions(r.reactions).map((k) => reactionInfo(k).emoji).join("")}
                 </span>
-                {r.user && <RoleBadge role={r.user.role} />}
+                {r.user && <RoleBadge role={badgeRole(r.user.role, r.user.shown_as_coach)} />}
               </li>
             );
           })}

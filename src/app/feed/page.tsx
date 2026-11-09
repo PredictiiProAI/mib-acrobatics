@@ -37,7 +37,7 @@ export default async function FeedPage() {
           <AnnouncementBanner announcement={settings.announcement} />
         </div>
       )}
-      <FeedList initialPosts={posts ?? []} viewer={{ id: user.id, role: user.role, name: publicName(user), avatarUrl: user.avatarUrl }} />
+      <FeedList initialPosts={posts ?? []} viewer={{ id: user.id, role: user.role, badgeRole: user.badgeRole, name: publicName(user), avatarUrl: user.avatarUrl }} />
     </div>
   );
 }

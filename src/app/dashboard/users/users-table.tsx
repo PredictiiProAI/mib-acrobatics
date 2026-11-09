@@ -33,7 +33,7 @@ import {
   type WaiverRecord,
 } from "@/lib/actions/users";
 import { LEVEL_LABEL } from "@/lib/profile";
-import { ADMIN_ROLE_LABEL, isStaff, needsWaiver } from "@/lib/roles";
+import { isStaff, needsWaiver, ROLE_LABEL } from "@/lib/roles";
 import { FORM_ROLE_LABEL, MEDICAL_FIELDS } from "@/lib/waiver";
 import type { AppRole, Database } from "@/lib/supabase/database.types";
 import { timeAgo } from "@/lib/time";
@@ -51,7 +51,7 @@ const ALL_ROLES: AppRole[] = ["superadmin", "admin", "media", "user"];
 type UiRole = AppRole | "parent";
 const UI_ROLES: UiRole[] = ["superadmin", "admin", "media", "parent", "user"];
 const uiRoleOf = (u: Row): UiRole => (u.role === "user" && u.account_type === "Părinte" ? "parent" : u.role);
-const uiLabel = (r: UiRole) => (r === "parent" ? "Părinte" : ADMIN_ROLE_LABEL[r]);
+const uiLabel = (r: UiRole) => (r === "parent" ? "Părinte" : ROLE_LABEL[r]);
 const uiStyle = (r: UiRole) => (r === "parent" ? "bg-neon-orange/10 text-neon-orange/90 ring-neon-orange/25" : ROLE_BADGE_STYLE[r]);
 const withParent = (roles: AppRole[]): UiRole[] => roles.flatMap((r): UiRole[] => (r === "user" ? ["parent", "user"] : [r]));
 const toAppRole = (r: UiRole) => ({ role: r === "parent" ? ("user" as const) : r, memberType: r === "parent" ? ("Părinte" as const) : r === "user" ? ("Sportiv" as const) : undefined });
@@ -646,9 +646,9 @@ function RoleCell({ me, user }: { me: Me; user: Row }) {
           if (role === "admin" || role === "superadmin") {
             const ok = await confirm({
               tone: "warning",
-              title: `Dai rolul ${ADMIN_ROLE_LABEL[role]}?`,
+              title: `Dai rolul ${ROLE_LABEL[role]}?`,
               description: `${user.full_name ?? user.email} va avea acces complet: moderare, utilizatori și toate conversațiile.`,
-              confirmLabel: `Da, fă-l ${ADMIN_ROLE_LABEL[role]}`,
+              confirmLabel: `Da, fă-l ${ROLE_LABEL[role]}`,
             });
             if (!ok) return;
           }
@@ -719,7 +719,7 @@ export function UsersTable({ me, users }: { me: Me; users: Row[] }) {
             >
               {r === "all"
                 ? `Toți (${users.length})`
-                : `${r === "parent" ? "Părinți" : ADMIN_ROLE_LABEL[r]} (${counts[r]})`}
+                : `${r === "parent" ? "Părinți" : ROLE_LABEL[r]} (${counts[r]})`}
             </button>
           ))}
         </div>

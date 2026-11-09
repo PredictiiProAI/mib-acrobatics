@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useRef, useState } from "react";
 import { useConfirm } from "@/components/confirm-dialog";
 import { RoleBadge } from "@/components/role-badge";
+import { badgeRole } from "@/lib/roles";
 import { deletePost } from "@/lib/actions/posts";
 import { saveReactions } from "@/lib/likes";
 import type { FeedPost } from "@/lib/posts";
@@ -118,7 +119,7 @@ export function PostCard({ post, viewer, priority, onDeleted }: { post: FeedPost
             <span className="truncate font-semibold" data-testid="post-author">
               {author}
             </span>
-            <RoleBadge role={post.author_role} />
+            <RoleBadge role={badgeRole(post.author_role, post.author_shown_as_coach)} />
           </p>
           <p className="mt-0.5 inline-flex items-center gap-1 text-xs text-white/45" title={fullDate.format(new Date(post.created_at))} suppressHydrationWarning>
             <Clock className="size-3" /> {timeAgo(post.created_at)}

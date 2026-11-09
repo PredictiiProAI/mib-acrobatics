@@ -265,6 +265,9 @@ export type Database = {
         }[];
       };
       admin_set_role: { Args: { target: string; new_role: AppRole }; Returns: undefined };
+      admin_request_documents: { Args: { target: string }; Returns: { email: string; full_name: string | null; account_type: AccountType }[] };
+      admin_document_requests: { Args: Record<string, never>; Returns: { id: string; documents_requested_at: string }[] };
+      my_documents_request: { Args: Record<string, never>; Returns: string | null };
       email_registered: { Args: { p_email: string }; Returns: boolean };
     };
     Enums: { app_role: AppRole; media_type: MediaType };

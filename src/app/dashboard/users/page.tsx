@@ -10,8 +10,9 @@ export const metadata: Metadata = { title: "Utilizatori" };
 export default async function UsersPage() {
   const me = await requireRole(STAFF_ROLES, "/dashboard/users");
   const supabase = await createClient();
-  const [{ data: users, error }, { data: posts }, { data: comments }] = await Promise.all([
+  const [{ data: users, error }, { data: requests }, { data: posts }, { data: comments }] = await Promise.all([
     supabase.rpc("admin_list_users"),
+    supabase.rpc("admin_document_requests"),
     supabase.from("posts").select("author_id"),
     supabase.from("comments").select("user_id"),
   ]);
@@ -20,6 +21,7 @@ export default async function UsersPage() {
   const tally = (ids: (string | undefined)[]) => ids.reduce<Record<string, number>>((acc, id) => (id ? { ...acc, [id]: (acc[id] ?? 0) + 1 } : acc), {});
   const postCount = tally((posts ?? []).map((p) => p.author_id));
   const commentCount = tally((comments ?? []).map((c) => c.user_id));
+  const requestedAt = new Map((requests ?? []).map((r) => [r.id, r.documents_requested_at]));
 
   return (
     <div className="space-y-8">
@@ -35,7 +37,7 @@ export default async function UsersPage() {
       </div>
       <UsersTable
         me={{ id: me.id, role: me.role }}
-        users={(users ?? []).map((u) => ({ ...u, posts: postCount[u.id] ?? 0, comments: commentCount[u.id] ?? 0 }))}
+        users={(users ?? []).map((u) => ({ ...u, posts: postCount[u.id] ?? 0, comments: commentCount[u.id] ?? 0, documents_requested_at: requestedAt.get(u.id) ?? null }))}
       />
     </div>
   );

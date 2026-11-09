@@ -10,6 +10,7 @@ import {
   MessageSquare,
   Phone,
   Search,
+  Send,
   Trash2,
   UserPlus,
   X,
@@ -28,6 +29,7 @@ import {
   deleteUser,
   getUserActivity,
   getWaiverSubmissions,
+  requestDocuments,
   setUserRole,
   type UserActivity,
   type WaiverRecord,
@@ -42,6 +44,7 @@ type Row =
   Database["public"]["Functions"]["admin_list_users"]["Returns"][number] & {
     posts: number;
     comments: number;
+    documents_requested_at?: string | null;
   };
 type Me = { id: string; role: AppRole };
 
@@ -267,7 +270,7 @@ function WaiverBadge({ user }: { user: Row }) {
     );
   const parent = isParent(user);
   const signed = parent ? !!user.waiver_signed : !!user.rules_accepted_at;
-  const label = parent ? (signed ? "Declarație ✓" : "Declarație ✕") : signed ? "Regulament ✓" : "Regulament ✕";
+  const label = `${parent ? (signed ? "Declarație ✓" : "Declarație ✕") : signed ? "Regulament ✓" : "Regulament ✕"}${!signed && user.documents_requested_at ? " · cerut" : ""}`;
   return (
     <div className="relative" onClick={(e) => e.stopPropagation()}>
       <button
@@ -288,8 +291,44 @@ function WaiverBadge({ user }: { user: Row }) {
         <div className="absolute left-0 top-full z-20 mt-2 w-64 rounded-2xl border border-white/10 bg-carbon p-3 text-xs shadow-xl" data-testid="waiver-popover">
           <WaiverStatus user={user} />
           {parent && signed && <PdfLinks userId={user.id} />}
+          {!signed && <RequestDocsButton user={user} />}
         </div>
       )}
+    </div>
+  );
+}
+
+function RequestDocsButton({ user }: { user: Row }) {
+  const router = useRouter();
+  const [pending, start] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+  const [sentAt, setSentAt] = useState(user.documents_requested_at ?? null);
+  const send = () =>
+    start(async () => {
+      setError(null);
+      const r = await requestDocuments(user.id);
+      if (!r.ok) return setError(r.error);
+      setSentAt(new Date().toISOString());
+      router.refresh();
+    });
+  return (
+    <div className="mt-2 grid gap-1.5 border-t border-white/10 pt-2" data-testid="request-docs">
+      <button
+        type="button"
+        onClick={send}
+        disabled={pending}
+        className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl bg-neon-orange px-3 py-2 text-xs font-bold text-onaccent transition hover:bg-neon-green active:scale-95 disabled:opacity-60"
+        data-testid="request-docs-button"
+      >
+        {pending ? <Loader2 className="size-3.5 animate-spin" /> : <Send className="size-3.5" />}
+        {sentAt ? "Cere din nou completarea" : "Cere completarea"}
+      </button>
+      {sentAt && (
+        <p className="text-xs text-white/50" data-testid="request-docs-sent">
+          Cerut pe {waiverFmt.format(new Date(sentAt))}. Primește email și formularul îi apare la fiecare intrare în aplicație, până îl completează.
+        </p>
+      )}
+      {error && <p className="text-xs text-red-300">{error}</p>}
     </div>
   );
 }
@@ -427,6 +466,7 @@ function UserPanel({ user, onClose }: { user: Row; onClose: () => void }) {
           <div className="col-span-2">
             <Detail label={isParent(user) ? "Acord parental & fișă medicală" : needsWaiver(user.role) ? "Regulament & siguranță" : "Documente"}>
               <WaiverStatus user={user} />
+              {needsWaiver(user.role) && !(isParent(user) ? user.waiver_signed : user.rules_accepted_at) && <RequestDocsButton user={user} />}
             </Detail>
           </div>
         </div>

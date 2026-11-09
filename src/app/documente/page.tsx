@@ -15,11 +15,12 @@ export default async function DocumentsGate({ searchParams }: { searchParams: Pr
   if (!needsWaiver(user.role)) redirect(next);
 
   const supabase = await createClient();
-  const [{ data: details }, { data: profile }, { data: settings }, { data: waivers }] = await Promise.all([
+  const [{ data: details }, { data: profile }, { data: settings }, { data: waivers }, { data: requested }] = await Promise.all([
     supabase.rpc("profile_details", { p_user: user.id }),
     supabase.from("users").select("full_name").eq("id", user.id).maybeSingle(),
     supabase.from("user_settings").select("phone").eq("user_id", user.id).maybeSingle(),
     supabase.from("waiver_submissions").select("*").eq("user_id", user.id).order("signed_at", { ascending: false }),
+    supabase.rpc("my_documents_request"),
   ]);
   const d = details?.[0];
   const parent = d?.account_type === "Părinte";
@@ -36,6 +37,11 @@ export default async function DocumentsGate({ searchParams }: { searchParams: Pr
             : "Citește regulile de siguranță din sală și confirmă că le respecți."}
         </p>
       </header>
+      {requested && (
+        <p className="rounded-2xl border border-neon-orange/40 bg-neon-orange/10 p-4 text-sm font-semibold text-neon-orange" data-testid="documents-requested">
+          Antrenorii ți-au cerut să completezi {parent ? "acordul parental și fișa medicală" : "regulamentul"}. Aplicația se deschide după ce termini.
+        </p>
+      )}
       {parent ? (
         <WaiverCard
           submissions={waivers ?? []}
@@ -45,6 +51,7 @@ export default async function DocumentsGate({ searchParams }: { searchParams: Pr
       ) : (
         <RulesCard acceptedAt={d?.rules_accepted_at ?? null} />
       )}
+      {!requested && (
       <p className="text-center text-xs text-white/40">
         Poți face asta și mai târziu, din{" "}
         <Link href={next} className="font-semibold text-white/60 underline-offset-2 hover:text-neon-orange hover:underline" data-testid="documents-later">
@@ -52,6 +59,7 @@ export default async function DocumentsGate({ searchParams }: { searchParams: Pr
         </Link>{" "}
         → Profil.
       </p>
+      )}
     </div>
   );
 }

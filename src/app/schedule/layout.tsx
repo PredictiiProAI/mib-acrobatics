@@ -1,8 +1,10 @@
 import { AppHeader } from "@/components/app-header";
 import { requireUser } from "@/lib/auth";
+import { enforceRequestedDocuments } from "@/lib/documents-gate";
 
 export default async function ScheduleLayout({ children }: LayoutProps<"/schedule">) {
   const user = await requireUser("/schedule");
+  await enforceRequestedDocuments(user, "/schedule");
   return (
     <>
       <AppHeader user={user} />

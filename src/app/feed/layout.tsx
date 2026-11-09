@@ -1,9 +1,11 @@
 import { AppHeader } from "@/components/app-header";
 import { ScrollTopButton } from "@/components/scroll-top-button";
 import { requireUser } from "@/lib/auth";
+import { enforceRequestedDocuments } from "@/lib/documents-gate";
 
 export default async function FeedLayout({ children }: LayoutProps<"/feed">) {
   const user = await requireUser("/feed");
+  await enforceRequestedDocuments(user, "/feed");
   return (
     <>
       <AppHeader user={user} />

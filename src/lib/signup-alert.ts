@@ -21,11 +21,11 @@ function buildMessage(user: { email: string; fullName: string }) {
 type AdminMail = { subject: string; text: string; html: string };
 
 /**
- * Emails the head coach. Never throws.
+ * Sends one email. Never throws.
  * Uses SMTP when SMTP_HOST is set (same server as the Supabase Auth emails), otherwise Resend when RESEND_API_KEY is set.
  */
-export async function sendAdminEmail(mail: AdminMail) {
-  const msg = { from: ALERT_FROM, to: ALERT_TO, ...mail };
+export async function sendEmail(to: string, mail: AdminMail) {
+  const msg = { from: ALERT_FROM, to, ...mail };
   try {
     if (process.env.SMTP_HOST) {
       const port = Number(process.env.SMTP_PORT || 587);
@@ -51,6 +51,32 @@ export async function sendAdminEmail(mail: AdminMail) {
   } catch (e) {
     console.error("admin email failed", e);
   }
+}
+
+/** Emails the head coach. */
+export const sendAdminEmail = (mail: AdminMail) => sendEmail(ALERT_TO, mail);
+
+/** Reminds a member (sent from Admin → Utilizatori) to complete the parental consent or the gym rules. */
+export function sendDocumentsRequest(info: { to: string; name: string; parent: boolean }) {
+  const site = (process.env.NEXT_PUBLIC_SITE_URL || "https://mib-acrobatics.vercel.app").replace(/\/$/, "");
+  const url = `${site}/documente`;
+  const doc = info.parent ? "Acordul parental & Fișa medicală" : "Regulamentul & Siguranța Sportiv AcroMIB";
+  const subject = `[AcroMIB] Te rugăm să completezi ${doc}`;
+  const hello = info.name ? `Bună, ${info.name}!` : "Bună!";
+  const body = info.parent
+    ? "Antrenorii MIB Acrobatics îți cer să completezi acordul parental și fișa medicală a copilului. Fără ele, copilul nu poate participa la antrenamente. Durează aproximativ 2 minute."
+    : "Antrenorii MIB Acrobatics îți cer să citești și să accepți regulamentul de siguranță din sală.";
+  return sendEmail(info.to, {
+    subject,
+    text: `${hello}\n\n${body}\n\nCompletează aici: ${url}\n\nEchipa AcroMIB`,
+    html: `<div style="background:#000;padding:24px;font-family:Arial,sans-serif;color:#fff"><div style="max-width:480px;margin:0 auto;background:#111;border-radius:16px;padding:24px">
+<img src="${site}/logo.png" alt="AcroMIB" width="120" style="display:block;margin:0 auto 16px">
+<p style="margin:0 0 4px;color:#39ff14;font-size:12px;font-weight:700;letter-spacing:3px">MIB ACROBATICS</p>
+<h1 style="margin:0 0 12px;font-size:20px">${escapeHtml(doc)}</h1>
+<p style="margin:0 0 8px">${escapeHtml(hello)}</p><p style="margin:0 0 20px;color:#ffffffcc">${escapeHtml(body)}</p>
+<a href="${url}" style="display:inline-block;background:#ff6a00;color:#000;font-weight:700;text-decoration:none;padding:12px 20px;border-radius:12px">Completează acum</a>
+<p style="margin:20px 0 0;color:#ffffff80;font-size:12px">Echipa AcroMIB</p></div></div>`,
+  });
 }
 
 export const sendSignupAlert = (user: { email: string; fullName: string }) => sendAdminEmail(buildMessage(user));

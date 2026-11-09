@@ -3,7 +3,7 @@
 import { AlertTriangle, CheckCircle2, FileSignature, Loader2, Pencil, Plus, ShieldCheck, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useState, useSyncExternalStore, useTransition } from "react";
 import { createPortal } from "react-dom";
 import { acceptRules, submitWaiver } from "@/lib/actions/waiver";
 import type { Database } from "@/lib/supabase/database.types";
@@ -179,9 +179,13 @@ export function RulesCard({ acceptedAt: initial }: { acceptedAt: string | null }
   );
 }
 
+const noopSubscribe = () => () => {};
+
 function WaiverModal({ edit, parent, onClose }: { edit?: WaiverSubmission; parent: Parent; onClose: () => void }) {
   const prefill = edit;
   const router = useRouter();
+  // The sheet portals into document.body, which only exists in the browser (it auto-opens on /documente).
+  const mounted = useSyncExternalStore(noopSubscribe, () => true, () => false);
   const [signerName, setSignerName] = useState(prefill?.signer_name ?? parent.name);
   const [childName, setChildName] = useState(prefill?.child_name ?? "");
   const [childBirthdate, setChildBirthdate] = useState(prefill?.child_birthdate ?? "");
@@ -230,6 +234,7 @@ function WaiverModal({ edit, parent, onClose }: { edit?: WaiverSubmission; paren
   const toggleAck = (key: WaiverAck) => setAcks((a) => (a.includes(key) ? a.filter((k) => k !== key) : [...a, key]));
   const today = new Date().toISOString().slice(0, 10);
 
+  if (!mounted) return null;
   return createPortal(
     <div
       className={`fixed inset-0 z-50 flex items-end justify-center bg-black/80 backdrop-blur-sm transition-opacity duration-200 sm:items-center sm:p-4 ${shown ? "opacity-100" : "opacity-0"}`}

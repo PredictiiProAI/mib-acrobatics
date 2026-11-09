@@ -1,10 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { getSessionUser } from "@/lib/auth";
 import { isStaff } from "@/lib/roles";
 import type { AppRole, Database } from "@/lib/supabase/database.types";
 import { createAdminClient, removeUserFiles } from "@/lib/supabase/admin";
+import { sendDocumentsRequest } from "@/lib/signup-alert";
 import { MEDIA_BUCKET } from "@/lib/supabase/env";
 import { createClient } from "@/lib/supabase/server";
 import type { ActionResult } from "./posts";
@@ -132,6 +134,23 @@ export async function getUserActivity(target: string): Promise<UserActivity | nu
     posts: posts.data ?? [],
     comments: (comments.data ?? []).map((c) => ({ id: c.id, content: c.content, created_at: c.created_at, post_caption: c.post?.caption ?? null })),
   };
+}
+
+/** Asks a member to complete the missing parental consent / rules (0022): email + forced /documente until done. */
+export async function requestDocuments(target: string): Promise<ActionResult> {
+  const me = await getSessionUser();
+  if (!me || !isStaff(me.role)) return { ok: false, error: "Nu ai acces la gestionarea utilizatorilor." };
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("admin_request_documents", { target });
+  if (error) {
+    console.error("admin_request_documents", error.message);
+    return { ok: false, error: error.code === "PGRST202" ? "Rulează migrarea 0022_document_requests.sql în Supabase." : "Cererea nu a putut fi trimisă." };
+  }
+  const u = data?.[0];
+  if (!u) return { ok: false, error: "Doar sportivii și părinții completează documente." };
+  after(() => sendDocumentsRequest({ to: u.email, name: u.full_name ?? "", parent: u.account_type === "Părinte" }));
+  revalidatePath("/dashboard/users");
+  return { ok: true };
 }
 
 export type WaiverRecord = Database["public"]["Tables"]["waiver_submissions"]["Row"];

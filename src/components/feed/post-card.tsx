@@ -1,7 +1,7 @@
 "use client";
 
 import { Avatar } from "@/components/avatar";
-import { Clock, Heart, MessageCircle, Trash2 } from "lucide-react";
+import { Clock, Heart, MessageCircle, SmilePlus, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { useRef, useState } from "react";
 import { useConfirm } from "@/components/confirm-dialog";
@@ -156,9 +156,7 @@ export function PostCard({ post, viewer, priority, onDeleted }: { post: FeedPost
           <ReactionTrigger
             mine={mine}
             onReact={react}
-            rootClassName="gap-1.5"
-            pickerClassName="grid size-11 shrink-0 place-items-center rounded-2xl bg-white/[0.04] text-white/70 transition hover:bg-white/[0.08] hover:text-neon-orange active:scale-95"
-            className={`group inline-flex min-w-0 flex-1 items-center justify-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-bold transition active:scale-95 ${
+            className={`group inline-flex w-full min-w-0 items-center justify-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-bold transition active:scale-95 ${
               mine.length ? "bg-neon-orange/15 text-neon-orange ring-1 ring-neon-orange/40" : "bg-white/[0.04] text-white/80 hover:bg-white/[0.08] hover:text-white"
             }`}
           >
@@ -167,7 +165,7 @@ export function PostCard({ post, viewer, priority, onDeleted }: { post: FeedPost
                 {mineInfo.map((r) => r.emoji).join("")}
               </span>
             ) : (
-              <Heart className="size-5 transition group-hover:text-neon-orange" />
+              <SmilePlus className="size-5 transition group-hover:text-neon-orange" />
             )}
             <span className="truncate font-medium">{mineInfo.length === 1 ? mineInfo[0].label : mineInfo.length ? "Reacțiile tale" : "Reacționează"}</span>
           </ReactionTrigger>

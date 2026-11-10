@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2, SmilePlus, X } from "lucide-react";
+import { Loader2, X } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Avatar } from "@/components/avatar";
@@ -8,16 +8,26 @@ import { RoleBadge } from "@/components/role-badge";
 import { badgeRole } from "@/lib/roles";
 import type { AppRole } from "@/lib/supabase/database.types";
 import { createClient } from "@/lib/supabase/client";
-import { REACTIONS, type ReactionCounts, type ReactionKey, DEFAULT_REACTION, reactionInfo, sortReactions, toggleReaction } from "@/lib/reactions";
+import { REACTIONS, type ReactionCounts, type ReactionKey, reactionInfo, sortReactions, toggleReaction } from "@/lib/reactions";
 
-const HOVER_OPEN_MS = 350;
-const HOVER_CLOSE_MS = 300;
-const LONG_PRESS_MS = 450;
 const BAR_WIDTH = 222;
 
+type BarPos = { top: number; below: boolean; left?: number; right?: number };
+type Align = "left" | "center" | "right";
+
+// The bar is `fixed` so scrollable comment lists can't clip it; it flips under the trigger near the top of the screen.
+function placeBar(r: DOMRect, align: Align): BarPos {
+  const below = r.top < 90;
+  const top = below ? r.bottom + 8 : r.top - 8;
+  const vw = window.innerWidth;
+  if (align === "right") return { top, below, right: Math.max(8, vw - r.right) };
+  if (align === "center") return { top, below, left: Math.min(Math.max(8, r.left + r.width / 2 - BAR_WIDTH / 2), vw - BAR_WIDTH - 8) };
+  return { top, below, left: Math.min(Math.max(8, r.left), vw - BAR_WIDTH - 8) };
+}
+
 /**
- * Messenger-style reaction trigger: tap/click adds the default reaction (or removes all of the viewer's), hovering (mouse)
- * or long-pressing (touch) opens the bar where each reaction toggles on its own, so several can be combined. `pickerClassName` adds a smiley button that opens the bar on tap.
+ * Messenger-style single reaction button: a tap opens the bar of 5 reactions, where each one toggles on its own
+ * (several can be combined, tapping an active one removes it). Tapping outside or scrolling closes the bar.
  */
 export function ReactionTrigger({
   mine,
@@ -26,79 +36,53 @@ export function ReactionTrigger({
   className = "",
   align = "left",
   label = "Reacționează",
-  pickerClassName,
   rootClassName = "",
 }: {
   mine: ReactionKey[];
   onReact: (next: ReactionKey[]) => void;
   children: ReactNode;
   className?: string;
-  align?: "left" | "center" | "right";
+  align?: Align;
   label?: string;
-  pickerClassName?: string;
   rootClassName?: string;
 }) {
   const [open, setOpenState] = useState(false);
-  const [pos, setPos] = useState<{ top: number; below: boolean; left?: number; right?: number }>({ top: 0, below: false });
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const longPressed = useRef(false);
+  const [pos, setPos] = useState<BarPos>({ top: 0, below: false });
   const root = useRef<HTMLDivElement>(null);
 
-  // The bar is `fixed` so scrollable comment lists can't clip it; it flips under the trigger near the top of the screen.
   const setOpen = (v: boolean) => {
     const r = root.current?.getBoundingClientRect();
-    if (v && r) {
-      const below = r.top < 90;
-      const top = below ? r.bottom + 8 : r.top - 8;
-      const vw = window.innerWidth;
-      if (align === "right") setPos({ top, below, right: Math.max(8, vw - r.right) });
-      else if (align === "center") setPos({ top, below, left: Math.min(Math.max(8, r.left + r.width / 2 - BAR_WIDTH / 2), vw - BAR_WIDTH - 8) });
-      else setPos({ top, below, left: Math.min(Math.max(8, r.left), vw - BAR_WIDTH - 8) });
-    }
+    if (v && r) setPos(placeBar(r, align));
     setOpenState(v);
-  };
-
-  const clear = () => {
-    if (timer.current) clearTimeout(timer.current);
-    timer.current = null;
-  };
-  const later = (fn: () => void, ms: number) => {
-    clear();
-    timer.current = setTimeout(fn, ms);
   };
 
   useEffect(() => {
     if (!open) return;
     const onDown = (e: PointerEvent) => !root.current?.contains(e.target as Node) && setOpenState(false);
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpenState(false);
-    const close = () => setOpenState(false);
+    // Picking a reaction can shift the layout (and fire scroll anchoring), so the bar follows its button
+    // and only closes once the button leaves the screen.
+    const follow = () => {
+      const r = root.current?.getBoundingClientRect();
+      if (!r || r.bottom < 0 || r.top > window.innerHeight) setOpenState(false);
+      else setPos(placeBar(r, align));
+    };
     document.addEventListener("pointerdown", onDown);
     document.addEventListener("keydown", onKey);
-    document.addEventListener("scroll", close, { capture: true, passive: true });
-    window.addEventListener("resize", close);
+    document.addEventListener("scroll", follow, { capture: true, passive: true });
+    window.addEventListener("resize", follow);
     return () => {
       document.removeEventListener("pointerdown", onDown);
       document.removeEventListener("keydown", onKey);
-      document.removeEventListener("scroll", close, { capture: true });
-      window.removeEventListener("resize", close);
+      document.removeEventListener("scroll", follow, { capture: true });
+      window.removeEventListener("resize", follow);
     };
-  }, [open]);
+  }, [open, align]);
 
-  useEffect(() => clear, []);
-
-  // The bar stays open so more reactions can be added; tapping outside closes it.
-  const pick = (key: ReactionKey) => {
-    clear();
-    onReact(sortReactions(toggleReaction(mine, key)));
-  };
+  const pick = (key: ReactionKey) => onReact(sortReactions(toggleReaction(mine, key)));
 
   return (
-    <div
-      ref={root}
-      className={`relative flex items-center ${rootClassName}`}
-      onPointerEnter={(e) => e.pointerType === "mouse" && later(() => setOpen(true), HOVER_OPEN_MS)}
-      onPointerLeave={(e) => e.pointerType === "mouse" && later(() => setOpen(false), HOVER_CLOSE_MS)}
-    >
+    <div ref={root} className={`relative flex items-center ${rootClassName}`}>
       {open && (
         <div
           role="toolbar"
@@ -127,49 +111,16 @@ export function ReactionTrigger({
       )}
       <button
         type="button"
-        aria-label={mine.length ? `Retrage ${mine.length === 1 ? `reacția ${reactionInfo(mine[0]).label}` : "reacțiile"}` : label}
+        aria-label={label}
+        aria-expanded={open}
         aria-pressed={mine.length > 0}
+        data-testid="reaction-trigger"
         data-reaction={mine.join(" ")}
-        onPointerDown={(e) => {
-          if (e.pointerType === "mouse") return;
-          longPressed.current = false;
-          later(() => {
-            longPressed.current = true;
-            setOpen(true);
-            navigator.vibrate?.(10);
-          }, LONG_PRESS_MS);
-        }}
-        onPointerUp={(e) => e.pointerType !== "mouse" && !longPressed.current && clear()}
-        onPointerCancel={clear}
-        onContextMenu={(e) => e.preventDefault()}
-        onClick={() => {
-          if (longPressed.current) {
-            longPressed.current = false;
-            return;
-          }
-          clear();
-          setOpen(false);
-          onReact(mine.length ? [] : [DEFAULT_REACTION]);
-        }}
-        className={`select-none [-webkit-touch-callout:none] ${className}`}
+        onClick={() => setOpen(!open)}
+        className={`select-none ${className}`}
       >
         {children}
       </button>
-      {pickerClassName && (
-        <button
-          type="button"
-          aria-label="Alege o reacție"
-          aria-expanded={open}
-          data-testid="reaction-picker"
-          onClick={() => {
-            clear();
-            setOpen(!open);
-          }}
-          className={`select-none ${pickerClassName}`}
-        >
-          <SmilePlus className="size-5" />
-        </button>
-      )}
     </div>
   );
 }
@@ -229,7 +180,7 @@ export function ReactionSummary({
         onClick={() => setOpen(true)}
         aria-label="Vezi cine a reacționat"
         data-testid="reaction-summary"
-        className={`flex flex-wrap items-center gap-1.5 text-left transition active:scale-95 ${hint ? "min-h-11 rounded-2xl pr-2" : ""} ${className}`}
+        className={`flex flex-wrap items-center gap-1.5 text-left transition active:scale-95 ${hint ? "min-h-11 rounded-2xl pr-2" : "-my-1 py-1"} ${className}`}
       >
         {pills}
         {hint && (

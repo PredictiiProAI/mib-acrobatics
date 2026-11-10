@@ -1,7 +1,7 @@
 "use client";
 
 import { Avatar } from "@/components/avatar";
-import { Loader2, Send, Trash2, ChevronUp, Heart } from "lucide-react";
+import { Loader2, Send, Trash2, ChevronUp, Heart, SmilePlus } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useConfirm } from "@/components/confirm-dialog";
 import { RoleBadge } from "@/components/role-badge";
@@ -247,16 +247,15 @@ export function CommentsSection({
                 <ReactionTrigger
                   mine={mine}
                   onReact={(next) => reactToComment(c, next)}
-                  label="Îmi place"
+                  label="Reacționează la comentariu"
                   align="right"
                   rootClassName="shrink-0 self-center"
-                  pickerClassName="grid size-9 place-items-center rounded-full text-white/45 transition hover:text-white active:scale-90 [&_svg]:size-[18px]"
-                  className={`grid size-9 place-items-center rounded-full transition active:scale-90 ${mine.length ? "text-neon-orange" : "text-white/45 hover:text-white"}`}
+                  className={`grid size-9 place-items-center rounded-full transition active:scale-90 ${mine.length ? "bg-neon-orange/10 text-neon-orange" : "text-white/40 hover:text-white"}`}
                 >
-                  {mine.length && !mine.includes(DEFAULT_REACTION) ? (
-                    <span className="text-lg leading-none">{reactionInfo(mine[0]).emoji}</span>
+                  {mine.length ? (
+                    <span className="text-base leading-none">{reactionInfo(mine[0]).emoji}</span>
                   ) : (
-                    <Heart className={`size-[18px] ${mine.length ? "fill-neon-orange" : ""}`} data-testid="comment-heart" />
+                    <SmilePlus className="size-[18px]" />
                   )}
                 </ReactionTrigger>
               )}

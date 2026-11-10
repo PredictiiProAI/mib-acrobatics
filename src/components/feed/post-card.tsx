@@ -84,8 +84,6 @@ export function PostCard({ post, viewer, priority, onDeleted }: { post: FeedPost
     if (!wanted.current.includes(DEFAULT_REACTION)) react([...wanted.current, DEFAULT_REACTION]);
   };
 
-  const mineInfo = mine.map(reactionInfo);
-
   async function remove() {
     const ok = await confirm({
       title: "Ștergi această postare?",
@@ -152,24 +150,23 @@ export function PostCard({ post, viewer, priority, onDeleted }: { post: FeedPost
       <ReactionSummary counts={counts} mine={mine} source={{ kind: "post", id: post.id }} hint className="mx-4 mt-2 md:mx-5" />
 
       <footer className="mt-4 flex items-center gap-2 border-t border-white/5 px-3 py-3">
-        <div className="flex-1">
-          <ReactionTrigger
-            mine={mine}
-            onReact={react}
-            className={`group inline-flex w-full min-w-0 items-center justify-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-bold transition active:scale-95 ${
-              mine.length ? "bg-neon-orange/15 text-neon-orange ring-1 ring-neon-orange/40" : "bg-white/[0.04] text-white/80 hover:bg-white/[0.08] hover:text-white"
-            }`}
-          >
-            {mineInfo.length ? (
-              <span key={mine.join()} className="animate-[pop-in_.2s_ease-out] whitespace-nowrap text-lg leading-none tracking-tight">
-                {mineInfo.map((r) => r.emoji).join("")}
-              </span>
-            ) : (
-              <SmilePlus className="size-5 transition group-hover:text-neon-orange" />
-            )}
-            <span className="truncate font-medium">{mineInfo.length === 1 ? mineInfo[0].label : mineInfo.length ? "Reacțiile tale" : "Reacționează"}</span>
-          </ReactionTrigger>
-        </div>
+        <ReactionTrigger
+          mine={mine}
+          onReact={react}
+          label={mine.length ? "Reacțiile tale" : "Reacționează"}
+          rootClassName="shrink-0"
+          className={`grid size-11 place-items-center rounded-2xl transition active:scale-90 ${
+            mine.length ? "bg-neon-orange/15 ring-1 ring-neon-orange/40" : "bg-white/[0.04] text-white/70 hover:bg-white/[0.08] hover:text-neon-orange"
+          }`}
+        >
+          {mine.length ? (
+            <span key={mine.join()} className="animate-[pop-in_.2s_ease-out] text-xl leading-none">
+              {reactionInfo(mine[0]).emoji}
+            </span>
+          ) : (
+            <SmilePlus className="size-5" />
+          )}
+        </ReactionTrigger>
         <button
           type="button"
           onClick={toggleComments}

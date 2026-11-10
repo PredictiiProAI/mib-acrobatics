@@ -1,7 +1,7 @@
 "use client";
 
 import { Avatar } from "@/components/avatar";
-import { Loader2, Send, Trash2, ChevronUp, Heart, SmilePlus } from "lucide-react";
+import { Loader2, Send, Trash2, ChevronUp, Heart, Smile } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useConfirm } from "@/components/confirm-dialog";
 import { RoleBadge } from "@/components/role-badge";
@@ -250,12 +250,12 @@ export function CommentsSection({
                   label="Reacționează la comentariu"
                   align="right"
                   rootClassName="shrink-0 self-center"
-                  className={`grid size-9 place-items-center rounded-full transition active:scale-90 ${mine.length ? "bg-neon-orange/10 text-neon-orange" : "text-white/40 hover:text-white"}`}
+                  className={`grid size-9 place-items-center rounded-full transition active:scale-90 bg-transparent hover:bg-white/[0.06] ${mine.length ? "" : "text-white/40 hover:text-white"}`}
                 >
                   {mine.length ? (
                     <span className="text-base leading-none">{reactionInfo(mine[0]).emoji}</span>
                   ) : (
-                    <SmilePlus className="size-[18px]" />
+                    <Smile className="size-[18px]" strokeWidth={1.75} />
                   )}
                 </ReactionTrigger>
               )}

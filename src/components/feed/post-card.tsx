@@ -1,7 +1,7 @@
 "use client";
 
 import { Avatar } from "@/components/avatar";
-import { Clock, Heart, MessageCircle, SmilePlus, Trash2 } from "lucide-react";
+import { Clock, Heart, MessageCircle, Smile, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { useRef, useState } from "react";
 import { useConfirm } from "@/components/confirm-dialog";
@@ -149,36 +149,34 @@ export function PostCard({ post, viewer, priority, onDeleted }: { post: FeedPost
       {error && <p className="px-4 pt-3 md:px-5 text-xs text-red-300">{error}</p>}
       <ReactionSummary counts={counts} mine={mine} source={{ kind: "post", id: post.id }} hint className="mx-4 mt-2 md:mx-5" />
 
-      <footer className="mt-4 flex items-center gap-2 border-t border-white/5 px-3 py-3">
+      <footer className="mt-1 flex items-center gap-1 px-2 pb-2 md:px-3">
         <ReactionTrigger
           mine={mine}
           onReact={react}
           label={mine.length ? "Reacțiile tale" : "Reacționează"}
           rootClassName="shrink-0"
-          className={`grid size-11 place-items-center rounded-2xl transition active:scale-90 ${
-            mine.length ? "bg-neon-orange/15 ring-1 ring-neon-orange/40" : "bg-white/[0.04] text-white/70 hover:bg-white/[0.08] hover:text-neon-orange"
-          }`}
+          className="grid size-11 place-items-center rounded-full bg-transparent p-2 text-white/55 transition hover:bg-white/[0.06] hover:text-white active:scale-90"
         >
           {mine.length ? (
-            <span key={mine.join()} className="animate-[pop-in_.2s_ease-out] text-xl leading-none">
+            <span key={mine.join()} className="animate-[pop-in_.2s_ease-out] text-2xl leading-none">
               {reactionInfo(mine[0]).emoji}
             </span>
           ) : (
-            <SmilePlus className="size-5" />
+            <Smile className="size-6" strokeWidth={1.75} />
           )}
         </ReactionTrigger>
         <button
           type="button"
           onClick={toggleComments}
           aria-expanded={commentsOpen}
+          aria-label={`${comments} ${comments === 1 ? "comentariu" : "comentarii"}`}
           data-testid="comments-toggle"
-          className={`group inline-flex flex-1 items-center justify-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-bold transition active:scale-95 ${
-            commentsOpen ? "bg-neon-green/10 text-neon-green ring-1 ring-neon-green/30" : "bg-white/[0.04] text-white/80 hover:bg-white/[0.08] hover:text-white"
+          className={`inline-flex h-11 items-center gap-1.5 rounded-full bg-transparent px-2.5 text-sm font-semibold transition hover:bg-white/[0.06] active:scale-90 ${
+            commentsOpen ? "text-neon-green" : "text-white/55 hover:text-white"
           }`}
         >
-          <MessageCircle className="size-5 group-hover:text-neon-green" />
+          <MessageCircle className="size-6" strokeWidth={1.75} />
           <span data-testid="comment-count">{comments}</span>
-          <span className="font-medium">{comments === 1 ? "comentariu" : "comentarii"}</span>
         </button>
       </footer>
 

@@ -17,6 +17,7 @@ export const metadata: Metadata = {
   openGraph: openGraph("/", SITE_TITLE, SITE_DESCRIPTION),
   twitter: { card: "summary", title: SITE_TITLE, description: SITE_DESCRIPTION, images: ["/mib-logo.png"] },
   appleWebApp: { capable: true, title: "AcroMIB", statusBarStyle: "black-translucent" },
+  verification: { google: "Eu43EGpW7gnGQUIwWGc5lzs-SrfgMsRwpNA3LWYXRe8" },
 };
 
 export const viewport: Viewport = { themeColor: "#000000", colorScheme: "dark" };

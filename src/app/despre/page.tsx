@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import {
   ArrowRight,
   BadgeCheck,
@@ -22,11 +23,7 @@ import { isStaff } from "@/lib/roles";
 import { GalleryGrid } from "./gallery-grid";
 import { PillarCards } from "./pillar-cards";
 
-export const metadata: Metadata = {
-  title: "Despre Noi",
-  description:
-    "MIB Acrobatics: gimnastică, acrobatică sportivă și dans & ritm pentru o creștere armonioasă, fizică și mentală, a copiilor.",
-};
+export const metadata: Metadata = pageMetadata("/despre", "Despre Noi", "MIB Acrobatics: gimnastică, acrobatică sportivă și dans & ritm pentru o creștere armonioasă, fizică și mentală, a copiilor.");
 
 const WHY_PARENTS = [
   {

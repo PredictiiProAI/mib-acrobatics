@@ -32,3 +32,5 @@ export const WHY_MIB = [
 
 /** Optional WhatsApp number (international format, e.g. 40712345678) for the "Despre Noi" CTA. */
 export const WHATSAPP_NUMBER = (process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "").replace(/\D/g, "");
+
+export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://mib-acrobatics.vercel.app").replace(/\/$/, "");

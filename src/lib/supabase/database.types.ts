@@ -57,9 +57,9 @@ export type Database = {
         Relationships: [];
       };
       user_settings: {
-        Row: { user_id: string; phone: string | null; notify_feed: boolean; notify_schedule: boolean; updated_at: string };
-        Insert: { user_id: string; phone?: string | null; notify_feed?: boolean; notify_schedule?: boolean; updated_at?: string };
-        Update: { phone?: string | null; notify_feed?: boolean; notify_schedule?: boolean; updated_at?: string };
+        Row: { user_id: string; phone: string | null; notify_feed: boolean; notify_schedule: boolean; notify_messages: boolean; updated_at: string };
+        Insert: { user_id: string; phone?: string | null; notify_feed?: boolean; notify_schedule?: boolean; notify_messages?: boolean; updated_at?: string };
+        Update: { phone?: string | null; notify_feed?: boolean; notify_schedule?: boolean; notify_messages?: boolean; updated_at?: string };
         Relationships: [];
       };
       posts: {

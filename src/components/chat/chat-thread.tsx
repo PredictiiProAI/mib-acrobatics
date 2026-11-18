@@ -4,6 +4,7 @@ import { Check, CheckCheck, Loader2, Paperclip, Send, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Fragment, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { Database } from "@/lib/supabase/database.types";
+import { notifyDirectMessage } from "@/lib/actions/push";
 import { createClient } from "@/lib/supabase/client";
 import { ACCEPT_ATTR, MAX_UPLOAD_BYTES, mediaTypeFor } from "@/lib/media";
 
@@ -225,6 +226,7 @@ export function ChatThread({
       if (attachment_path) await supabase.storage.from(DM_BUCKET).remove([attachment_path]);
       return fail("Mesajul nu a putut fi trimis.");
     }
+    void notifyDirectMessage(data.id).catch(() => {});
     setMessages((list) => {
       const withoutTemp = list.filter((m) => m.id !== tempId);
       return withoutTemp.some((m) => m.id === data.id) ? withoutTemp : [...withoutTemp, data];

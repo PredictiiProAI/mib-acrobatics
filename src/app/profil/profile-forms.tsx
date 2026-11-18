@@ -8,7 +8,7 @@ import { ChildrenInput } from "@/components/children-input";
 import { Button, Input } from "@/components/ui";
 import { ACCOUNT_TYPES, AVATAR_MAX_BYTES, AVATAR_TYPES, DISCIPLINE_SUGGESTIONS, LEVEL_LABEL, LEVELS } from "@/lib/profile";
 import { createClient } from "@/lib/supabase/client";
-import { changePassword, saveProfile, setAvatar, setNotification, type FormState } from "./actions";
+import { changePassword, saveProfile, setAvatar, setNotification, type FormState, type NotifyKey } from "./actions";
 
 function Status({ state }: { state: FormState }) {
   if (!state) return null;
@@ -216,7 +216,7 @@ export function ProfileForm({ initial }: { initial: ProfileValues }) {
   );
 }
 
-function Toggle({ label, initial, setting }: { label: string; initial: boolean; setting: "notify_feed" | "notify_schedule" }) {
+function Toggle({ label, initial, setting }: { label: string; initial: boolean; setting: NotifyKey }) {
   const [on, setOn] = useState(initial);
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
@@ -254,11 +254,12 @@ function Toggle({ label, initial, setting }: { label: string; initial: boolean; 
   );
 }
 
-export function NotificationToggles({ feed, schedule }: { feed: boolean; schedule: boolean }) {
+export function NotificationToggles({ feed, schedule, messages }: { feed: boolean; schedule: boolean; messages: boolean }) {
   return (
     <ul className="mt-3 divide-y divide-white/10">
       <Toggle setting="notify_feed" initial={feed} label="Notificări email pentru analize & postări noi în AcroMib" />
       <Toggle setting="notify_schedule" initial={schedule} label="Notificări (email și push) pentru modificări de orar & grupe" />
+      <Toggle setting="notify_messages" initial={messages} label="Notificări push pentru mesaje private" />
     </ul>
   );
 }

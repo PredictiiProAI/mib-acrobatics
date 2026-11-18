@@ -20,7 +20,7 @@ export default async function ProfilePage() {
   const supabase = await createClient();
   const [{ data: profile }, { data: settings }, { data: details }, { data: waivers }, { data: assigned }] = await Promise.all([
     supabase.from("users").select("full_name, display_name, discipline, level").eq("id", user.id).maybeSingle(),
-    supabase.from("user_settings").select("phone, notify_feed, notify_schedule").eq("user_id", user.id).maybeSingle(),
+    supabase.from("user_settings").select("*").eq("user_id", user.id).maybeSingle(),
     supabase.rpc("profile_details", { p_user: user.id }),
     supabase.from("waiver_submissions").select("*").eq("user_id", user.id).order("signed_at", { ascending: false }),
     supabase.rpc("user_assignment", { p_user: user.id }),
@@ -119,7 +119,7 @@ export default async function ProfilePage() {
       <div className="grid gap-6 lg:grid-cols-2">
         <section className="rounded-3xl border border-neon-orange/40 bg-carbon/80 p-6">
           <h2 className="font-display text-lg font-bold text-white">Notificări</h2>
-          <NotificationToggles feed={settings?.notify_feed ?? true} schedule={settings?.notify_schedule ?? true} />
+          <NotificationToggles feed={settings?.notify_feed ?? true} schedule={settings?.notify_schedule ?? true} messages={settings?.notify_messages ?? true} />
           <PushToggle />
         </section>
         <section className="rounded-3xl border border-neon-orange/40 bg-carbon/80 p-6">

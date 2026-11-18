@@ -34,6 +34,7 @@ export function PushListener() {
       handles.push(
         await PushNotifications.addListener("pushNotificationReceived", (n) => {
           const data = (n.data ?? {}) as { url?: string; title?: string; body?: string };
+          if (data.url && data.url === window.location.pathname) return;
           setBanner({ title: n.title || data.title || "MIB Acrobatics", body: n.body || data.body || "", url: data.url });
           navigator.vibrate?.(200);
         }),

@@ -92,16 +92,17 @@ export async function setAvatar(url: string | null): Promise<{ error?: string }>
   return {};
 }
 
-export async function setNotification(key: "notify_feed" | "notify_schedule", value: boolean): Promise<{ error?: string }> {
+const NOTIFY_KEYS = ["notify_feed", "notify_schedule", "notify_messages"] as const;
+export type NotifyKey = (typeof NOTIFY_KEYS)[number];
+
+export async function setNotification(key: NotifyKey, value: boolean): Promise<{ error?: string }> {
   const user = await requireUser("/profil");
-  if (key !== "notify_feed" && key !== "notify_schedule") return { error: "Setare necunoscută." };
+  if (!NOTIFY_KEYS.includes(key)) return { error: "Setare necunoscută." };
   const supabase = await createClient();
   const { error } = await supabase
     .from("user_settings")
-    .upsert(
-      { user_id: user.id, ...(key === "notify_feed" ? { notify_feed: value === true } : { notify_schedule: value === true }), updated_at: new Date().toISOString() },
-      { onConflict: "user_id" }
-    );
+    .upsert({ user_id: user.id, updated_at: new Date().toISOString(), ...({ [key]: value === true } as Partial<Record<NotifyKey, boolean>>) }, { onConflict: "user_id" });
+  if (error?.code === "PGRST204" || error?.code === "42703") return { error: "Rulează migrarea 0027_dm_push.sql în Supabase." };
   return error ? { error: "Nu am putut salva preferința." } : {};
 }
 

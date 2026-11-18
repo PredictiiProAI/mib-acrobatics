@@ -1,10 +1,13 @@
 "use client";
 
-import { Check, CheckCheck, Loader2, Send } from "lucide-react";
+import { Check, CheckCheck, Loader2, Paperclip, Send, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Fragment, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { Database } from "@/lib/supabase/database.types";
 import { createClient } from "@/lib/supabase/client";
+import { ACCEPT_ATTR, MAX_UPLOAD_BYTES, mediaTypeFor } from "@/lib/media";
+
+const DM_BUCKET = "dm_media";
 
 type Message = Database["public"]["Tables"]["direct_messages"]["Row"] & { pending?: boolean };
 
@@ -18,6 +21,33 @@ function dayLabel(iso: string) {
   if (d.toDateString() === today.toDateString()) return "Azi";
   if (d.toDateString() === yesterday.toDateString()) return "Ieri";
   return dayFmt.format(d);
+}
+
+/** Private bucket: each attachment is shown through a short-lived signed URL (or the local preview while sending). */
+function Attachment({ path, type, localUrl, onLoad }: { path: string; type: "image" | "video"; localUrl?: string; onLoad: () => void }) {
+  const [signed, setSigned] = useState<{ path: string; url: string | null } | null>(null);
+  useEffect(() => {
+    if (localUrl) return;
+    let live = true;
+    createClient()
+      .storage.from(DM_BUCKET)
+      .createSignedUrl(path, 60 * 60)
+      .then(({ data }) => live && setSigned({ path, url: data?.signedUrl ?? null }));
+    return () => {
+      live = false;
+    };
+  }, [path, localUrl]);
+  const url = localUrl ?? (signed?.path === path ? signed.url : undefined);
+  if (url === undefined) return <div className="mb-1 grid h-40 w-56 max-w-full place-items-center rounded-xl bg-black/30"><Loader2 className="size-5 animate-spin opacity-60" /></div>;
+  if (url === null) return <p className="mb-1 text-xs opacity-70">Fișierul nu mai este disponibil.</p>;
+  return type === "video" ? (
+    <video src={url} controls playsInline preload="metadata" onLoadedMetadata={onLoad} className="mb-1 max-h-80 w-72 max-w-full rounded-xl bg-black" data-testid="msg-video" />
+  ) : (
+    <a href={url} target="_blank" rel="noopener" className="mb-1 block">
+      {/* eslint-disable-next-line @next/next/no-img-element -- signed URLs from a private bucket */}
+      <img src={url} alt="Fotografie" onLoad={onLoad} className="max-h-80 w-auto max-w-full rounded-xl object-contain" data-testid="msg-image" />
+    </a>
+  );
 }
 
 /**
@@ -53,6 +83,9 @@ export function ChatThread({
   const [loadingOlder, setLoadingOlder] = useState(false);
   const [text, setText] = useState(initialText);
   const [error, setError] = useState<string | null>(null);
+  const [file, setFile] = useState<{ file: File; url: string; type: "image" | "video" } | null>(null);
+  const [localUrls, setLocalUrls] = useState<Record<string, string>>({});
+  const fileInput = useRef<HTMLInputElement>(null);
   const scroller = useRef<HTMLDivElement>(null);
   const stickToBottom = useRef(true);
   const staffView = !counterpartIds && viewerId !== threadUserId;
@@ -131,12 +164,35 @@ export function ChatThread({
     });
   }
 
+  // Media sizes are known only after loading; stay pinned to the newest message if we were.
+  const keepAtBottom = () => {
+    const el = scroller.current;
+    if (el && stickToBottom.current) el.scrollTop = el.scrollHeight;
+  };
+
+  function pickFile(f: File | undefined) {
+    if (!f) return;
+    const type = mediaTypeFor(f.type);
+    if (!type) return setError("Poți trimite doar fotografii (JPG, PNG, WEBP, GIF, HEIC) sau video (MP4, MOV, WEBM).");
+    if (f.size > MAX_UPLOAD_BYTES) return setError("Fișierul depășește 50 MB.");
+    setError(null);
+    setFile((old) => {
+      if (old) URL.revokeObjectURL(old.url);
+      return { file: f, url: URL.createObjectURL(f), type };
+    });
+  }
+
   async function send() {
     const content = text.trim();
-    if (!content) return;
+    const attachment = file;
+    if (!content && !attachment) return;
     setText("");
+    setFile(null);
     setError(null);
     const tempId = `tmp-${crypto.randomUUID()}`;
+    const ext = attachment?.file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 5) || "bin";
+    const attachment_path = attachment ? `${viewerId}/${recipientId}/${crypto.randomUUID()}.${ext}` : null;
+    if (attachment && attachment_path) setLocalUrls((m) => ({ ...m, [attachment_path]: attachment.url }));
     stickToBottom.current = true;
     const optimistic: Message = {
       id: tempId,
@@ -145,19 +201,29 @@ export function ChatThread({
       content,
       created_at: new Date().toISOString(),
       read_at: null,
+      attachment_path,
+      attachment_type: attachment?.type ?? null,
       pending: true,
     };
     setMessages((list) => [...list, optimistic]);
+    const fail = (msg: string) => {
+      setMessages((list) => list.filter((m) => m.id !== tempId));
+      setText(content);
+      if (attachment) setFile(attachment);
+      setError(msg);
+    };
+    if (attachment && attachment_path) {
+      const { error: upError } = await supabase.storage.from(DM_BUCKET).upload(attachment_path, attachment.file, { contentType: attachment.file.type, upsert: false });
+      if (upError) return fail(`Fișierul nu a putut fi încărcat: ${upError.message}`);
+    }
     const { data, error } = await supabase
       .from("direct_messages")
-      .insert({ sender_id: viewerId, receiver_id: recipientId, content })
+      .insert({ sender_id: viewerId, receiver_id: recipientId, content, attachment_path, attachment_type: attachment?.type ?? null })
       .select("*")
       .single();
     if (error || !data) {
-      setMessages((list) => list.filter((m) => m.id !== tempId));
-      setText(content);
-      setError("Mesajul nu a putut fi trimis.");
-      return;
+      if (attachment_path) await supabase.storage.from(DM_BUCKET).remove([attachment_path]);
+      return fail("Mesajul nu a putut fi trimis.");
     }
     setMessages((list) => {
       const withoutTemp = list.filter((m) => m.id !== tempId);
@@ -208,7 +274,8 @@ export function ChatThread({
                       : "rounded-bl-md border border-white/10 bg-white/[0.06] text-white"
                   } ${m.pending ? "opacity-60" : ""}`}
                 >
-                  <p className="whitespace-pre-wrap break-words">{m.content}</p>
+                  {m.attachment_path && m.attachment_type && <Attachment path={m.attachment_path} type={m.attachment_type} localUrl={localUrls[m.attachment_path]} onLoad={keepAtBottom} />}
+                  {m.content.trim() && <p className="whitespace-pre-wrap break-words">{m.content}</p>}
                   <p className={`mt-0.5 flex items-center justify-end gap-1 text-[10px] ${out ? "text-onaccent/60" : "text-white/40"}`}>
                     <span suppressHydrationWarning>{timeFmt.format(new Date(m.created_at))}</span>
                     {out && m.id === lastOutgoing?.id && !m.pending && (m.read_at ? <CheckCheck className="size-3.5" aria-label="Văzut" /> : <Check className="size-3.5" aria-label="Trimis" />)}
@@ -221,6 +288,28 @@ export function ChatThread({
       </div>
 
       {error && <p className="px-4 pb-1 text-xs text-red-300">{error}</p>}
+      {file && (
+        <div className="flex items-center gap-3 border-t border-white/5 px-3 pt-3" data-testid="attachment-preview">
+          {file.type === "video" ? (
+            <video src={file.url} muted playsInline className="size-16 rounded-lg bg-black object-cover" />
+          ) : (
+            // eslint-disable-next-line @next/next/no-img-element -- local blob preview
+            <img src={file.url} alt="" className="size-16 rounded-lg object-cover" />
+          )}
+          <p className="min-w-0 flex-1 truncate text-xs text-white/60">{file.file.name}</p>
+          <button
+            type="button"
+            onClick={() => {
+              URL.revokeObjectURL(file.url);
+              setFile(null);
+            }}
+            aria-label="Elimină fișierul"
+            className="rounded-full p-1.5 text-white/60 hover:bg-white/5 hover:text-white"
+          >
+            <X className="size-4" />
+          </button>
+        </div>
+      )}
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -228,6 +317,26 @@ export function ChatThread({
         }}
         className="flex items-end gap-2 border-t border-white/5 p-3"
       >
+        <input
+          ref={fileInput}
+          type="file"
+          accept={ACCEPT_ATTR}
+          className="hidden"
+          data-testid="attach-input"
+          onChange={(e) => {
+            pickFile(e.target.files?.[0]);
+            e.target.value = "";
+          }}
+        />
+        <button
+          type="button"
+          onClick={() => fileInput.current?.click()}
+          aria-label="Atașează fotografie sau video"
+          className="rounded-xl border border-white/10 p-2.5 text-white/70 transition hover:border-neon-orange/50 hover:text-neon-orange"
+          data-testid="attach-button"
+        >
+          <Paperclip className="size-5" />
+        </button>
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
@@ -245,7 +354,7 @@ export function ChatThread({
         />
         <button
           type="submit"
-          disabled={!text.trim()}
+          disabled={!text.trim() && !file}
           aria-label="Trimite"
           className="rounded-xl bg-neon-orange p-2.5 text-onaccent transition hover:brightness-110 disabled:opacity-40"
         >

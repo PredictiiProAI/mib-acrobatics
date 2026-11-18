@@ -1,7 +1,7 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { ChevronDown, Loader2 } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { FeedPost } from "@/lib/posts";
 import { createClient } from "@/lib/supabase/client";
 import { PostCard } from "./post-card";
@@ -14,6 +14,30 @@ function mergeNewest(list: FeedPost[], fresh: FeedPost[]) {
   const ids = new Set(list.map((p) => p.id));
   const added = fresh.filter((p) => !ids.has(p.id));
   return added.length ? [...added, ...list] : list;
+}
+
+const TZ = "Europe/Bucharest";
+const dayKeyFmt = new Intl.DateTimeFormat("en-CA", { timeZone: TZ });
+const dayLabelFmt = new Intl.DateTimeFormat("ro-RO", { timeZone: TZ, day: "numeric", month: "long", year: "numeric" });
+
+function dayLabel(key: string, iso: string) {
+  const today = dayKeyFmt.format(new Date());
+  const yesterday = dayKeyFmt.format(new Date(Date.now() - 864e5));
+  return key === today ? "Astăzi" : key === yesterday ? "Ieri" : dayLabelFmt.format(new Date(iso));
+}
+
+const postCount = (n: number) => `${n} ${n === 1 ? "postare" : n % 100 >= 20 || (n >= 100 && n % 100 === 0) ? "de postări" : "postări"}`;
+
+/** Posts grouped by Bucharest calendar day, newest first. */
+function groupByDay(posts: FeedPost[]) {
+  const days: { key: string; label: string; posts: FeedPost[] }[] = [];
+  for (const p of posts) {
+    const key = dayKeyFmt.format(new Date(p.created_at));
+    const last = days.at(-1);
+    if (last?.key === key) last.posts.push(p);
+    else days.push({ key, label: dayLabel(key, p.created_at), posts: [p] });
+  }
+  return days;
 }
 
 export function FeedList({ initialPosts, viewer }: { initialPosts: FeedPost[]; viewer: Viewer }) {
@@ -92,6 +116,10 @@ export function FeedList({ initialPosts, viewer }: { initialPosts: FeedPost[]; v
   }, [fetchNewest]);
 
   const removePost = useCallback((id: string) => setPosts((list) => list.filter((p) => p.id !== id)), []);
+  const days = useMemo(() => groupByDay(posts), [posts]);
+  // Only the newest day is open by default; a tap flips a day away from its default.
+  const [flipped, setFlipped] = useState<Record<string, boolean>>({});
+  const isOpen = (key: string, i: number) => (i === 0) !== !!flipped[key];
 
   if (!posts.length) {
     return (
@@ -104,9 +132,36 @@ export function FeedList({ initialPosts, viewer }: { initialPosts: FeedPost[]; v
 
   return (
     <div className="space-y-6">
-      {posts.map((post, i) => (
-        <PostCard key={post.id} post={post} viewer={viewer} priority={i === 0} onDeleted={removePost} />
-      ))}
+      {days.map((day, i) => {
+        const open = isOpen(day.key, i);
+        return (
+          <section key={day.key} className="mx-auto w-full max-w-xl space-y-4" data-testid="feed-day" data-open={open}>
+            <button
+              type="button"
+              onClick={() => setFlipped((f) => ({ ...f, [day.key]: !f[day.key] }))}
+              aria-expanded={open}
+              className={`flex min-h-12 w-full items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-left transition active:scale-[0.99] ${
+                open ? "border-neon-orange/60 bg-neon-orange/10" : "border-white/10 bg-carbon/80 hover:border-neon-orange/50"
+              }`}
+              data-testid="feed-day-header"
+            >
+              <span className="font-display text-sm font-bold first-letter:uppercase">
+                {day.label} <span className="font-sans font-semibold text-white/50">• {postCount(day.posts.length)}</span>
+              </span>
+              <ChevronDown className={`size-5 shrink-0 text-neon-green transition-transform duration-300 ${open ? "rotate-180" : ""}`} />
+            </button>
+            {open && (
+              <div className="grid grid-rows-[1fr] opacity-100 transition-all duration-300 ease-out starting:grid-rows-[0fr] starting:opacity-0">
+                <div className="min-h-0 space-y-6 overflow-hidden">
+                  {day.posts.map((post, j) => (
+                    <PostCard key={post.id} post={post} viewer={viewer} priority={i === 0 && j === 0} onDeleted={removePost} />
+                  ))}
+                </div>
+              </div>
+            )}
+          </section>
+        );
+      })}
       <div ref={sentinel} className="flex justify-center py-6 text-sm text-white/40">
         {loading && <Loader2 className="size-6 animate-spin text-neon-orange" />}
         {error && (

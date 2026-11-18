@@ -10,7 +10,6 @@ import {
   MapPin,
   Mail,
   MessageSquare,
-  Phone,
   Search,
   Send,
   Trash2,
@@ -33,12 +32,12 @@ import {
   getWaiverSubmissions,
   requestDocuments,
   sendTestPush,
-  setUserAssignment,
   setUserRole,
+  updateUserProfile,
   type UserActivity,
   type WaiverRecord,
 } from "@/lib/actions/users";
-import { LEVEL_LABEL } from "@/lib/profile";
+import { DISCIPLINE_SUGGESTIONS, LEVEL_LABEL, LEVELS } from "@/lib/profile";
 import { isStaff, needsWaiver, ROLE_LABEL } from "@/lib/roles";
 import { FORM_ROLE_LABEL, MEDICAL_FIELDS } from "@/lib/waiver";
 import type { AppRole, Database } from "@/lib/supabase/database.types";
@@ -139,36 +138,97 @@ function AssignmentFields({
   );
 }
 
-function AssignmentEditor({ user, options }: { user: Row; options: Options }) {
+function ProfileEditor({ user, options }: { user: Row; options: Options }) {
   const router = useRouter();
+  const [form, setForm] = useState({
+    phone: user.phone ?? "",
+    discipline: user.discipline ?? "",
+    level: user.level ?? "",
+    birthdate: user.birthdate ?? "",
+    children_names: user.children_names ?? "",
+    emergency_contact: user.emergency_contact ?? "",
+  });
   const [city, setCity] = useState(user.city ?? "");
   const [groups, setGroups] = useState<string[]>(user.groups);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [pending, start] = useTransition();
+  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setForm((f) => ({ ...f, [k]: e.target.value }));
+  const label = (text: string, value: string, required = false) => (
+    <span className="flex items-center justify-between gap-2 text-xs font-semibold text-white/60">
+      {text}
+      {!value.trim() && <span className={`text-[11px] font-normal ${required ? "text-red-300" : "text-white/35"}`}>Necompletat</span>}
+    </span>
+  );
   return (
-    <section className="rounded-2xl border border-white/10 p-4" data-testid="assignment-editor">
-      <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-white/50">Oraș & grupe</h3>
-      <AssignmentFields options={options} city={city} groups={groups} onCity={setCity} onGroups={setGroups} idPrefix={`edit-${user.id}`} />
-      <p className="mt-3 text-xs text-white/45">Notificările push despre un antrenament ajung doar la membrii grupei lui (și ai orașului, dacă antrenamentul are oraș).</p>
-      <div className="mt-3 flex items-center gap-3">
-        <Button
-          type="button"
-          disabled={pending}
-          data-testid="save-assignment"
-          onClick={() =>
-            start(async () => {
-              setMsg(null);
-              const r = await setUserAssignment(user.id, city, groups);
-              setMsg(r.ok ? { ok: true, text: "Salvat." } : { ok: false, text: r.error });
-              if (r.ok) router.refresh();
-            })
-          }
-        >
-          {pending && <Loader2 className="size-4 animate-spin" />} Salvează
-        </Button>
-        {msg && <span className={`text-sm ${msg.ok ? "text-neon-green" : "text-red-300"}`}>{msg.text}</span>}
+    <form
+      className="rounded-2xl border border-white/10 p-4"
+      data-testid="profile-editor"
+      onSubmit={(e) => {
+        e.preventDefault();
+        start(async () => {
+          setMsg(null);
+          const r = await updateUserProfile(user.id, { ...form, city, groups });
+          setMsg(r.ok ? { ok: true, text: "Modificările au fost salvate." } : { ok: false, text: r.error });
+          if (r.ok) router.refresh();
+        });
+      }}
+    >
+      <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-white/50">Date profil</h3>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <label className="grid gap-1.5">
+          {label("Telefon", form.phone)}
+          <input type="tel" value={form.phone} onChange={set("phone")} maxLength={20} placeholder="07xx xxx xxx" className={field} name="phone" />
+        </label>
+        <label className="grid gap-1.5">
+          {label("Data nașterii", form.birthdate)}
+          <input type="date" value={form.birthdate} onChange={set("birthdate")} min="1900-01-01" className={field} name="birthdate" />
+        </label>
+        <label className="grid gap-1.5">
+          {label("Disciplină", form.discipline)}
+          <input value={form.discipline} onChange={set("discipline")} list="admin-disciplines" maxLength={80} placeholder="ex. Dans" className={field} name="discipline" />
+          <datalist id="admin-disciplines">
+            {DISCIPLINE_SUGGESTIONS.map((d) => (
+              <option key={d} value={d} />
+            ))}
+          </datalist>
+        </label>
+        <label className="grid gap-1.5">
+          {label("Nivel", form.level)}
+          <select value={form.level} onChange={set("level")} className={field} name="level">
+            <option value="">—</option>
+            {LEVELS.map((l) => (
+              <option key={l} value={l}>
+                {LEVEL_LABEL[l]}
+              </option>
+            ))}
+          </select>
+        </label>
+        {isParent(user) && (
+          <label className="grid gap-1.5 sm:col-span-2">
+            {label("Copii", form.children_names)}
+            <input value={form.children_names} onChange={set("children_names")} maxLength={300} placeholder="ex. Maria (8 ani), Andrei (11 ani)" className={field} name="children_names" />
+          </label>
+        )}
+        <label className="grid gap-1.5 sm:col-span-2">
+          {label("Contact de urgență", form.emergency_contact, true)}
+          <input value={form.emergency_contact} onChange={set("emergency_contact")} maxLength={200} placeholder="Nume și telefon" className={field} name="emergency_contact" />
+        </label>
       </div>
-    </section>
+      <div className="mt-4 border-t border-white/10 pt-4">
+        <AssignmentFields options={options} city={city} groups={groups} onCity={setCity} onGroups={setGroups} idPrefix={`edit-${user.id}`} />
+        <p className="mt-3 text-xs text-white/45">Notificările push despre un antrenament ajung doar la membrii grupei lui (și ai orașului, dacă antrenamentul are oraș).</p>
+      </div>
+      <div className="mt-4 flex flex-wrap items-center gap-3">
+        <Button type="submit" disabled={pending} data-testid="save-profile">
+          {pending && <Loader2 className="size-4 animate-spin" />} Salvează modificările
+        </Button>
+        {msg && (
+          <span className={`text-sm ${msg.ok ? "text-neon-green" : "text-red-300"}`} data-testid="save-profile-result">
+            {msg.text}
+          </span>
+        )}
+      </div>
+    </form>
   );
 }
 
@@ -591,28 +651,6 @@ function UserPanel({ user, options, onClose }: { user: Row; options: Options; on
               </a>
             </Detail>
           </div>
-          <Detail label="Telefon">
-            {user.phone ? (
-              <a
-                href={`tel:${user.phone}`}
-                className="inline-flex items-center gap-1.5 hover:text-neon-orange"
-              >
-                <Phone className="size-3.5" /> {user.phone}
-              </a>
-            ) : (
-              <span className="text-white/40">—</span>
-            )}
-          </Detail>
-          <Detail label="Disciplină">
-            {user.discipline || <span className="text-white/40">—</span>}
-          </Detail>
-          <Detail label="Nivel">
-            {user.level ? (
-              LEVEL_LABEL[user.level]
-            ) : (
-              <span className="text-white/40">—</span>
-            )}
-          </Detail>
           <Detail label="Înscris">
             {dateFmt.format(new Date(user.created_at))}
           </Detail>
@@ -624,19 +662,6 @@ function UserPanel({ user, options, onClose }: { user: Row; options: Options; on
             </Detail>
           </div>
           <Detail label="Tip cont">{user.account_type ?? "Sportiv"}</Detail>
-          <Detail label="Data nașterii">
-            {user.birthdate ? dateFmt.format(new Date(user.birthdate)) : <span className="text-white/40">—</span>}
-          </Detail>
-          {user.account_type === "Părinte" && (
-            <div className="col-span-2">
-              <Detail label="Copii">{user.children_names || <span className="text-white/40">—</span>}</Detail>
-            </div>
-          )}
-          <div className="col-span-2">
-            <Detail label="Contact de urgență">
-              {user.emergency_contact || <span className="text-red-300">Necompletat</span>}
-            </Detail>
-          </div>
           <div className="col-span-2">
             <Detail label={isParent(user) ? "Acord parental & fișă medicală" : needsWaiver(user.role) ? "Regulament & siguranță" : "Documente"}>
               <WaiverStatus user={user} />
@@ -645,7 +670,7 @@ function UserPanel({ user, options, onClose }: { user: Row; options: Options; on
           </div>
         </div>
 
-        <AssignmentEditor key={user.id} user={user} options={options} />
+        <ProfileEditor key={user.id} user={user} options={options} />
 
         {waivers.length > 0 && (
           <section data-testid="panel-waivers">

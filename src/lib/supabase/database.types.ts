@@ -206,8 +206,17 @@ export type Database = {
         Relationships: [];
       };
       direct_messages: {
-        Row: { id: string; sender_id: string; receiver_id: string; content: string; created_at: string; read_at: string | null };
-        Insert: { sender_id: string; receiver_id: string; content: string };
+        Row: {
+          id: string;
+          sender_id: string;
+          receiver_id: string;
+          content: string;
+          created_at: string;
+          read_at: string | null;
+          attachment_path?: string | null;
+          attachment_type?: "image" | "video" | null;
+        };
+        Insert: { sender_id: string; receiver_id: string; content: string; attachment_path?: string | null; attachment_type?: "image" | "video" | null };
         Update: { read_at?: string | null };
         Relationships: [
           { foreignKeyName: "direct_messages_sender_id_fkey"; columns: ["sender_id"]; isOneToOne: false; referencedRelation: "users"; referencedColumns: ["id"] },
@@ -294,6 +303,18 @@ export type Database = {
       user_assignment: { Args: { p_user: string }; Returns: { city: string | null; groups: string[] }[] };
       admin_user_assignments: { Args: Record<string, never>; Returns: { id: string; city: string | null; groups: string[] }[] };
       admin_set_user_assignment: { Args: { target: string; p_city: string | null; p_groups: string[] }; Returns: undefined };
+      admin_update_profile: {
+        Args: {
+          target: string;
+          p_phone: string | null;
+          p_discipline: string | null;
+          p_level: string | null;
+          p_birthdate: string | null;
+          p_children_names: string | null;
+          p_emergency_contact: string | null;
+        };
+        Returns: undefined;
+      };
       admin_rename_group: { Args: { p_old: string; p_new: string }; Returns: undefined };
     };
     Enums: { app_role: AppRole; media_type: MediaType };

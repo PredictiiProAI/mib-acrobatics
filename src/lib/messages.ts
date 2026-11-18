@@ -15,6 +15,9 @@ export type Conversation = {
   unread: number;
 };
 
+const previewOf = (m: { content: string; attachment_type?: string | null }) =>
+  m.content.trim() || (m.attachment_type === "video" ? "🎬 Video" : m.attachment_type === "image" ? "📷 Fotografie" : "");
+
 export const THREAD_PAGE_SIZE = 100;
 /** Route slug of a member's conversation with the coaching staff (shared coach inbox). */
 export const COACH_THREAD = "antrenor";
@@ -77,7 +80,7 @@ export async function getMemberInbox(meId: string): Promise<Conversation[]> {
         name: key === COACH_THREAD ? coach?.full_name || "Antrenor" : "Membru",
         email: "",
         role: key === COACH_THREAD ? "admin" : "user",
-        lastMessage: m.content,
+        lastMessage: previewOf(m),
         lastAt: m.created_at,
         lastFromUser: m.sender_id !== meId,
         unread: 0,
@@ -156,7 +159,7 @@ export async function getInbox(meId: string): Promise<Conversation[]> {
         name: u?.full_name || u?.email || "Utilizator",
         email: u?.email ?? "",
         role: u?.role ?? "user",
-        lastMessage: m.content,
+        lastMessage: previewOf(m),
         lastAt: m.created_at,
         lastFromUser: m.sender_id === other,
         unread: 0,

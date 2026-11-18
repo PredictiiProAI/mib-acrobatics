@@ -6,6 +6,7 @@ import { getSessionUser } from "@/lib/auth";
 import { isStaff } from "@/lib/roles";
 import type { AppRole, Database } from "@/lib/supabase/database.types";
 import { createAdminClient, removeUserFiles } from "@/lib/supabase/admin";
+import { LEVELS } from "@/lib/profile";
 import { sendPush } from "@/lib/push.server";
 import { sendDocumentsRequest } from "@/lib/signup-alert";
 import { MEDIA_BUCKET } from "@/lib/supabase/env";
@@ -60,6 +61,43 @@ export async function setUserAssignment(target: string, city: string, groups: st
   revalidatePath("/dashboard/users");
   revalidatePath("/profil");
   return { ok: true };
+}
+
+export type ProfileFieldsInput = {
+  phone: string;
+  discipline: string;
+  level: string;
+  birthdate: string;
+  children_names: string;
+  emergency_contact: string;
+  city: string;
+  groups: string[];
+};
+
+/** Staff only: fill in a member's profile fields and city/groups (both RPCs re-check staff in the database). */
+export async function updateUserProfile(target: string, input: ProfileFieldsInput): Promise<ActionResult> {
+  const me = await getSessionUser();
+  if (!me || !isStaff(me.role)) return { ok: false, error: "Doar antrenorii pot modifica profilul altui membru." };
+  const phone = input.phone.trim();
+  if (phone && !/^\+?[0-9 ()./-]{6,20}$/.test(phone)) return { ok: false, error: "Număr de telefon invalid." };
+  if (input.level && !(LEVELS as string[]).includes(input.level)) return { ok: false, error: "Nivel invalid." };
+  const birthdate = input.birthdate.trim();
+  if (birthdate && (!/^\d{4}-\d{2}-\d{2}$/.test(birthdate) || birthdate < "1900-01-01" || Number.isNaN(Date.parse(birthdate)))) return { ok: false, error: "Data nașterii este invalidă." };
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_update_profile", {
+    target,
+    p_phone: phone || null,
+    p_discipline: input.discipline.trim().slice(0, 80) || null,
+    p_level: input.level || null,
+    p_birthdate: birthdate || null,
+    p_children_names: input.children_names.trim().slice(0, 300) || null,
+    p_emergency_contact: input.emergency_contact.trim().slice(0, 200) || null,
+  });
+  if (error) {
+    console.error("admin_update_profile", error.message);
+    return { ok: false, error: error.code === "PGRST202" ? "Rulează migrarea 0026_admin_profile_dm_media.sql în Supabase." : "Profilul nu a putut fi salvat." };
+  }
+  return setUserAssignment(target, input.city, input.groups);
 }
 
 /** Sends a test notification only to the signed-in staff member's own devices. */

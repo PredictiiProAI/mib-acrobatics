@@ -6,6 +6,7 @@ export type AccountType = "Sportiv" | "Părinte" | "Antrenor";
 export type TrainingLevel = "beginner" | "intermediate" | "advanced";
 export type ScheduleLevel = "all" | "beginner" | "intermediate" | "advanced";
 export type BadgeColor = "violet" | "fuchsia" | "sky" | "emerald" | "amber" | "rose";
+export type AttendanceStatus = "attending" | "absent" | "pending";
 type ScheduleInsert = {
   group_name: string;
   age_range?: string | null;
@@ -184,6 +185,15 @@ export type Database = {
         Insert: never;
         Update: never;
         Relationships: [];
+      };
+      session_attendance: {
+        Row: { id: string; schedule_id: string; session_date: string; user_id: string; status: AttendanceStatus; created_at: string; updated_at: string };
+        Insert: { schedule_id: string; session_date: string; user_id: string; status?: AttendanceStatus };
+        Update: { status?: AttendanceStatus };
+        Relationships: [
+          { foreignKeyName: "session_attendance_schedule_id_fkey"; columns: ["schedule_id"]; isOneToOne: false; referencedRelation: "schedule"; referencedColumns: ["id"] },
+          { foreignKeyName: "session_attendance_user_id_fkey"; columns: ["user_id"]; isOneToOne: false; referencedRelation: "users"; referencedColumns: ["id"] },
+        ];
       };
       direct_messages: {
         Row: { id: string; sender_id: string; receiver_id: string; content: string; created_at: string; read_at: string | null };

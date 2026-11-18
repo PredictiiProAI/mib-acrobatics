@@ -1,6 +1,6 @@
 "use client";
 
-import { Clock, Loader2, Pencil, Plus, Trash2, X } from "lucide-react";
+import { Clock, Loader2, Pencil, Plus, Trash2, Users, X } from "lucide-react";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { createPortal } from "react-dom";
 import { useConfirm } from "@/components/confirm-dialog";
@@ -15,9 +15,12 @@ import {
   hhmm,
   LEVEL_LABEL,
   LEVELS,
+  sessionDateLabel,
   sortSchedule,
   type ScheduleRow,
+  type SessionRoster,
 } from "@/lib/schedule";
+import { AttendanceSheet, rosterCounts } from "./attendance-sheet";
 
 const EMPTY: ScheduleInput = {
   group_name: "",
@@ -46,7 +49,8 @@ const toInput = (r: ScheduleRow): ScheduleInput => ({
 
 const field = "w-full rounded-xl border border-white/10 bg-black/50 px-3.5 py-2.5 text-sm outline-none placeholder:text-white/30 focus:border-neon-orange/70 focus:shadow-neon-sm";
 
-export function ScheduleManager({ rows }: { rows: ScheduleRow[] }) {
+export function ScheduleManager({ rows, rosters }: { rows: ScheduleRow[]; rosters: Record<string, SessionRoster> }) {
+  const [rosterOf, setRosterOf] = useState<ScheduleRow | null>(null);
   const [editing, setEditing] = useState<ScheduleInput | null>(null);
   const [editingGroup, setEditingGroup] = useState<GroupInput | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -54,6 +58,10 @@ export function ScheduleManager({ rows }: { rows: ScheduleRow[] }) {
   const [confirm, confirmDialog] = useConfirm();
   const groups = useMemo(() => groupSchedule(rows), [rows]);
   const byDay = useMemo(() => DAYS.map((_, i) => sortSchedule(rows).filter((r) => r.day_of_week === i + 1)), [rows]);
+  const upcoming = useMemo(
+    () => rows.filter((r) => rosters[r.id]).sort((a, b) => rosters[a.id].date.localeCompare(rosters[b.id].date) || a.start_time.localeCompare(b.start_time)),
+    [rows, rosters]
+  );
 
   async function remove(r: ScheduleRow) {
     const ok = await confirm({
@@ -112,6 +120,45 @@ export function ScheduleManager({ rows }: { rows: ScheduleRow[] }) {
       </div>
 
       <section>
+        <h2 className="font-display text-lg font-extrabold">Prezență la următoarele antrenamente</h2>
+        <p className="mt-1 text-sm text-white/50">Apasă pe un antrenament ca să vezi cine a confirmat și cine nu poate ajunge.</p>
+        {upcoming.length ? (
+          <ul className="-mx-4 mt-4 flex snap-x gap-3 overflow-x-auto px-4 pb-1 [scrollbar-width:none]" data-testid="upcoming-sessions">
+            {upcoming.map((r) => {
+              const c = rosterCounts(rosters[r.id]);
+              return (
+                <li key={r.id} className="shrink-0 snap-start">
+                  <button
+                    type="button"
+                    onClick={() => setRosterOf(r)}
+                    data-testid="upcoming-session"
+                    className="glass flex w-56 flex-col rounded-2xl p-3.5 text-left transition hover:border-neon-orange/50 hover:shadow-neon-sm"
+                  >
+                    <span className="text-[11px] font-semibold text-white/50 first-letter:uppercase">
+                      {sessionDateLabel(rosters[r.id].date)} · {hhmm(r.start_time)}
+                    </span>
+                    <span className="mt-1 flex items-center gap-1.5">
+                      <span className={`size-2 shrink-0 rounded-full ${BADGE_STYLE[r.badge_color].dot}`} />
+                      <span className="truncate font-semibold">{r.group_name}</span>
+                    </span>
+                    <span className="mt-2 flex items-center gap-3 text-xs font-bold">
+                      <span className="text-neon-green">✔️ {c.attending}</span>
+                      <span className="text-red-300">❌ {c.absent}</span>
+                      <span className="ml-auto inline-flex items-center gap-1 text-white/50">
+                        <Users className="size-3.5" /> {c.attending + c.absent}
+                      </span>
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        ) : (
+          <p className="mt-3 text-sm text-white/50">Nu sunt antrenamente în program.</p>
+        )}
+      </section>
+
+      <section>
         <h2 className="font-display text-lg font-extrabold">Calendar săptămânal</h2>
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7" data-testid="week-calendar">
           {byDay.map((list, i) => (
@@ -140,6 +187,15 @@ export function ScheduleManager({ rows }: { rows: ScheduleRow[] }) {
                         <span className="truncate text-sm font-semibold">{r.group_name}</span>
                       </span>
                       {r.age_range && <span className="block truncate text-[11px] text-white/45">{r.age_range}</span>}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setRosterOf(r)}
+                      aria-label={`Prezență ${r.group_name} ${DAYS[i]}`}
+                      data-testid="calendar-attendance"
+                      className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-white/5 px-2 py-1 text-[11px] font-bold text-white/70 transition hover:bg-neon-orange/15 hover:text-white"
+                    >
+                      <Users className="size-3" /> <span className="text-neon-green">{rosterCounts(rosters[r.id]).attending}</span>/<span className="text-red-300">{rosterCounts(rosters[r.id]).absent}</span>
                     </button>
                     <button
                       type="button"
@@ -239,6 +295,7 @@ export function ScheduleManager({ rows }: { rows: ScheduleRow[] }) {
         />
       )}
       {editingGroup && <GroupForm initial={editingGroup} onClose={() => setEditingGroup(null)} />}
+      {rosterOf && rosters[rosterOf.id] && <AttendanceSheet row={rosterOf} roster={rosters[rosterOf.id]} onClose={() => setRosterOf(null)} />}
       {confirmDialog}
     </div>
   );

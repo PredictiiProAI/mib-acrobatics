@@ -2,12 +2,16 @@
 
 import { Signal } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { BADGE_STYLE, DAYS, hhmm, LEVEL_LABEL, type ScheduleRow } from "@/lib/schedule";
+import { AttendanceButtons } from "@/components/attendance-buttons";
+import { BADGE_STYLE, DAYS, hhmm, LEVEL_LABEL, type AttendanceStatus, type ScheduleRow } from "@/lib/schedule";
+
+/** Next-occurrence date per class plus the member's answer; omitted for staff (no RSVP buttons). */
+export type ScheduleRsvp = { dates: Record<string, string>; mine: Record<string, AttendanceStatus> };
 
 const SHORT = ["Lun", "Mar", "Mie", "Joi", "Vin", "Sâm", "Dum"];
 
 /** Mobile-first schedule: scrollable day chips, then the selected day's classes as cards. */
-export function ScheduleDayList({ rows, today }: { rows: ScheduleRow[]; today: number }) {
+export function ScheduleDayList({ rows, today, rsvp }: { rows: ScheduleRow[]; today: number; rsvp?: ScheduleRsvp }) {
   const [day, setDay] = useState(today);
   const activeChip = useRef<HTMLButtonElement>(null);
   const classes = rows.filter((r) => r.day_of_week === day);
@@ -53,7 +57,8 @@ export function ScheduleDayList({ rows, today }: { rows: ScheduleRow[]; today: n
       {classes.length ? (
         <ul className="mt-3 grid gap-3 md:grid-cols-2" role="tabpanel">
           {classes.map((r) => (
-            <li key={r.id} className="glass flex items-stretch gap-4 rounded-2xl p-4" data-testid="day-class">
+            <li key={r.id} className="glass rounded-2xl p-4" data-testid="day-class">
+              <div className="flex items-stretch gap-4">
               <div className="flex w-16 shrink-0 flex-col justify-center border-r border-white/10 pr-4 text-center">
                 <span className="font-display text-lg font-black leading-none text-neon-orange">{hhmm(r.start_time)}</span>
                 <span className="mt-1 text-xs text-white/50">{hhmm(r.end_time)}</span>
@@ -71,6 +76,8 @@ export function ScheduleDayList({ rows, today }: { rows: ScheduleRow[]; today: n
                 </p>
                 {r.notes && <p className="mt-1 text-xs text-white/45">{r.notes}</p>}
               </div>
+              </div>
+              {rsvp?.dates[r.id] && <AttendanceButtons scheduleId={r.id} date={rsvp.dates[r.id]} status={rsvp.mine[r.id] ?? null} />}
             </li>
           ))}
         </ul>

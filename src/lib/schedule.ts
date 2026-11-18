@@ -1,6 +1,6 @@
-import type { BadgeColor, Database, ScheduleLevel } from "./supabase/database.types";
+import type { AttendanceStatus, BadgeColor, Database, ScheduleLevel } from "./supabase/database.types";
 
-export type { BadgeColor, ScheduleLevel };
+export type { AttendanceStatus, BadgeColor, ScheduleLevel };
 export type ScheduleRow = Database["public"]["Tables"]["schedule"]["Row"];
 
 /** ISO weekday order: index 0 = Luni (day_of_week 1). */
@@ -63,3 +63,41 @@ export function todayIsoDay(now = new Date()) {
   const name = new Intl.DateTimeFormat("en-US", { weekday: "short", timeZone: "Europe/Bucharest" }).format(now);
   return ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].indexOf(name) + 1;
 }
+
+/** Today's date ("YYYY-MM-DD"), ISO weekday and "HH:MM" in the club's timezone. */
+export function clubNow(now = new Date()) {
+  const parts = Object.fromEntries(
+    new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Bucharest", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" })
+      .formatToParts(now)
+      .map((p) => [p.type, p.value])
+  );
+  return { date: `${parts.year}-${parts.month}-${parts.day}`, day: todayIsoDay(now), time: `${parts.hour}:${parts.minute}` };
+}
+
+const addDays = (isoDate: string, days: number) => {
+  const d = new Date(`${isoDate}T12:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+};
+
+/** Date ("YYYY-MM-DD") of the next occurrence of a weekly class that has not ended yet. */
+export function nextSessionDate(row: Pick<ScheduleRow, "day_of_week" | "end_time">, now = new Date()) {
+  const c = clubNow(now);
+  let delta = (row.day_of_week - c.day + 7) % 7;
+  if (delta === 0 && hhmm(row.end_time) <= c.time) delta = 7;
+  return addDays(c.date, delta);
+}
+
+/** "2026-11-19" -> "joi, 19 noiembrie" */
+export const sessionDateLabel = (isoDate: string) =>
+  new Intl.DateTimeFormat("ro-RO", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" }).format(new Date(`${isoDate}T12:00:00Z`));
+
+export const ATTENDANCE_LABEL: Record<AttendanceStatus, string> = {
+  attending: "Vin",
+  absent: "Nu pot ajunge",
+  pending: "Fără răspuns",
+};
+
+export type AttendancePerson = { userId: string; name: string; avatarUrl: string | null; status: AttendanceStatus; updatedAt: string };
+/** Who answered for the next occurrence of one weekly class. */
+export type SessionRoster = { scheduleId: string; date: string; people: AttendancePerson[] };

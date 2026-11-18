@@ -262,3 +262,29 @@ export async function getWaiverSubmissions(target: string): Promise<WaiverRecord
   if (error) console.error("getWaiverSubmissions", error.message);
   return data ?? [];
 }
+
+/** Staff: personalised push to the selected members, optionally also saved as a private message from the sender. */
+export async function sendBulkNotification(input: { userIds: string[]; title: string; body: string; asMessage: boolean }): Promise<ActionResult & { recipients?: number; withDevice?: number; sent?: number }> {
+  const me = await getSessionUser();
+  if (!me || !isStaff(me.role)) return { ok: false, error: "Nu ai acces." };
+  const ids = [...new Set(Array.isArray(input.userIds) ? input.userIds : [])].filter((id) => typeof id === "string" && UUID_RE.test(id) && id !== me.id);
+  const title = (input.title ?? "").trim().slice(0, 80) || "MIB Acrobatics";
+  const body = (input.body ?? "").trim().slice(0, 1000);
+  if (!ids.length) return { ok: false, error: "Selectează cel puțin un utilizator." };
+  if (ids.length > 500) return { ok: false, error: "Poți trimite la cel mult 500 de utilizatori odată." };
+  if (!body) return { ok: false, error: "Scrie mesajul." };
+  const admin = createAdminClient();
+  if (!admin) return { ok: false, error: MISSING_KEY };
+
+  if (input.asMessage) {
+    const content = title === "MIB Acrobatics" ? body : `${title}\n${body}`;
+    const { error } = await admin.from("direct_messages").insert(ids.map((receiver_id) => ({ sender_id: me.id, receiver_id, content })));
+    if (error) {
+      console.error("sendBulkNotification messages", error.message);
+      return { ok: false, error: "Mesajele nu au putut fi salvate." };
+    }
+  }
+  const res = await sendPush(ids, { title, body: body.length > 180 ? `${body.slice(0, 177)}…` : body, url: input.asMessage ? `/messages/${me.id}` : "/feed", tag: `bulk-${Date.now()}` });
+  if (res.skipped === "FIREBASE_SERVICE_ACCOUNT missing") return { ok: false, error: "Lipsește FIREBASE_SERVICE_ACCOUNT pe server (Vercel)." };
+  return { ok: true, recipients: ids.length, withDevice: res.recipients, sent: res.sent };
+}

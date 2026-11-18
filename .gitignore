@@ -40,3 +40,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Firebase Android config (kept out of git; place it in android/app/ before building)
+android/app/google-services.json

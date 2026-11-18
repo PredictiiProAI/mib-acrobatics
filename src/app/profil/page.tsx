@@ -1,4 +1,5 @@
-import { LogOut } from "lucide-react";
+import Link from "next/link";
+import { LogOut, MessageSquareHeart } from "lucide-react";
 import { signOut } from "@/app/(auth)/actions";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { BackButton } from "@/components/back-button";
@@ -6,7 +7,7 @@ import type { Metadata } from "next";
 import { RoleBadge } from "@/components/role-badge";
 import { publicName, requireUser } from "@/lib/auth";
 import { LEVEL_LABEL } from "@/lib/profile";
-import { needsWaiver } from "@/lib/roles";
+import { isStaff, needsWaiver } from "@/lib/roles";
 import { createClient } from "@/lib/supabase/server";
 import { DeleteAccountCard } from "./delete-account-card";
 import { RulesCard, WaiverCard } from "./waiver-card";
@@ -128,6 +129,21 @@ export default async function ProfilePage() {
           <PasswordForm />
         </section>
       </div>
+
+      {!isStaff(user.role) && (
+        <section className="flex flex-col gap-4 rounded-3xl border border-neon-green/40 bg-carbon/80 p-6 sm:flex-row sm:items-center sm:justify-between" data-testid="contact-admin">
+          <div>
+            <h2 className="font-display text-lg font-bold text-white">Contactează administratorul</h2>
+            <p className="mt-1 text-sm text-white/60">Feedback-ul tău este foarte important pentru noi. Scrie-ne!</p>
+          </div>
+          <Link
+            href="/messages/admin"
+            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-neon-green px-4 py-2.5 text-sm font-bold text-black transition hover:brightness-110"
+          >
+            <MessageSquareHeart className="size-4" /> Scrie-ne
+          </Link>
+        </section>
+      )}
 
       <DeleteAccountCard />
     </div>

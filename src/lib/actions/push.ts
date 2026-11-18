@@ -63,7 +63,7 @@ export async function notifyDirectMessage(messageId: string): Promise<void> {
 
   // A member writing to the coach reaches every Antrenor (role admin or Super Admin shown as coach), not just one account.
   const coachIds = (coaches ?? []).filter((c) => c.role === "admin" || c.shown_as_coach).map((c) => c.id);
-  const toCoaches = !isStaff(sender?.role) && isStaff(receiver?.role) && coachIds.length > 0;
+  const toCoaches = !isStaff(sender?.role) && coachIds.includes(msg.receiver_id);
   let targets = toCoaches ? coachIds : [msg.receiver_id];
   const { data: settings, error: settingError } = await admin.from("user_settings").select("user_id, notify_messages").in("user_id", targets);
   if (!settingError) targets = targets.filter((id) => settings?.find((s) => s.user_id === id)?.notify_messages !== false);

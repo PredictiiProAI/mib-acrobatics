@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { ChatThread } from "@/components/chat/chat-thread";
 import { ThreadShell } from "@/components/chat/thread-shell";
 import { requireUser } from "@/lib/auth";
-import { COACH_THREAD, getCoach, getPairThread, getStaffIds, THREAD_PAGE_SIZE } from "@/lib/messages";
+import { ADMIN_THREAD, COACH_THREAD, getPairThread, getStaffGroups, getStaffIds, THREAD_PAGE_SIZE } from "@/lib/messages";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Conversație" };
@@ -13,11 +13,34 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export default async function MemberThreadPage({ params, searchParams }: PageProps<"/messages/[userId]">) {
   const [{ userId }, { draft }] = await Promise.all([params, searchParams]);
   const me = await requireUser(`/messages/${userId}`);
-  const staffIds = await getStaffIds();
+  const [staffIds, groups] = await Promise.all([getStaffIds(), getStaffGroups()]);
   const initialText = typeof draft === "string" ? draft.slice(0, 500) : "";
 
+  if (userId === ADMIN_THREAD) {
+    const admin = groups.admins[0];
+    if (!admin) redirect(`/messages/${COACH_THREAD}`);
+    const messages = await getPairThread(me.id, groups.adminIds);
+    return (
+      <ThreadShell backHref="/messages" name="Administrator MIB" subtitle={<span className="text-neon-green">Feedback și întrebări pentru club</span>}>
+        <ChatThread
+          key={ADMIN_THREAD}
+          viewerId={me.id}
+          threadUserId={me.id}
+          recipientId={admin.id}
+          counterpartIds={groups.adminIds}
+          initialMessages={messages}
+          pageSize={THREAD_PAGE_SIZE}
+          peerName="Administrator MIB"
+          initialText={initialText}
+          emptyHint="Feedback-ul tău este foarte important pentru noi. Scrie-ne!"
+        />
+      </ThreadShell>
+    );
+  }
+
   if (userId === COACH_THREAD) {
-    const [coach, messages] = await Promise.all([getCoach(), getPairThread(me.id, staffIds)]);
+    const coach = groups.coaches[0];
+    const messages = await getPairThread(me.id, groups.coachIds);
     const coachName = coach?.full_name || "Antrenor";
     return (
       <ThreadShell backHref="/messages" name={coachName} subtitle={<span className="text-neon-green">Antrenor MIB Acrobatics</span>}>
@@ -27,7 +50,7 @@ export default async function MemberThreadPage({ params, searchParams }: PagePro
             viewerId={me.id}
             threadUserId={me.id}
             recipientId={coach.id}
-            counterpartIds={staffIds}
+            counterpartIds={groups.coachIds}
             initialMessages={messages}
             pageSize={THREAD_PAGE_SIZE}
             peerName={coachName}
@@ -42,7 +65,7 @@ export default async function MemberThreadPage({ params, searchParams }: PagePro
   }
 
   if (!UUID.test(userId) || userId === me.id) notFound();
-  if (staffIds.includes(userId)) redirect(`/messages/${COACH_THREAD}`);
+  if (staffIds.includes(userId)) redirect(`/messages/${groups.adminIds.includes(userId) ? ADMIN_THREAD : COACH_THREAD}`);
   const supabase = await createClient();
   const [{ data: peer }, messages] = await Promise.all([
     supabase.from("users").select("id, full_name, display_name, account_type").eq("id", userId).maybeSingle(),

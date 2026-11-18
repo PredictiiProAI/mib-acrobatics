@@ -21,12 +21,31 @@ const previewOf = (m: { content: string; attachment_type?: string | null }) =>
 export const THREAD_PAGE_SIZE = 100;
 /** Route slug of a member's conversation with the coaching staff (shared coach inbox). */
 export const COACH_THREAD = "antrenor";
+/** Route slug of a member's conversation with the club administrators (feedback / „Contactează administratorul”). */
+export const ADMIN_THREAD = "admin";
 export type DirectoryMember = { id: string; name: string; accountType: string | null };
 
 export async function getStaffIds() {
   const supabase = await createClient();
   const { data } = await supabase.from("users").select("id").in("role", ["admin", "superadmin"]);
   return (data ?? []).map((u) => u.id);
+}
+
+type StaffRow = { id: string; full_name: string | null; role: AppRole; shown_as_coach: boolean | null };
+
+/** Staff split into coaches (role admin or Super Admin shown as coach) and administrators (the other Super Admins), oldest first. */
+export async function getStaffGroups() {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("users")
+    .select("id, full_name, role, shown_as_coach")
+    .in("role", ["admin", "superadmin"])
+    .order("created_at", { ascending: true });
+  const staff = (data ?? []) as StaffRow[];
+  const flagged = staff.filter((u) => u.role === "admin" || u.shown_as_coach);
+  const coaches = flagged.length ? flagged : staff;
+  const admins = staff.filter((u) => !coaches.includes(u));
+  return { coaches, admins, coachIds: coaches.map((u) => u.id), adminIds: admins.map((u) => u.id) };
 }
 
 /** Latest messages between `meId` and any of `otherIds`, oldest first. */
@@ -58,7 +77,7 @@ export async function getMemberDirectory(meId: string): Promise<DirectoryMember[
 /** Member inbox: the coach conversation plus every peer conversation, newest first. */
 export async function getMemberInbox(meId: string): Promise<Conversation[]> {
   const supabase = await createClient();
-  const [{ data: messages }, staffIds, coach] = await Promise.all([
+  const [{ data: messages }, staffIds, coach, groups] = await Promise.all([
     supabase
       .from("direct_messages")
       .select("*")
@@ -67,19 +86,21 @@ export async function getMemberInbox(meId: string): Promise<Conversation[]> {
       .limit(2000),
     getStaffIds(),
     getCoach(),
+    getStaffGroups(),
   ]);
   const staff = new Set(staffIds);
+  const admins = new Set(groups.adminIds);
   const conversations = new Map<string, Conversation>();
   for (const m of messages ?? []) {
     const other = m.sender_id === meId ? m.receiver_id : m.sender_id;
-    const key = staff.has(other) ? COACH_THREAD : other;
+    const key = admins.has(other) ? ADMIN_THREAD : staff.has(other) ? COACH_THREAD : other;
     let c = conversations.get(key);
     if (!c) {
       c = {
         userId: key,
-        name: key === COACH_THREAD ? coach?.full_name || "Antrenor" : "Membru",
+        name: key === ADMIN_THREAD ? "Administrator MIB" : key === COACH_THREAD ? coach?.full_name || "Antrenor" : "Membru",
         email: "",
-        role: key === COACH_THREAD ? "admin" : "user",
+        role: key === ADMIN_THREAD ? "superadmin" : key === COACH_THREAD ? "admin" : "user",
         lastMessage: previewOf(m),
         lastAt: m.created_at,
         lastFromUser: m.sender_id !== meId,
@@ -89,7 +110,7 @@ export async function getMemberInbox(meId: string): Promise<Conversation[]> {
     }
     if (m.receiver_id === meId && !m.read_at) c.unread++;
   }
-  const peerIds = [...conversations.keys()].filter((k) => k !== COACH_THREAD);
+  const peerIds = [...conversations.keys()].filter((k) => k !== COACH_THREAD && k !== ADMIN_THREAD);
   if (peerIds.length) {
     const { data: peers } = await supabase.from("users").select("id, full_name, display_name").in("id", peerIds);
     for (const p of peers ?? []) {

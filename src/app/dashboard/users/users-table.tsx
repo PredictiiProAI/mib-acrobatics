@@ -966,15 +966,71 @@ function RoleCell({ me, user }: { me: Me; user: Row }) {
   );
 }
 
-function BulkNotifyDialog({ users, onClose, onSent }: { users: Row[]; onClose: () => void; onSent: () => void }) {
+function BulkNotifyDialog({ users: all, groups, onClose }: { users: Row[]; groups: string[]; onClose: () => void }) {
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [q, setQ] = useState("");
+  const [group, setGroup] = useState("all");
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [asMessage, setAsMessage] = useState(true);
   const [result, setResult] = useState<{ ok: boolean; text: string } | null>(null);
   const [pending, start] = useTransition();
+  const users = all.filter((u) => selected.has(u.id));
   const n = users.length;
+  const needle = q.trim().toLowerCase();
+  const shown = all.filter(
+    (u) =>
+      (group === "all" || (group === NONE ? !u.groups.length : u.groups.some((g) => sameText(g, group)))) &&
+      (!needle || nameOf(u).toLowerCase().includes(needle) || u.email.toLowerCase().includes(needle) || (u.phone ?? "").includes(needle)),
+  );
+  const allShown = shown.length > 0 && shown.every((u) => selected.has(u.id));
+  const edit = (fn: (next: Set<string>) => void) =>
+    setSelected((prev) => {
+      const next = new Set(prev);
+      fn(next);
+      return next;
+    });
   return (
-    <Modal title={`Notificare către ${n} ${n === 1 ? "utilizator" : "utilizatori"}`} onClose={onClose}>
+    <Modal title="Trimite notificare push" onClose={onClose}>
+      <div className="mb-4 space-y-2" data-testid="bulk-picker">
+        <div className="flex gap-2">
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Caută după nume, email sau telefon…" className={field} data-testid="bulk-search" />
+          <select value={group} onChange={(e) => setGroup(e.target.value)} aria-label="Grupă / Școală" className={`${field} max-w-[40%]`} data-testid="bulk-group">
+            <option value="all">Toate școlile</option>
+            {groups.map((g) => (
+              <option key={g} value={g}>{g}</option>
+            ))}
+            <option value={NONE}>Fără grupă</option>
+          </select>
+        </div>
+        <div className="flex items-center justify-between text-xs text-white/60">
+          <button type="button" disabled={!shown.length} onClick={() => edit((s) => shown.forEach((u) => (allShown ? s.delete(u.id) : s.add(u.id))))} className="font-semibold text-neon-green disabled:opacity-40" data-testid="bulk-select-shown">
+            {allShown ? "Deselectează afișații" : `Selectează afișații (${shown.length})`}
+          </button>
+          <span data-testid="bulk-count">
+            {n} {n === 1 ? "selectat" : "selectați"}
+            {n > 0 && (
+              <button type="button" onClick={() => setSelected(new Set())} className="ml-2 underline hover:text-white">
+                Golește
+              </button>
+            )}
+          </span>
+        </div>
+        <ul className="max-h-56 divide-y divide-white/5 overflow-y-auto rounded-xl border border-white/10" data-testid="bulk-list">
+          {shown.map((u) => (
+            <li key={u.id}>
+              <label className="flex cursor-pointer items-center gap-3 px-3 py-2 hover:bg-white/[0.04]" data-testid="bulk-option">
+                <input type="checkbox" checked={selected.has(u.id)} onChange={() => edit((s) => (s.has(u.id) ? s.delete(u.id) : s.add(u.id)))} className="size-4 accent-[#76ff03]" />
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm">{nameOf(u)}</span>
+                  <span className="block truncate text-xs text-white/45">{[u.email, u.groups.join(", ")].filter(Boolean).join(" · ")}</span>
+                </span>
+              </label>
+            </li>
+          ))}
+          {!shown.length && <li className="px-3 py-4 text-center text-xs text-white/45">Niciun utilizator găsit.</li>}
+        </ul>
+      </div>
       <form
         className="space-y-4"
         data-testid="bulk-form"
@@ -988,13 +1044,10 @@ function BulkNotifyDialog({ users, onClose, onSent }: { users: Row[]; onClose: (
               ok: true,
               text: `Trimis la ${r.recipients}. Push pe telefon: ${r.withDevice} ${r.withDevice === 1 ? "utilizator" : "utilizatori"}${asMessage ? "; restul îl văd în Mesaje" : ""}.`,
             });
-            onSent();
+            setSelected(new Set());
           });
         }}
       >
-        <p className="max-h-24 overflow-y-auto text-xs text-white/60" data-testid="bulk-recipients">
-          {users.map(nameOf).join(", ")}
-        </p>
         <label className="grid gap-1.5">
           <span className="text-xs font-semibold text-white/60">Titlu (opțional)</span>
           <input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={80} placeholder="MIB Acrobatics" className={field} data-testid="bulk-title" />
@@ -1020,7 +1073,7 @@ function BulkNotifyDialog({ users, onClose, onSent }: { users: Row[]; onClose: (
             {result?.ok ? "Închide" : "Anulează"}
           </Button>
           {!result?.ok && (
-            <Button type="submit" disabled={pending || !body.trim()} data-testid="bulk-send">
+            <Button type="submit" disabled={pending || !body.trim() || !n} data-testid="bulk-send">
               {pending ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />} Trimite la {n}
             </Button>
           )}
@@ -1039,8 +1092,7 @@ export function UsersTable({ me, users, options }: { me: Me; users: Row[]; optio
   const [cityFilter, setCityFilter] = useState("all");
   const [groupFilter, setGroupFilter] = useState("all");
   const [docFilter, setDocFilter] = useState<DocFilter>("all");
-  const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [bulkUsers, setBulkUsers] = useState<Row[] | null>(null);
+  const [bulkOpen, setBulkOpen] = useState(false);
   const q = query.trim().toLowerCase();
   const rows = users.filter(
     (u) =>
@@ -1053,21 +1105,6 @@ export function UsersTable({ me, users, options }: { me: Me; users: Row[]; optio
         nameOf(u).toLowerCase().includes(q) ||
         (u.phone ?? "").includes(q)),
   );
-  const selectable = rows.filter((u) => u.id !== me.id);
-  const allSelected = selectable.length > 0 && selectable.every((u) => selected.has(u.id));
-  const toggle = (id: string) =>
-    setSelected((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  const toggleAll = () =>
-    setSelected((prev) => {
-      const next = new Set(prev);
-      selectable.forEach((u) => (allSelected ? next.delete(u.id) : next.add(u.id)));
-      return next;
-    });
   const counts = UI_ROLES.reduce<Record<string, number>>(
     (acc, r) => ({ ...acc, [r]: users.filter((u) => uiRoleOf(u) === r).length }),
     {},
@@ -1079,7 +1116,9 @@ export function UsersTable({ me, users, options }: { me: Me; users: Row[]; optio
         <Button onClick={() => setCreating(true)} data-testid="create-user">
           <UserPlus className="size-4" /> Adaugă utilizator
         </Button>
-        <TestPushButton />
+        <Button type="button" variant="ghost" onClick={() => setBulkOpen(true)} data-testid="bulk-open">
+          <Megaphone className="size-4" /> Trimite notificare push
+        </Button>
         <label className="flex min-w-60 flex-1 items-center gap-2 rounded-xl border border-white/10 bg-black/40 px-3 py-2.5 text-sm focus-within:border-neon-orange/70">
           <Search className="size-4 text-white/40" />
           <input
@@ -1134,27 +1173,10 @@ export function UsersTable({ me, users, options }: { me: Me; users: Row[]; optio
         </select>
       </div>
 
-      {selected.size > 0 && (
-        <div className="sticky top-2 z-30 flex flex-wrap items-center gap-3 rounded-2xl border border-neon-green/40 bg-black/90 px-4 py-3 backdrop-blur" data-testid="bulk-bar">
-          <span className="text-sm font-semibold">
-            {selected.size} {selected.size === 1 ? "utilizator selectat" : "utilizatori selectați"}
-          </span>
-          <Button type="button" onClick={() => setBulkUsers(users.filter((u) => selected.has(u.id)))} data-testid="bulk-open">
-            <Megaphone className="size-4" /> Trimite notificare
-          </Button>
-          <button type="button" onClick={() => setSelected(new Set())} className="text-xs text-white/60 hover:text-white">
-            Deselectează tot
-          </button>
-        </div>
-      )}
-
       <div className="glass overflow-x-auto rounded-2xl">
         <table className="w-full min-w-[860px] text-left text-sm">
           <thead className="border-b border-white/5 text-xs uppercase tracking-wider text-white/40">
             <tr>
-              <th className="w-10 py-3 pl-4">
-                <input type="checkbox" checked={allSelected} onChange={toggleAll} aria-label="Selectează tot" title="Selectează toți utilizatorii afișați" className="size-4 accent-[#76ff03]" data-testid="select-all" />
-              </th>
               <th className="px-4 py-3 font-medium">Utilizator</th>
               <th className="px-4 py-3 font-medium">Rol</th>
               <th className="px-4 py-3 font-medium">Activitate</th>
@@ -1175,11 +1197,6 @@ export function UsersTable({ me, users, options }: { me: Me; users: Row[]; optio
                   setOpenId(u.id)
                 }
               >
-                <td className="w-10 py-3 pl-4">
-                  {u.id !== me.id && (
-                    <input type="checkbox" checked={selected.has(u.id)} onChange={() => toggle(u.id)} aria-label={`Selectează ${nameOf(u)}`} className="size-4 accent-[#76ff03]" data-testid="select-user" />
-                  )}
-                </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-3">
                     <Avatar
@@ -1268,7 +1285,7 @@ export function UsersTable({ me, users, options }: { me: Me; users: Row[]; optio
             {rows.length === 0 && (
               <tr>
                 <td
-                  colSpan={8}
+                  colSpan={7}
                   className="px-4 py-10 text-center text-white/50"
                 >
                   Niciun utilizator găsit.
@@ -1281,7 +1298,7 @@ export function UsersTable({ me, users, options }: { me: Me; users: Row[]; optio
       {creating && (
         <CreateUserDialog me={me} options={options} onClose={() => setCreating(false)} />
       )}
-      {bulkUsers && <BulkNotifyDialog users={bulkUsers} onClose={() => setBulkUsers(null)} onSent={() => setSelected(new Set())} />}
+      {bulkOpen && <BulkNotifyDialog users={users.filter((u) => u.id !== me.id)} groups={options.groups} onClose={() => setBulkOpen(false)} />}
       {opened && <UserPanel user={opened} options={options} onClose={() => setOpenId(null)} />}
     </div>
   );

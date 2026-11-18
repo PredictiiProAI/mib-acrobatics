@@ -46,7 +46,7 @@ export async function notifyDirectMessage(messageId: string): Promise<void> {
   if (!msg || msg.sender_id !== me.id || Date.now() - new Date(msg.created_at).getTime() > BURST_MS) return;
 
   const since = new Date(new Date(msg.created_at).getTime() - BURST_MS).toISOString();
-  const [{ count: recent }, { data: setting, error: settingError }, { data: receiver }, { data: sender }] = await Promise.all([
+  const [{ count: recent }, { data: receiver }, { data: sender }, { data: coaches }] = await Promise.all([
     admin
       .from("direct_messages")
       .select("id", { count: "exact", head: true })
@@ -55,16 +55,23 @@ export async function notifyDirectMessage(messageId: string): Promise<void> {
       .is("read_at", null)
       .gte("created_at", since)
       .lt("created_at", msg.created_at),
-    admin.from("user_settings").select("notify_messages").eq("user_id", msg.receiver_id).maybeSingle(),
     admin.from("users").select("role").eq("id", msg.receiver_id).maybeSingle(),
-    admin.from("users").select("full_name, display_name").eq("id", msg.sender_id).maybeSingle(),
+    admin.from("users").select("full_name, display_name, role").eq("id", msg.sender_id).maybeSingle(),
+    admin.from("users").select("id, role, shown_as_coach").in("role", ["admin", "superadmin"]),
   ]);
   if (recent) return;
-  if (!settingError && setting?.notify_messages === false) return;
+
+  // A member writing to the coach reaches every Antrenor (role admin or Super Admin shown as coach), not just one account.
+  const coachIds = (coaches ?? []).filter((c) => c.role === "admin" || c.shown_as_coach).map((c) => c.id);
+  const toCoaches = !isStaff(sender?.role) && isStaff(receiver?.role) && coachIds.length > 0;
+  let targets = toCoaches ? coachIds : [msg.receiver_id];
+  const { data: settings, error: settingError } = await admin.from("user_settings").select("user_id, notify_messages").in("user_id", targets);
+  if (!settingError) targets = targets.filter((id) => settings?.find((s) => s.user_id === id)?.notify_messages !== false);
+  if (!targets.length) return;
 
   const name = sender?.display_name || sender?.full_name || "Mesaj nou";
   const text = msg.content?.trim();
   const body = text ? (text.length > 120 ? `${text.slice(0, 117)}…` : text) : msg.attachment_type === "video" ? "🎬 Video" : msg.attachment_type ? "📷 Foto" : "Mesaj nou";
   const base = receiver && isStaff(receiver.role) ? "/dashboard/messages" : "/messages";
-  await sendPush([msg.receiver_id], { title: name, body, url: `${base}/${msg.sender_id}`, tag: `dm-${msg.sender_id}` });
+  await sendPush(targets, { title: name, body, url: `${base}/${msg.sender_id}`, tag: `dm-${msg.sender_id}` });
 }

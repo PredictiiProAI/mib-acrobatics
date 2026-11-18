@@ -100,15 +100,15 @@ export async function getMemberInbox(meId: string): Promise<Conversation[]> {
   return [...conversations.values()];
 }
 
-/** The coach regular users write to: the first admin, falling back to a superadmin. */
+/** The coach regular users write to: the first Antrenor (role admin or a Super Admin shown as coach), falling back to any staff. */
 export async function getCoach() {
   const supabase = await createClient();
   const { data } = await supabase
     .from("users")
-    .select("id, full_name, role")
+    .select("id, full_name, role, shown_as_coach")
     .in("role", ["admin", "superadmin"])
     .order("created_at", { ascending: true });
-  return data?.find((u) => u.role === "admin") ?? data?.[0] ?? null;
+  return data?.find((u) => u.role === "admin" || u.shown_as_coach) ?? data?.[0] ?? null;
 }
 
 export async function getUnreadCount(userId: string) {

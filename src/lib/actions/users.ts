@@ -42,6 +42,7 @@ export async function setUserRole(target: string, role: AppRole, memberType?: Me
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const MISSING_KEY = "Lipsește SUPABASE_SERVICE_ROLE_KEY pe server (Vercel → Environment Variables).";
 
 const cleanCity = (city: unknown) => (typeof city === "string" ? city.trim().slice(0, 80) : "") || null;
@@ -101,15 +102,34 @@ export async function updateUserProfile(target: string, input: ProfileFieldsInpu
 }
 
 /** Sends a test notification only to the signed-in staff member's own devices. */
-export async function sendTestPush(): Promise<ActionResult & { sent?: number; devices?: number }> {
+const PLATFORM_LABEL: Record<string, string> = { android: "Android", ios: "iPhone", web: "browser" };
+
+/** Test push to the signed-in staff member's own devices, or to one chosen member's devices. */
+export async function sendTestPush(target?: string): Promise<ActionResult & { sent?: number; devices?: number; summary?: string }> {
   const me = await getSessionUser();
   if (!me || !isStaff(me.role)) return { ok: false, error: "Nu ai acces." };
-  const res = await sendPush([me.id], { title: "Test MIB Acrobatics", body: "Notificările push funcționează pe acest dispozitiv.", url: "/dashboard/users", tag: "test-push" });
+  if (target !== undefined && !UUID_RE.test(target)) return { ok: false, error: "Utilizator invalid." };
+  const self = !target || target === me.id;
+  const res = await sendPush([target ?? me.id], {
+    title: "Test MIB Acrobatics",
+    body: "Notificările push funcționează pe acest dispozitiv.",
+    url: self ? "/dashboard/users" : "/profil",
+    tag: "test-push",
+  });
   if (res.skipped === "FIREBASE_SERVICE_ACCOUNT missing") return { ok: false, error: "Lipsește FIREBASE_SERVICE_ACCOUNT pe server (Vercel)." };
   if (res.skipped) return { ok: false, error: `Notificarea nu a fost trimisă: ${res.skipped}` };
-  if (!res.tokens) return { ok: false, error: "Nu ai niciun dispozitiv înregistrat. Activează notificările push din /profil pe telefon sau în browser." };
+  if (!res.tokens)
+    return {
+      ok: false,
+      error: self
+        ? "Nu ai niciun dispozitiv înregistrat pe contul tău. Activează notificările push din /profil, logat cu acest cont."
+        : "Utilizatorul nu are niciun dispozitiv cu notificări push activate.",
+    };
   if (!res.sent) return { ok: false, error: `Trimiterea a eșuat pe toate cele ${res.tokens} dispozitive.` };
-  return { ok: true, sent: res.sent, devices: res.tokens };
+  const summary = Object.entries(res.platforms ?? {})
+    .map(([p, n]) => `${n} ${PLATFORM_LABEL[p] ?? p}`)
+    .join(", ");
+  return { ok: true, sent: res.sent, devices: res.tokens, summary };
 }
 
 /** Mirrors public.admin_set_role: admins create user/media accounts, superadmin any role. */

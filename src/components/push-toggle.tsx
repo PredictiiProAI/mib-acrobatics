@@ -31,10 +31,6 @@ async function nativeToken(): Promise<string> {
   return new Promise<string>((resolve, reject) => {
     void PushNotifications.addListener("registration", (t) => resolve(t.value));
     void PushNotifications.addListener("registrationError", (e) => reject(new Error(e.error)));
-    void PushNotifications.addListener("pushNotificationActionPerformed", (a) => {
-      const url = (a.notification.data as { url?: string } | undefined)?.url;
-      if (url) window.location.href = url;
-    });
     void PushNotifications.register();
   });
 }

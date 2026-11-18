@@ -4,7 +4,10 @@ import { getMessaging } from "firebase-admin/messaging";
 import { createAdminClient } from "./supabase/admin";
 
 export type PushMessage = { title: string; body: string; url?: string; tag?: string };
-export type PushResult = { recipients: number; tokens: number; sent: number; failed: number; skipped?: string };
+export type PushResult = { recipients: number; tokens: number; sent: number; failed: number; skipped?: string; platforms?: Record<string, number> };
+
+/** Android channel created by the app (PushListener); high importance gives sound + heads-up banner. */
+export const ANDROID_CHANNEL_ID = "mib_alerts";
 
 function firebaseApp(): App | null {
   const raw = process.env.FIREBASE_SERVICE_ACCOUNT;
@@ -32,14 +35,14 @@ export async function sendPush(userIds: string[] | "all", msg: PushMessage, opts
   const admin = createAdminClient();
   if (!admin) return empty("SUPABASE_SERVICE_ROLE_KEY missing");
 
-  let query = admin.from("push_tokens").select("token, user_id");
+  let query = admin.from("push_tokens").select("token, user_id, platform");
   if (userIds !== "all") query = query.in("user_id", userIds);
   const { data: rows, error } = await query;
   if (error) {
     console.error("push tokens", error.message);
     return empty(error.message);
   }
-  let targets = (rows ?? []) as { token: string; user_id: string }[];
+  let targets = (rows ?? []) as { token: string; user_id: string; platform: string }[];
   if (opts.exclude?.length) targets = targets.filter((t) => !opts.exclude!.includes(t.user_id));
   if (opts.respectScheduleSetting && targets.length) {
     const { data: off } = await admin.from("user_settings").select("user_id").eq("notify_schedule", false);
@@ -55,6 +58,7 @@ export async function sendPush(userIds: string[] | "all", msg: PushMessage, opts
   const link = msg.url ?? "/schedule";
   let sent = 0;
   let failed = 0;
+  const platforms: Record<string, number> = {};
   const dead: string[] = [];
   for (let i = 0; i < targets.length; i += 500) {
     const batch = targets.slice(i, i + 500).map((t) => t.token);
@@ -62,13 +66,22 @@ export async function sendPush(userIds: string[] | "all", msg: PushMessage, opts
       tokens: batch,
       notification: { title: msg.title, body: msg.body },
       data: { url: link, title: msg.title, body: msg.body, ...(msg.tag ? { tag: msg.tag } : {}) },
-      android: { priority: "high", notification: { tag: msg.tag, color: "#ff6a00" } },
+      android: {
+        priority: "high",
+        notification: { tag: msg.tag, color: "#8b00ff", channelId: ANDROID_CHANNEL_ID, sound: "default", defaultVibrateTimings: true, priority: "max", visibility: "public" },
+      },
       webpush: { headers: { Urgency: "high" }, fcmOptions: { link } },
     });
     sent += res.successCount;
     failed += res.failureCount;
-    res.responses.forEach((r, j) => r.error && DEAD.has(r.error.code) && dead.push(batch[j]));
+    res.responses.forEach((r, j) => {
+      if (r.success) platforms[targets[i + j].platform] = (platforms[targets[i + j].platform] ?? 0) + 1;
+      else if (r.error) {
+        console.error("push failed", targets[i + j].platform, r.error.code);
+        if (DEAD.has(r.error.code)) dead.push(batch[j]);
+      }
+    });
   }
   if (dead.length) await admin.from("push_tokens").delete().in("token", dead);
-  return { recipients, tokens: targets.length, sent, failed };
+  return { recipients, tokens: targets.length, sent, failed, platforms };
 }

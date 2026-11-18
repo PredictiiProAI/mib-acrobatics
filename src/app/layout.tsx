@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Exo_2, Geist } from "next/font/google";
+import { PushListener } from "@/components/push-listener";
 import { THEME_SCRIPT } from "@/components/theme-toggle";
 import { SITE_URL } from "@/lib/club";
 import { openGraph, SITE_DESCRIPTION, SITE_NAME, SITE_TITLE } from "@/lib/seo";
@@ -28,7 +29,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
       </head>
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        {children}
+        <PushListener />
+      </body>
     </html>
   );
 }

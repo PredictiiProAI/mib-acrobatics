@@ -296,7 +296,7 @@ function AssignmentBadges({ user }: { user: Row }) {
   );
 }
 
-function TestPushButton() {
+function TestPushButton({ target, label = "Trimite-mi un push de test" }: { target?: string; label?: string }) {
   const [pending, start] = useTransition();
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   return (
@@ -305,16 +305,16 @@ function TestPushButton() {
         type="button"
         variant="ghost"
         disabled={pending}
-        data-testid="test-push"
+        data-testid={target ? "test-push-user" : "test-push"}
         onClick={() =>
           start(async () => {
             setMsg(null);
-            const r = await sendTestPush();
-            setMsg(r.ok ? { ok: true, text: `Trimis pe ${r.sent} ${r.sent === 1 ? "dispozitiv" : "dispozitive"} ale tale.` } : { ok: false, text: r.error });
+            const r = await sendTestPush(target);
+            setMsg(r.ok ? { ok: true, text: `Trimis pe ${r.sent} ${r.sent === 1 ? "dispozitiv" : "dispozitive"}${r.summary ? ` (${r.summary})` : ""}.` } : { ok: false, text: r.error });
           })
         }
       >
-        {pending ? <Loader2 className="size-4 animate-spin" /> : <BellRing className="size-4" />} Trimite-mi un push de test
+        {pending ? <Loader2 className="size-4 animate-spin" /> : <BellRing className="size-4" />} {label}
       </Button>
       {msg && (
         <span className={`text-xs ${msg.ok ? "text-neon-green" : "text-red-300"}`} data-testid="test-push-result">
@@ -714,6 +714,10 @@ function UserPanel({ user, options, onClose }: { user: Row; options: Options; on
               {needsWaiver(user.role) && !(isParent(user) ? user.waiver_signed : user.rules_accepted_at) && <RequestDocsButton user={user} />}
             </Detail>
           </div>
+        </div>
+
+        <div className="rounded-2xl border border-white/10 p-4">
+          <TestPushButton key={user.id} target={user.id} label="Trimite push de test acestui utilizator" />
         </div>
 
         <ProfileEditor key={user.id} user={user} options={options} />

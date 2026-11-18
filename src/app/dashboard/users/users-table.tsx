@@ -5,6 +5,8 @@ import {
   Clock,
   Eye,
   BellRing,
+  Check,
+  Plus,
   Film,
   Loader2,
   MapPin,
@@ -91,6 +93,14 @@ function AssignmentFields({
 }) {
   const all = [...new Set([...options.groups, ...groups])];
   const toggle = (g: string) => onGroups(groups.includes(g) ? groups.filter((x) => x !== g) : [...groups, g]);
+  const [adding, setAdding] = useState<string | null>(null);
+  const addNew = () => {
+    const name = (adding ?? "").trim().slice(0, 80);
+    setAdding(null);
+    if (!name) return;
+    const existing = all.find((g) => sameText(g, name));
+    if (!groups.includes(existing ?? name)) onGroups([...groups, existing ?? name]);
+  };
   return (
     <div className="grid gap-3">
       <label className="grid gap-1.5">
@@ -113,8 +123,7 @@ function AssignmentFields({
       </label>
       <fieldset className="grid gap-1.5">
         <legend className="mb-1.5 text-xs font-semibold text-white/60">Grupă / Școală</legend>
-        {all.length ? (
-          <div className="flex flex-wrap gap-1.5" data-testid="assign-groups">
+        <div className="flex flex-wrap gap-1.5" data-testid="assign-groups">
             {all.map((g) => {
               const on = groups.includes(g);
               return (
@@ -129,10 +138,46 @@ function AssignmentFields({
                 </button>
               );
             })}
-          </div>
-        ) : (
-          <p className="text-xs text-white/45">Nu există grupe. Adaugă-le în Program & Grupe.</p>
-        )}
+          {adding === null ? (
+            <button
+              type="button"
+              onClick={() => setAdding("")}
+              className="inline-flex items-center gap-1 rounded-full border border-dashed border-neon-green/60 px-3 py-1.5 text-xs font-semibold text-neon-green transition hover:bg-neon-green/10"
+              data-testid="add-group"
+            >
+              <Plus className="size-3.5" /> Adaugă școală
+            </button>
+          ) : (
+            <span className="inline-flex items-center gap-1">
+              <input
+                autoFocus
+                value={adding}
+                maxLength={80}
+                placeholder="Nume școală / grupă"
+                onChange={(e) => setAdding(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    addNew();
+                  } else if (e.key === "Escape") {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setAdding(null);
+                  }
+                }}
+                className="h-8 w-44 rounded-full border border-neon-green/60 bg-black/40 px-3 text-xs outline-none"
+                data-testid="add-group-input"
+              />
+              <button type="button" onClick={addNew} aria-label="Adaugă" className="grid size-8 place-items-center rounded-full bg-neon-green text-black" data-testid="add-group-confirm">
+                <Check className="size-4" />
+              </button>
+              <button type="button" onClick={() => setAdding(null)} aria-label="Renunță" className="grid size-8 place-items-center rounded-full text-white/60 hover:bg-white/5">
+                <X className="size-4" />
+              </button>
+            </span>
+          )}
+        </div>
+        <p className="text-[11px] text-white/40">O școală nouă apare și în filtre după salvare. Ca să primească notificări de program, adaug-o și în Program & Grupe cu același nume.</p>
       </fieldset>
     </div>
   );

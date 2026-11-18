@@ -27,7 +27,9 @@ export default async function UsersPage() {
   const assignment = new Map((assignments ?? []).map((a) => [a.id, a]));
   const byName = (a: string, b: string) => a.localeCompare(b, "ro");
   const options = {
-    groups: [...new Set((classes ?? []).map((c) => c.group_name))],
+    groups: [...(classes ?? []).map((c) => c.group_name), ...(assignments ?? []).flatMap((a) => a.groups)].filter(
+      (g, i, list) => list.findIndex((x) => x.trim().toLocaleLowerCase("ro") === g.trim().toLocaleLowerCase("ro")) === i,
+    ),
     cities: [...new Set((assignments ?? []).map((a) => a.city?.trim()).filter((c): c is string => !!c))].sort(byName),
   };
 

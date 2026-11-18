@@ -16,7 +16,7 @@ export default async function MessagesLayout({ children }: LayoutProps<"/message
     <>
       <AppHeader user={user} />
       <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 pt-4 md:pb-4">
-        <div className="flex h-[calc(100svh-3.5rem-1px-env(safe-area-inset-bottom))] min-h-[28rem] gap-4 max-md:-mt-4 max-md:pt-[env(safe-area-inset-top)] md:h-[calc(100svh-6.5rem)]">
+        <div className="flex h-[calc(100dvh-3.5rem-1px-env(safe-area-inset-bottom))] md:min-h-[28rem] gap-4 max-md:-mt-4 max-md:pt-[env(safe-area-inset-top)] md:h-[calc(100svh-6.5rem)]">
           <InboxList
             conversations={conversations}
             basePath="/messages"

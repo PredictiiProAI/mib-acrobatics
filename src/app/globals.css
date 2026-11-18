@@ -228,3 +228,10 @@ body::before {
     print-color-adjust: exact;
   }
 }
+
+/* While typing on mobile, the bottom tab bar would sit on top of the keyboard and hide the message box. */
+@media (max-width: 767px) {
+  body:has(textarea:focus, input:not([type="checkbox"], [type="radio"], [type="file"]):focus) [data-testid="bottom-nav"] {
+    display: none;
+  }
+}

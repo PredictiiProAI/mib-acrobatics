@@ -47,12 +47,13 @@ async function webToken(): Promise<string> {
 }
 
 /** Turns push notifications on/off for this device (Android app via Capacitor, browsers via Firebase web push). */
-export function PushToggle({ compact = false }: { compact?: boolean }) {
+/** `promptOnly`: shown only until push is on for this device (turning it off stays in /profil). */
+export function PushToggle({ compact = false, promptOnly = false }: { compact?: boolean; promptOnly?: boolean }) {
   const token = useSyncExternalStore(subscribe, () => localStorage.getItem(KEY), () => null);
   const supported = useSyncExternalStore(subscribe, () => Capacitor.isNativePlatform() || isWebPushConfigured, () => false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
-  if (!supported) return null;
+  if (!supported || (promptOnly && token)) return null;
 
   const enable = () =>
     startTransition(async () => {

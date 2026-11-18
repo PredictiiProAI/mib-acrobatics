@@ -42,7 +42,7 @@ export default async function SchedulePage() {
         </div>
       </section>
 
-      <PushToggle />
+      <PushToggle promptOnly />
 
       <ScheduleDayList rows={sortSchedule(rows)} today={today} rsvp={rsvp} />
     </div>

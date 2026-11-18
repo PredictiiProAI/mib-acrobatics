@@ -23,6 +23,7 @@ const setStored = (token: string | null) => {
 };
 
 async function nativeToken(): Promise<string> {
+  if (!Capacitor.isPluginAvailable("PushNotifications")) throw new Error("Versiunea instalată a aplicației nu are notificări push. Actualizează MIB Acrobatics din Google Play, apoi încearcă din nou.");
   const { PushNotifications } = await import("@capacitor/push-notifications");
   let perm = await PushNotifications.checkPermissions();
   if (perm.receive === "prompt" || perm.receive === "prompt-with-rationale") perm = await PushNotifications.requestPermissions();

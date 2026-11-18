@@ -4,6 +4,7 @@ import { Camera, Check, KeyRound, Loader2, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useActionState, useRef, useState, useTransition } from "react";
 import { Avatar } from "@/components/avatar";
+import { ChildrenInput } from "@/components/children-input";
 import { Button, Input } from "@/components/ui";
 import { ACCOUNT_TYPES, AVATAR_MAX_BYTES, AVATAR_TYPES, DISCIPLINE_SUGGESTIONS, LEVEL_LABEL, LEVELS } from "@/lib/profile";
 import { createClient } from "@/lib/supabase/client";
@@ -146,16 +147,10 @@ export function ProfileForm({ initial }: { initial: ProfileValues }) {
       <div className={`grid transition-[grid-template-rows,opacity] duration-300 ${accountType === "Părinte" ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}>
         <div className="min-h-0 overflow-hidden px-px pb-px">
           {accountType === "Părinte" && (
-            <Field label="Numele și vârsta copilului / copiilor">
-              <Input
-                name="children_names"
-                defaultValue={initial.children_names}
-                maxLength={300}
-                required
-                placeholder="ex. Andrei, 9 ani; Maria, 12 ani"
-                data-testid="children-names"
-              />
-            </Field>
+            <div className="space-y-1.5">
+              <span className="text-xs font-semibold uppercase tracking-wider text-white/60">Numele și vârsta copilului / copiilor</span>
+              <ChildrenInput name="children_names" defaultValue={initial.children_names} />
+            </div>
           )}
         </div>
       </div>

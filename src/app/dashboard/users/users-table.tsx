@@ -24,6 +24,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { createPortal } from "react-dom";
 import { Avatar } from "@/components/avatar";
+import { ChildrenInput } from "@/components/children-input";
 import { Button } from "@/components/ui";
 import { useConfirm } from "@/components/confirm-dialog";
 import { ROLE_BADGE_STYLE } from "@/components/role-badge";
@@ -249,10 +250,10 @@ function ProfileEditor({ user, options }: { user: Row; options: Options }) {
           </select>
         </label>
         {isParent(user) && (
-          <label className="grid gap-1.5 sm:col-span-2">
+          <div className="grid gap-1.5 sm:col-span-2">
             {label("Copii", form.children_names)}
-            <input value={form.children_names} onChange={set("children_names")} maxLength={300} placeholder="ex. Maria (8 ani), Andrei (11 ani)" className={field} name="children_names" />
-          </label>
+            <ChildrenInput defaultValue={form.children_names} onChange={(v) => setForm((f) => ({ ...f, children_names: v }))} />
+          </div>
         )}
         <label className="grid gap-1.5 sm:col-span-2">
           {label("Contact de urgență", form.emergency_contact, true)}

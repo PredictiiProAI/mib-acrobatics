@@ -263,7 +263,7 @@ export function NotificationToggles({ feed, schedule }: { feed: boolean; schedul
   return (
     <ul className="mt-3 divide-y divide-white/10">
       <Toggle setting="notify_feed" initial={feed} label="Notificări email pentru analize & postări noi în AcroMib" />
-      <Toggle setting="notify_schedule" initial={schedule} label="Notificări email pentru modificări de orar & grupe" />
+      <Toggle setting="notify_schedule" initial={schedule} label="Notificări (email și push) pentru modificări de orar & grupe" />
     </ul>
   );
 }

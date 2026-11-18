@@ -195,6 +195,12 @@ export type Database = {
           { foreignKeyName: "session_attendance_user_id_fkey"; columns: ["user_id"]; isOneToOne: false; referencedRelation: "users"; referencedColumns: ["id"] },
         ];
       };
+      push_tokens: {
+        Row: { token: string; user_id: string; platform: "web" | "android" | "ios"; created_at: string; updated_at: string };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
       direct_messages: {
         Row: { id: string; sender_id: string; receiver_id: string; content: string; created_at: string; read_at: string | null };
         Insert: { sender_id: string; receiver_id: string; content: string };
@@ -230,6 +236,8 @@ export type Database = {
       };
     };
     Functions: {
+      register_push_token: { Args: { p_token: string; p_platform: string }; Returns: undefined };
+      unregister_push_token: { Args: { p_token: string }; Returns: undefined };
       current_app_role: { Args: Record<string, never>; Returns: AppRole | null };
       is_staff: { Args: Record<string, never>; Returns: boolean };
       can_publish: { Args: Record<string, never>; Returns: boolean };

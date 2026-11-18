@@ -1,9 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { getSessionUser } from "@/lib/auth";
 import { isStaff } from "@/lib/roles";
-import { BADGE_COLORS, LEVELS, type BadgeColor, type ScheduleLevel } from "@/lib/schedule";
+import { sendPush } from "@/lib/push.server";
+import { BADGE_COLORS, dayLabel, hhmm, LEVELS, type BadgeColor, type ScheduleLevel } from "@/lib/schedule";
 import { createClient } from "@/lib/supabase/server";
 import type { ActionResult } from "./posts";
 
@@ -21,6 +23,17 @@ export type ScheduleInput = {
 };
 
 const TIME = /^([01]\d|2[0-3]):[0-5]\d$/;
+
+/** Push "the schedule changed" to every member after the response is sent (skips the coach who made it). */
+function notifySchedule(actorId: string, body: string) {
+  after(async () => {
+    const res = await sendPush("all", { title: "Programul s-a modificat", body, url: "/schedule", tag: "schedule-change" }, { respectScheduleSetting: true, exclude: [actorId] });
+    if (res.skipped) console.info("schedule push skipped:", res.skipped);
+  });
+}
+
+const slot = (r: { group_name: string; day_of_week: number; start_time: string; end_time: string }) =>
+  `${r.group_name} · ${dayLabel(r.day_of_week)} ${hhmm(r.start_time)}–${hhmm(r.end_time)}`;
 
 function revalidateSchedule() {
   revalidatePath("/");
@@ -59,6 +72,7 @@ export async function saveScheduleEntry(input: ScheduleInput): Promise<ActionRes
     console.error("saveScheduleEntry", error.message);
     return { ok: false, error: "Ora de antrenament nu a putut fi salvată." };
   }
+  notifySchedule(me.id, input.id ? `Ora a fost modificată: ${slot(row)}.` : `Oră nouă în program: ${slot(row)}.`);
   revalidateSchedule();
   return { ok: true };
 }
@@ -67,8 +81,10 @@ export async function deleteScheduleEntry(id: string): Promise<ActionResult> {
   const me = await getSessionUser();
   if (!me || !isStaff(me.role)) return { ok: false, error: "Doar antrenorii pot modifica programul." };
   const supabase = await createClient();
+  const { data: old } = await supabase.from("schedule").select("group_name, day_of_week, start_time, end_time").eq("id", id).maybeSingle();
   const { error } = await supabase.from("schedule").delete().eq("id", id);
   if (error) return { ok: false, error: "Ora de antrenament nu a putut fi ștearsă." };
+  if (old) notifySchedule(me.id, `Antrenament anulat: ${slot(old)}.`);
   revalidateSchedule();
   return { ok: true };
 }
@@ -109,6 +125,7 @@ export async function saveScheduleGroup(input: GroupInput): Promise<ActionResult
     console.error("saveScheduleGroup", error.message);
     return { ok: false, error: "Grupa nu a putut fi salvată." };
   }
+  notifySchedule(me.id, `Grupa „${group_name}” a fost actualizată. Verifică programul.`);
   revalidateSchedule();
   return { ok: true };
 }
@@ -119,11 +136,13 @@ export async function deleteScheduleGroup(ids: string[]): Promise<ActionResult> 
   if (!me || !isStaff(me.role)) return { ok: false, error: "Doar antrenorii pot modifica programul." };
   if (!validIds(ids)) return { ok: false, error: "Grupă invalidă." };
   const supabase = await createClient();
+  const { data: old } = await supabase.from("schedule").select("group_name").in("id", ids).limit(1);
   const { error } = await supabase.from("schedule").delete().in("id", ids);
   if (error) {
     console.error("deleteScheduleGroup", error.message);
     return { ok: false, error: "Grupa nu a putut fi ștearsă." };
   }
+  if (old?.[0]) notifySchedule(me.id, `Grupa „${old[0].group_name}” a fost scoasă din program.`);
   revalidateSchedule();
   return { ok: true };
 }

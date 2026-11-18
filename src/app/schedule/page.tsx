@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { MessageSquare, Pencil } from "lucide-react";
+import { PushToggle } from "@/components/push-toggle";
 import { ScheduleDayList } from "@/components/schedule-day-list";
 import { ButtonLink } from "@/components/ui";
 import { requireUser } from "@/lib/auth";
@@ -40,6 +41,8 @@ export default async function SchedulePage() {
           )}
         </div>
       </section>
+
+      {!staff && <PushToggle />}
 
       <ScheduleDayList rows={sortSchedule(rows)} today={today} rsvp={rsvp} />
     </div>

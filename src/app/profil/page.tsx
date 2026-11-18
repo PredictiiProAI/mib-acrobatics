@@ -10,6 +10,7 @@ import { needsWaiver } from "@/lib/roles";
 import { createClient } from "@/lib/supabase/server";
 import { DeleteAccountCard } from "./delete-account-card";
 import { RulesCard, WaiverCard } from "./waiver-card";
+import { PushToggle } from "@/components/push-toggle";
 import { AvatarUploader, NotificationToggles, PasswordForm, ProfileForm } from "./profile-forms";
 
 export const metadata: Metadata = { title: "Profilul meu" };
@@ -96,6 +97,7 @@ export default async function ProfilePage() {
         <section className="rounded-3xl border border-neon-orange/40 bg-carbon/80 p-6">
           <h2 className="font-display text-lg font-bold text-white">Notificări</h2>
           <NotificationToggles feed={settings?.notify_feed ?? true} schedule={settings?.notify_schedule ?? true} />
+          <PushToggle />
         </section>
         <section className="rounded-3xl border border-neon-orange/40 bg-carbon/80 p-6">
           <h2 className="font-display text-lg font-bold text-white">Securitate</h2>

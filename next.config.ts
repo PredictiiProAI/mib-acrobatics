@@ -4,6 +4,9 @@ const STORAGE_PATH = "/storage/v1/object/public/**";
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL) : null;
 
 const nextConfig: NextConfig = {
+  experimental: {
+    agentUpgrade: "security",
+  },
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "*.supabase.co", pathname: STORAGE_PATH },

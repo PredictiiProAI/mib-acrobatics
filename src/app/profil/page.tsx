@@ -18,12 +18,14 @@ export const metadata: Metadata = { title: "Profilul meu" };
 export default async function ProfilePage() {
   const user = await requireUser("/profil");
   const supabase = await createClient();
-  const [{ data: profile }, { data: settings }, { data: details }, { data: waivers }] = await Promise.all([
+  const [{ data: profile }, { data: settings }, { data: details }, { data: waivers }, { data: assigned }] = await Promise.all([
     supabase.from("users").select("full_name, display_name, discipline, level").eq("id", user.id).maybeSingle(),
     supabase.from("user_settings").select("phone, notify_feed, notify_schedule").eq("user_id", user.id).maybeSingle(),
     supabase.rpc("profile_details", { p_user: user.id }),
     supabase.from("waiver_submissions").select("*").eq("user_id", user.id).order("signed_at", { ascending: false }),
+    supabase.rpc("user_assignment", { p_user: user.id }),
   ]);
+  const assignment = assigned?.[0];
   const extra = details?.[0];
   const name = publicName(user);
 
@@ -72,6 +74,27 @@ export default async function ProfilePage() {
             )}
           </div>
           {profile?.discipline && <p className="text-sm text-white/70">{profile.discipline}</p>}
+          <dl className="w-full space-y-2 border-t border-white/10 pt-4 text-left text-sm" data-testid="profile-assignment">
+            <div>
+              <dt className="text-xs font-semibold text-white/50">Oraș / Localitate</dt>
+              <dd className="text-white">{assignment?.city || <span className="text-white/40">Nesetat</span>}</dd>
+            </div>
+            <div>
+              <dt className="text-xs font-semibold text-white/50">Grupă / Școală</dt>
+              <dd className="mt-1 flex flex-wrap gap-1.5">
+                {assignment?.groups.length ? (
+                  assignment.groups.map((g) => (
+                    <span key={g} className="rounded-full bg-neon-orange/10 px-2.5 py-0.5 text-xs font-bold text-neon-orange ring-1 ring-neon-orange/40">
+                      {g}
+                    </span>
+                  ))
+                ) : (
+                  <span className="text-white/40">Nesetată</span>
+                )}
+              </dd>
+            </div>
+            <p className="text-[11px] text-white/40">Le setează antrenorul. Primești notificări doar pentru antrenamentele grupei tale.</p>
+          </dl>
         </section>
 
         <section className="rounded-3xl border border-neon-orange/40 bg-carbon/80 p-6">

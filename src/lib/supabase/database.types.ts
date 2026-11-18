@@ -17,6 +17,7 @@ type ScheduleInsert = {
   badge_color?: BadgeColor;
   notes?: string | null;
   sort_order?: number;
+  city?: string | null;
 };
 
 type Rel = { foreignKeyName: string; columns: string[]; isOneToOne: boolean; referencedRelation: string; referencedColumns: string[] };
@@ -37,6 +38,8 @@ export type Database = {
           avatar_url: string | null;
           account_type?: AccountType;
           shown_as_coach?: boolean;
+          city?: string | null;
+          groups?: string[];
         };
         Insert: never;
         Update: {
@@ -122,6 +125,7 @@ export type Database = {
           badge_color: BadgeColor;
           notes: string | null;
           sort_order: number;
+          city: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -287,6 +291,10 @@ export type Database = {
       admin_document_requests: { Args: Record<string, never>; Returns: { id: string; documents_requested_at: string }[] };
       my_documents_request: { Args: Record<string, never>; Returns: string | null };
       email_registered: { Args: { p_email: string }; Returns: boolean };
+      user_assignment: { Args: { p_user: string }; Returns: { city: string | null; groups: string[] }[] };
+      admin_user_assignments: { Args: Record<string, never>; Returns: { id: string; city: string | null; groups: string[] }[] };
+      admin_set_user_assignment: { Args: { target: string; p_city: string | null; p_groups: string[] }; Returns: undefined };
+      admin_rename_group: { Args: { p_old: string; p_new: string }; Returns: undefined };
     };
     Enums: { app_role: AppRole; media_type: MediaType };
     CompositeTypes: { [_ in never]: never };

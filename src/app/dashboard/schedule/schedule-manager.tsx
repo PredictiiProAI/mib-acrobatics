@@ -32,6 +32,7 @@ const EMPTY: ScheduleInput = {
   badge_color: "violet",
   notes: "",
   sort_order: 0,
+  city: "",
 };
 
 const toInput = (r: ScheduleRow): ScheduleInput => ({
@@ -45,6 +46,7 @@ const toInput = (r: ScheduleRow): ScheduleInput => ({
   badge_color: r.badge_color,
   notes: r.notes ?? "",
   sort_order: r.sort_order,
+  city: r.city ?? "",
 });
 
 const field = "w-full rounded-xl border border-white/10 bg-black/50 px-3.5 py-2.5 text-sm outline-none placeholder:text-white/30 focus:border-neon-orange/70 focus:shadow-neon-sm";
@@ -93,12 +95,12 @@ export function ScheduleManager({ rows, rosters }: { rows: ScheduleRow[]; roster
   }
 
   const editGroup = (g: (typeof groups)[number]) =>
-    setEditingGroup({ ids: g.sessions.map((s) => s.id), group_name: g.name, age_range: g.ageRange ?? "", level: g.level, badge_color: g.color, sort_order: g.sortOrder });
+    setEditingGroup({ ids: g.sessions.map((s) => s.id), group_name: g.name, age_range: g.ageRange ?? "", level: g.level, badge_color: g.color, sort_order: g.sortOrder, city: g.sessions[0]?.city ?? "" });
 
   const newForGroup = (g?: (typeof groups)[number], day?: number) =>
     setEditing({
       ...EMPTY,
-      ...(g ? { group_name: g.name, age_range: g.ageRange ?? "", level: g.level, badge_color: g.color, sort_order: g.sortOrder } : {}),
+      ...(g ? { group_name: g.name, age_range: g.ageRange ?? "", level: g.level, badge_color: g.color, sort_order: g.sortOrder, city: g.sessions[0]?.city ?? "" } : {}),
       ...(day ? { day_of_week: day } : {}),
     });
 
@@ -186,7 +188,7 @@ export function ScheduleManager({ rows, rosters }: { rows: ScheduleRow[]; roster
                         <span className={`size-2 shrink-0 rounded-full ${BADGE_STYLE[r.badge_color].dot}`} />
                         <span className="truncate text-sm font-semibold">{r.group_name}</span>
                       </span>
-                      {r.age_range && <span className="block truncate text-[11px] text-white/45">{r.age_range}</span>}
+                      {(r.age_range || r.city) && <span className="block truncate text-[11px] text-white/45">{[r.city, r.age_range].filter(Boolean).join(" · ")}</span>}
                     </button>
                     <button
                       type="button"
@@ -328,7 +330,7 @@ function EntryForm({
   // Picking an existing group copies its age range, level and colour.
   function pickGroup(name: string) {
     const g = groups.find((x) => x.name.toLowerCase() === name.trim().toLowerCase());
-    setForm((f) => ({ ...f, group_name: name, ...(g && !f.id ? { age_range: g.ageRange ?? "", level: g.level, badge_color: g.color, sort_order: g.sortOrder } : {}) }));
+    setForm((f) => ({ ...f, group_name: name, ...(g && !f.id ? { age_range: g.ageRange ?? "", level: g.level, badge_color: g.color, sort_order: g.sortOrder, city: g.sessions[0]?.city ?? "" } : {}) }));
   }
 
   function submit() {
@@ -366,6 +368,11 @@ function EntryForm({
                 <option key={n} value={n} />
               ))}
             </datalist>
+          </label>
+          <label className="space-y-1.5 sm:col-span-2">
+            <span className="text-xs font-semibold text-white/60">Oraș / Localitate (opțional)</span>
+            <input value={form.city} onChange={(e) => set("city", e.target.value)} placeholder="ex. Vaslui" maxLength={80} className={field} name="city" data-testid="schedule-city" />
+            <span className="block text-[11px] text-white/45">Cu oraș, notificările ajung doar la membrii grupei din acel oraș.</span>
           </label>
           <label className="space-y-1.5">
             <span className="text-xs font-semibold text-white/60">Vârstă</span>
@@ -496,6 +503,11 @@ function GroupForm({ initial, onClose }: { initial: GroupInput; onClose: () => v
           <label className="space-y-1.5 sm:col-span-2">
             <span className="text-xs font-semibold text-white/60">Nume grupă</span>
             <input required value={form.group_name} onChange={(e) => set("group_name", e.target.value)} maxLength={80} className={field} name="group_name" />
+          </label>
+          <label className="space-y-1.5 sm:col-span-2">
+            <span className="text-xs font-semibold text-white/60">Oraș / Localitate (opțional)</span>
+            <input value={form.city} onChange={(e) => set("city", e.target.value)} placeholder="ex. Vaslui" maxLength={80} className={field} name="city" data-testid="schedule-city" />
+            <span className="block text-[11px] text-white/45">Cu oraș, notificările ajung doar la membrii grupei din acel oraș.</span>
           </label>
           <label className="space-y-1.5">
             <span className="text-xs font-semibold text-white/60">Vârstă</span>

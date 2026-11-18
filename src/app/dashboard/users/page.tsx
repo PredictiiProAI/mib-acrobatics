@@ -10,11 +10,13 @@ export const metadata: Metadata = { title: "Utilizatori" };
 export default async function UsersPage() {
   const me = await requireRole(STAFF_ROLES, "/dashboard/users");
   const supabase = await createClient();
-  const [{ data: users, error }, { data: requests }, { data: posts }, { data: comments }] = await Promise.all([
+  const [{ data: users, error }, { data: requests }, { data: posts }, { data: comments }, { data: assignments }, { data: classes }] = await Promise.all([
     supabase.rpc("admin_list_users"),
     supabase.rpc("admin_document_requests"),
     supabase.from("posts").select("author_id"),
     supabase.from("comments").select("user_id"),
+    supabase.rpc("admin_user_assignments"),
+    supabase.from("schedule").select("group_name, sort_order").order("sort_order").order("group_name"),
   ]);
   if (error) console.error("admin_list_users", error.message);
 
@@ -22,6 +24,12 @@ export default async function UsersPage() {
   const postCount = tally((posts ?? []).map((p) => p.author_id));
   const commentCount = tally((comments ?? []).map((c) => c.user_id));
   const requestedAt = new Map((requests ?? []).map((r) => [r.id, r.documents_requested_at]));
+  const assignment = new Map((assignments ?? []).map((a) => [a.id, a]));
+  const byName = (a: string, b: string) => a.localeCompare(b, "ro");
+  const options = {
+    groups: [...new Set((classes ?? []).map((c) => c.group_name))],
+    cities: [...new Set((assignments ?? []).map((a) => a.city?.trim()).filter((c): c is string => !!c))].sort(byName),
+  };
 
   return (
     <div className="space-y-8">
@@ -37,7 +45,11 @@ export default async function UsersPage() {
       </div>
       <UsersTable
         me={{ id: me.id, role: me.role }}
-        users={(users ?? []).map((u) => ({ ...u, posts: postCount[u.id] ?? 0, comments: commentCount[u.id] ?? 0, documents_requested_at: requestedAt.get(u.id) ?? null }))}
+        users={(users ?? []).map((u) => ({ ...u, posts: postCount[u.id] ?? 0, comments: commentCount[u.id] ?? 0, documents_requested_at: requestedAt.get(u.id) ?? null,
+          city: assignment.get(u.id)?.city ?? null,
+          groups: assignment.get(u.id)?.groups ?? [],
+        }))}
+        options={options}
       />
     </div>
   );

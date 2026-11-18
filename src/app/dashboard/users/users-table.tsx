@@ -4,8 +4,10 @@ import {
   FileText,
   Clock,
   Eye,
+  BellRing,
   Film,
   Loader2,
+  MapPin,
   Mail,
   MessageSquare,
   Phone,
@@ -30,6 +32,8 @@ import {
   getUserActivity,
   getWaiverSubmissions,
   requestDocuments,
+  sendTestPush,
+  setUserAssignment,
   setUserRole,
   type UserActivity,
   type WaiverRecord,
@@ -45,8 +49,175 @@ type Row =
     posts: number;
     comments: number;
     documents_requested_at?: string | null;
+    city: string | null;
+    groups: string[];
   };
 type Me = { id: string; role: AppRole };
+/** Group names from /dashboard/schedule and cities already in use, for pickers and filters. */
+type Options = { groups: string[]; cities: string[] };
+
+type DocFilter = "all" | "declaratie" | "regulament" | "none";
+const DOC_FILTERS: { value: DocFilter; label: string }[] = [
+  { value: "all", label: "Toate documentele" },
+  { value: "declaratie", label: "Declarație" },
+  { value: "regulament", label: "Regulament" },
+  { value: "none", label: "Fără documente" },
+];
+const NONE = "__none__";
+const sameText = (a: string | null | undefined, b: string) => (a ?? "").trim().toLocaleLowerCase("ro") === b.trim().toLocaleLowerCase("ro");
+function docsMatch(u: Row, f: DocFilter) {
+  if (f === "all") return true;
+  const parent = u.account_type === "Părinte";
+  const signed = parent ? !!u.waiver_signed : !!u.rules_accepted_at;
+  if (f === "declaratie") return needsWaiver(u.role) && parent && signed;
+  if (f === "regulament") return needsWaiver(u.role) && !parent && signed;
+  return needsWaiver(u.role) && !signed;
+}
+
+/** City input (with suggestions) + group/school checkboxes; used when creating and editing a member. */
+function AssignmentFields({
+  options,
+  city,
+  groups,
+  onCity,
+  onGroups,
+  idPrefix,
+}: {
+  options: Options;
+  city: string;
+  groups: string[];
+  onCity: (v: string) => void;
+  onGroups: (v: string[]) => void;
+  idPrefix: string;
+}) {
+  const all = [...new Set([...options.groups, ...groups])];
+  const toggle = (g: string) => onGroups(groups.includes(g) ? groups.filter((x) => x !== g) : [...groups, g]);
+  return (
+    <div className="grid gap-3">
+      <label className="grid gap-1.5">
+        <span className="text-xs font-semibold text-white/60">Oraș / Localitate</span>
+        <input
+          list={`${idPrefix}-cities`}
+          maxLength={80}
+          placeholder="ex. Iași"
+          value={city}
+          onChange={(e) => onCity(e.target.value)}
+          className={field}
+          name="city"
+          data-testid="assign-city"
+        />
+        <datalist id={`${idPrefix}-cities`}>
+          {options.cities.map((c) => (
+            <option key={c} value={c} />
+          ))}
+        </datalist>
+      </label>
+      <fieldset className="grid gap-1.5">
+        <legend className="mb-1.5 text-xs font-semibold text-white/60">Grupă / Școală</legend>
+        {all.length ? (
+          <div className="flex flex-wrap gap-1.5" data-testid="assign-groups">
+            {all.map((g) => {
+              const on = groups.includes(g);
+              return (
+                <button
+                  key={g}
+                  type="button"
+                  onClick={() => toggle(g)}
+                  aria-pressed={on}
+                  className={`rounded-full px-3 py-1.5 text-xs font-semibold ring-1 transition ${on ? "bg-neon-orange text-onaccent ring-neon-orange" : "bg-white/5 text-white/70 ring-white/10 hover:text-white"}`}
+                >
+                  {g}
+                </button>
+              );
+            })}
+          </div>
+        ) : (
+          <p className="text-xs text-white/45">Nu există grupe. Adaugă-le în Program & Grupe.</p>
+        )}
+      </fieldset>
+    </div>
+  );
+}
+
+function AssignmentEditor({ user, options }: { user: Row; options: Options }) {
+  const router = useRouter();
+  const [city, setCity] = useState(user.city ?? "");
+  const [groups, setGroups] = useState<string[]>(user.groups);
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [pending, start] = useTransition();
+  return (
+    <section className="rounded-2xl border border-white/10 p-4" data-testid="assignment-editor">
+      <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-white/50">Oraș & grupe</h3>
+      <AssignmentFields options={options} city={city} groups={groups} onCity={setCity} onGroups={setGroups} idPrefix={`edit-${user.id}`} />
+      <p className="mt-3 text-xs text-white/45">Notificările push despre un antrenament ajung doar la membrii grupei lui (și ai orașului, dacă antrenamentul are oraș).</p>
+      <div className="mt-3 flex items-center gap-3">
+        <Button
+          type="button"
+          disabled={pending}
+          data-testid="save-assignment"
+          onClick={() =>
+            start(async () => {
+              setMsg(null);
+              const r = await setUserAssignment(user.id, city, groups);
+              setMsg(r.ok ? { ok: true, text: "Salvat." } : { ok: false, text: r.error });
+              if (r.ok) router.refresh();
+            })
+          }
+        >
+          {pending && <Loader2 className="size-4 animate-spin" />} Salvează
+        </Button>
+        {msg && <span className={`text-sm ${msg.ok ? "text-neon-green" : "text-red-300"}`}>{msg.text}</span>}
+      </div>
+    </section>
+  );
+}
+
+function AssignmentBadges({ user }: { user: Row }) {
+  if (!user.city && !user.groups.length) return <p className="mt-1 text-[11px] text-white/35" data-testid="row-assignment">Fără oraș / grupă</p>;
+  return (
+    <div className="mt-1 flex flex-wrap gap-1" data-testid="row-assignment">
+      {user.city && (
+        <span className="inline-flex items-center gap-1 rounded-full bg-neon-green/10 px-2 py-0.5 text-[11px] font-semibold text-neon-green ring-1 ring-neon-green/30">
+          <MapPin className="size-3" /> {user.city}
+        </span>
+      )}
+      {user.groups.map((g) => (
+        <span key={g} className="rounded-full bg-neon-orange/10 px-2 py-0.5 text-[11px] font-semibold text-neon-orange ring-1 ring-neon-orange/30">
+          {g}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function TestPushButton() {
+  const [pending, start] = useTransition();
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  return (
+    <div className="flex items-center gap-2">
+      <Button
+        type="button"
+        variant="ghost"
+        disabled={pending}
+        data-testid="test-push"
+        onClick={() =>
+          start(async () => {
+            setMsg(null);
+            const r = await sendTestPush();
+            setMsg(r.ok ? { ok: true, text: `Trimis pe ${r.sent} ${r.sent === 1 ? "dispozitiv" : "dispozitive"} ale tale.` } : { ok: false, text: r.error });
+          })
+        }
+      >
+        {pending ? <Loader2 className="size-4 animate-spin" /> : <BellRing className="size-4" />} Trimite-mi un push de test
+      </Button>
+      {msg && (
+        <span className={`text-xs ${msg.ok ? "text-neon-green" : "text-red-300"}`} data-testid="test-push-result">
+          {msg.text}
+        </span>
+      )}
+    </div>
+  );
+}
 
 const ALL_ROLES: AppRole[] = ["superadmin", "admin", "media", "user"];
 
@@ -127,7 +298,7 @@ function Modal({
   );
 }
 
-function CreateUserDialog({ me, onClose }: { me: Me; onClose: () => void }) {
+function CreateUserDialog({ me, options, onClose }: { me: Me; options: Options; onClose: () => void }) {
   const router = useRouter();
   const [form, setForm] = useState({
     name: "",
@@ -135,6 +306,8 @@ function CreateUserDialog({ me, onClose }: { me: Me; onClose: () => void }) {
     password: "",
     role: "user" as UiRole,
   });
+  const [city, setCity] = useState("");
+  const [groups, setGroups] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const set =
@@ -150,7 +323,7 @@ function CreateUserDialog({ me, onClose }: { me: Me; onClose: () => void }) {
           e.preventDefault();
           startTransition(async () => {
             setError(null);
-            const r = await createUser({ ...form, ...toAppRole(form.role) });
+            const r = await createUser({ ...form, ...toAppRole(form.role), city, groups });
             if (!r.ok) return setError(r.error);
             onClose();
             router.refresh();
@@ -200,6 +373,7 @@ function CreateUserDialog({ me, onClose }: { me: Me; onClose: () => void }) {
             </option>
           ))}
         </select>
+        <AssignmentFields options={options} city={city} groups={groups} onCity={setCity} onGroups={setGroups} idPrefix="create" />
         <p className="text-xs text-white/45">
           Contul este activ imediat (fără email de confirmare). Comunică-i
           parola utilizatorului; o poate schimba din profil.
@@ -362,7 +536,7 @@ function PdfLinks({ userId }: { userId: string }) {
   );
 }
 
-function UserPanel({ user, onClose }: { user: Row; onClose: () => void }) {
+function UserPanel({ user, options, onClose }: { user: Row; options: Options; onClose: () => void }) {
   const [activity, setActivity] = useState<UserActivity | null>(null);
   const [waivers, setWaivers] = useState<WaiverRecord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -470,6 +644,8 @@ function UserPanel({ user, onClose }: { user: Row; onClose: () => void }) {
             </Detail>
           </div>
         </div>
+
+        <AssignmentEditor key={user.id} user={user} options={options} />
 
         {waivers.length > 0 && (
           <section data-testid="panel-waivers">
@@ -713,16 +889,22 @@ function RoleCell({ me, user }: { me: Me; user: Row }) {
   );
 }
 
-export function UsersTable({ me, users }: { me: Me; users: Row[] }) {
+export function UsersTable({ me, users, options }: { me: Me; users: Row[]; options: Options }) {
   const [query, setQuery] = useState("");
   const [creating, setCreating] = useState(false);
   const [openId, setOpenId] = useState<string | null>(null);
   const opened = users.find((u) => u.id === openId) ?? null;
   const [filter, setFilter] = useState<UiRole | "all">("all");
+  const [cityFilter, setCityFilter] = useState("all");
+  const [groupFilter, setGroupFilter] = useState("all");
+  const [docFilter, setDocFilter] = useState<DocFilter>("all");
   const q = query.trim().toLowerCase();
   const rows = users.filter(
     (u) =>
       (filter === "all" || uiRoleOf(u) === filter) &&
+      (cityFilter === "all" || (cityFilter === NONE ? !u.city : sameText(u.city, cityFilter))) &&
+      (groupFilter === "all" || (groupFilter === NONE ? !u.groups.length : u.groups.some((g) => sameText(g, groupFilter)))) &&
+      docsMatch(u, docFilter) &&
       (!q ||
         u.email.toLowerCase().includes(q) ||
         nameOf(u).toLowerCase().includes(q) ||
@@ -739,6 +921,7 @@ export function UsersTable({ me, users }: { me: Me; users: Row[] }) {
         <Button onClick={() => setCreating(true)} data-testid="create-user">
           <UserPlus className="size-4" /> Adaugă utilizator
         </Button>
+        <TestPushButton />
         <label className="flex min-w-60 flex-1 items-center gap-2 rounded-xl border border-white/10 bg-black/40 px-3 py-2.5 text-sm focus-within:border-neon-orange/70">
           <Search className="size-4 text-white/40" />
           <input
@@ -763,6 +946,34 @@ export function UsersTable({ me, users }: { me: Me; users: Row[] }) {
             </button>
           ))}
         </div>
+      </div>
+
+      <div className="grid gap-2 sm:grid-cols-3" data-testid="user-filters">
+        <select value={cityFilter} onChange={(e) => setCityFilter(e.target.value)} aria-label="Oraș / Localitate" className={field} data-testid="filter-city">
+          <option value="all">Toate orașele</option>
+          <option value={NONE}>Fără oraș</option>
+          {options.cities.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
+        <select value={groupFilter} onChange={(e) => setGroupFilter(e.target.value)} aria-label="Grupă / Școală" className={field} data-testid="filter-group">
+          <option value="all">Toate grupele</option>
+          <option value={NONE}>Fără grupă</option>
+          {options.groups.map((g) => (
+            <option key={g} value={g}>
+              {g}
+            </option>
+          ))}
+        </select>
+        <select value={docFilter} onChange={(e) => setDocFilter(e.target.value as DocFilter)} aria-label="Documente" className={field} data-testid="filter-docs">
+          {DOC_FILTERS.map((d) => (
+            <option key={d.value} value={d.value}>
+              {d.label}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="glass overflow-x-auto rounded-2xl">
@@ -808,6 +1019,7 @@ export function UsersTable({ me, users }: { me: Me; users: Row[] }) {
                       <p className="truncate text-xs text-white/50">
                         {u.email}
                       </p>
+                      <AssignmentBadges user={u} />
                     </div>
                   </div>
                 </td>
@@ -887,9 +1099,9 @@ export function UsersTable({ me, users }: { me: Me; users: Row[] }) {
         </table>
       </div>
       {creating && (
-        <CreateUserDialog me={me} onClose={() => setCreating(false)} />
+        <CreateUserDialog me={me} options={options} onClose={() => setCreating(false)} />
       )}
-      {opened && <UserPanel user={opened} onClose={() => setOpenId(null)} />}
+      {opened && <UserPanel user={opened} options={options} onClose={() => setOpenId(null)} />}
     </div>
   );
 }

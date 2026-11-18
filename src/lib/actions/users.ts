@@ -6,6 +6,7 @@ import { getSessionUser } from "@/lib/auth";
 import { isStaff } from "@/lib/roles";
 import type { AppRole, Database } from "@/lib/supabase/database.types";
 import { createAdminClient, removeUserFiles } from "@/lib/supabase/admin";
+import { sendPush } from "@/lib/push.server";
 import { sendDocumentsRequest } from "@/lib/signup-alert";
 import { MEDIA_BUCKET } from "@/lib/supabase/env";
 import { createClient } from "@/lib/supabase/server";
@@ -42,13 +43,44 @@ export async function setUserRole(target: string, role: AppRole, memberType?: Me
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MISSING_KEY = "Lipsește SUPABASE_SERVICE_ROLE_KEY pe server (Vercel → Environment Variables).";
 
+const cleanCity = (city: unknown) => (typeof city === "string" ? city.trim().slice(0, 80) : "") || null;
+const cleanGroups = (groups: unknown) =>
+  Array.isArray(groups) ? [...new Set(groups.filter((g): g is string => typeof g === "string").map((g) => g.trim().slice(0, 80)).filter(Boolean))].slice(0, 30) : [];
+
+/** Staff only (enforced again in public.admin_set_user_assignment): a member's city and groups/schools. */
+export async function setUserAssignment(target: string, city: string, groups: string[]): Promise<ActionResult> {
+  const me = await getSessionUser();
+  if (!me || !isStaff(me.role)) return { ok: false, error: "Doar antrenorii pot schimba orașul și grupele." };
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_set_user_assignment", { target, p_city: cleanCity(city), p_groups: cleanGroups(groups) });
+  if (error) {
+    console.error("admin_set_user_assignment", error.message);
+    return { ok: false, error: error.code === "PGRST202" ? "Rulează migrarea 0025_city_groups.sql în Supabase." : "Orașul și grupele nu au putut fi salvate." };
+  }
+  revalidatePath("/dashboard/users");
+  revalidatePath("/profil");
+  return { ok: true };
+}
+
+/** Sends a test notification only to the signed-in staff member's own devices. */
+export async function sendTestPush(): Promise<ActionResult & { sent?: number; devices?: number }> {
+  const me = await getSessionUser();
+  if (!me || !isStaff(me.role)) return { ok: false, error: "Nu ai acces." };
+  const res = await sendPush([me.id], { title: "Test MIB Acrobatics", body: "Notificările push funcționează pe acest dispozitiv.", url: "/dashboard/users", tag: "test-push" });
+  if (res.skipped === "FIREBASE_SERVICE_ACCOUNT missing") return { ok: false, error: "Lipsește FIREBASE_SERVICE_ACCOUNT pe server (Vercel)." };
+  if (res.skipped) return { ok: false, error: `Notificarea nu a fost trimisă: ${res.skipped}` };
+  if (!res.tokens) return { ok: false, error: "Nu ai niciun dispozitiv înregistrat. Activează notificările push din /profil pe telefon sau în browser." };
+  if (!res.sent) return { ok: false, error: `Trimiterea a eșuat pe toate cele ${res.tokens} dispozitive.` };
+  return { ok: true, sent: res.sent, devices: res.tokens };
+}
+
 /** Mirrors public.admin_set_role: admins create user/media accounts, superadmin any role. */
 function canGrant(me: AppRole, role: AppRole) {
   return me === "superadmin" || (me === "admin" && (role === "user" || role === "media"));
 }
 
 /** Creates a confirmed account via the Admin Auth API, so the staff session stays signed in. */
-export async function createUser(input: { name: string; email: string; password: string; role: AppRole; memberType?: MemberType }): Promise<ActionResult> {
+export async function createUser(input: { name: string; email: string; password: string; role: AppRole; memberType?: MemberType; city?: string; groups?: string[] }): Promise<ActionResult> {
   const me = await getSessionUser();
   if (!me || !isStaff(me.role)) return { ok: false, error: "Nu ai acces la gestionarea utilizatorilor." };
   const name = input.name.trim().slice(0, 120);
@@ -75,7 +107,15 @@ export async function createUser(input: { name: string; email: string; password:
 
   const id = data.user.id;
   const { error: profileError } = await admin.from("users").upsert(
-      { id, email, full_name: name, role: input.role, account_type: input.role === "user" && input.memberType === "Părinte" ? "Părinte" : "Sportiv" },
+      {
+        id,
+        email,
+        full_name: name,
+        role: input.role,
+        account_type: input.role === "user" && input.memberType === "Părinte" ? "Părinte" : "Sportiv",
+        city: cleanCity(input.city),
+        groups: cleanGroups(input.groups),
+      },
       { onConflict: "id" },
     );
   if (profileError) {

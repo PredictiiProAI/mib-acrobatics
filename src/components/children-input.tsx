@@ -24,7 +24,11 @@ function parse(value: string): Child[] {
 const serialize = (rows: Child[]) =>
   rows
     .filter((c) => c.name.trim())
-    .map((c) => (c.age ? `${c.name.trim()}, ${c.age} ${c.age === "1" ? "an" : "ani"}` : c.name.trim()))
+    .map((c) =>
+      c.age
+        ? `${c.name.trim()}, ${c.age} ${c.age === "1" ? "an" : "ani"}`
+        : c.name.trim()
+    )
     .join("; ");
 
 /** Name + age rows for a parent's children, stored as "Nume, 9 ani; Nume, 12 ani". */
@@ -45,31 +49,44 @@ export function ChildrenInput({
     setRows(next);
     onChange?.(serialize(next));
   };
-  const edit = (i: number, patch: Partial<Child>) => update(rows.map((c, j) => (j === i ? { ...c, ...patch } : c)));
+  const edit = (i: number, patch: Partial<Child>) =>
+    update(rows.map((c, j) => (j === i ? { ...c, ...patch } : c)));
 
   return (
     <div className="space-y-2" data-testid="children-input">
       {name && <input type="hidden" name={name} value={value} />}
       {rows.map((c, i) => (
-        <div key={i} className="flex items-center gap-2" data-testid="child-row">
-          <Input
-            value={c.name}
-            onChange={(e) => edit(i, { name: e.target.value.replace(/[;]/g, "") })}
-            maxLength={60}
-            placeholder={`Numele copilului ${i + 1}`}
-            aria-label={`Numele copilului ${i + 1}`}
-            className={`min-w-0 flex-1 ${inputClassName}`}
-            data-testid="child-name"
-          />
-          <Input
-            value={c.age}
-            onChange={(e) => edit(i, { age: e.target.value.replace(/\D/g, "").slice(0, 2) })}
-            inputMode="numeric"
-            placeholder="Vârsta"
-            aria-label={`Vârsta copilului ${i + 1}`}
-            className={`w-20 shrink-0 text-center ${inputClassName}`}
-            data-testid="child-age"
-          />
+        <div
+          key={i}
+          className="flex items-center gap-2"
+          data-testid="child-row"
+        >
+          <div className="min-w-0 flex-1">
+            <Input
+              value={c.name}
+              onChange={(e) =>
+                edit(i, { name: e.target.value.replace(/[;]/g, "") })
+              }
+              maxLength={60}
+              placeholder={`Numele copilului ${i + 1}`}
+              aria-label={`Numele copilului ${i + 1}`}
+              className={inputClassName}
+              data-testid="child-name"
+            />
+          </div>
+          <div className="w-24 shrink-0">
+            <Input
+              value={c.age}
+              onChange={(e) =>
+                edit(i, { age: e.target.value.replace(/\D/g, "").slice(0, 2) })
+              }
+              inputMode="numeric"
+              placeholder="Vârsta"
+              aria-label={`Vârsta copilului ${i + 1}`}
+              className={`text-center ${inputClassName}`}
+              data-testid="child-age"
+            />
+          </div>
           {rows.length > 1 && (
             <button
               type="button"

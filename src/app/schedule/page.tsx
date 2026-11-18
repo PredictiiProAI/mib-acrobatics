@@ -16,7 +16,7 @@ export default async function SchedulePage() {
   const rows = await getSchedule();
   const today = todayIsoDay();
   const staff = isStaff(user.role);
-  const rsvp = staff ? undefined : { dates: Object.fromEntries(rows.map((r) => [r.id, nextSessionDate(r)])), mine: await getMyAttendance(user.id, rows) };
+  const rsvp = { dates: Object.fromEntries(rows.map((r) => [r.id, nextSessionDate(r)])), mine: await getMyAttendance(user.id, rows) };
 
   return (
     <div className="space-y-6">
@@ -28,7 +28,7 @@ export default async function SchedulePage() {
             <h1 className="mt-2 font-display text-2xl font-black sm:text-3xl md:text-4xl">
               Program <span className="text-gradient">săptămânal</span>
             </h1>
-            <p className="mt-2 max-w-xl text-sm text-white/60">{staff ? "Grupe pe vârste și niveluri. Vezi cine vine la fiecare antrenament în Program & Grupe." : "Confirmă dacă vii la următoarele antrenamente, ca antrenorul să știe pe cine așteaptă."}</p>
+            <p className="mt-2 max-w-xl text-sm text-white/60">{staff ? "Confirmă dacă vii la antrenamente. Vezi cine vine la fiecare ședință în Program & Grupe." : "Confirmă dacă vii la următoarele antrenamente, ca antrenorul să știe pe cine așteaptă."}</p>
           </div>
           {staff ? (
             <ButtonLink href="/dashboard/schedule">
@@ -42,7 +42,7 @@ export default async function SchedulePage() {
         </div>
       </section>
 
-      {!staff && <PushToggle />}
+      <PushToggle />
 
       <ScheduleDayList rows={sortSchedule(rows)} today={today} rsvp={rsvp} />
     </div>

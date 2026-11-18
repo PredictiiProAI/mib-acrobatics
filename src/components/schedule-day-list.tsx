@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { AttendanceButtons } from "@/components/attendance-buttons";
 import { BADGE_STYLE, DAYS, hhmm, LEVEL_LABEL, type AttendanceStatus, type ScheduleRow } from "@/lib/schedule";
 
-/** Next-occurrence date per class plus the member's answer; omitted for staff (no RSVP buttons). */
+/** Next-occurrence date per class plus the signed-in user's answer. */
 export type ScheduleRsvp = { dates: Record<string, string>; mine: Record<string, AttendanceStatus> };
 
 const SHORT = ["Lun", "Mar", "Mie", "Joi", "Vin", "Sâm", "Dum"];

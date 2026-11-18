@@ -122,12 +122,16 @@ export async function getUnreadCount(userId: string) {
 }
 
 /** Latest messages of the conversation between `threadUserId` and the coaching staff, oldest first. */
-export async function getThread(threadUserId: string) {
+export async function getThread(threadUserId: string, pairWith?: string) {
   const supabase = await createClient();
   const { data } = await supabase
     .from("direct_messages")
     .select("*")
-    .or(`sender_id.eq.${threadUserId},receiver_id.eq.${threadUserId}`)
+    .or(
+      pairWith
+        ? `and(sender_id.eq.${threadUserId},receiver_id.eq.${pairWith}),and(sender_id.eq.${pairWith},receiver_id.eq.${threadUserId})`
+        : `sender_id.eq.${threadUserId},receiver_id.eq.${threadUserId}`,
+    )
     .order("created_at", { ascending: false })
     .limit(THREAD_PAGE_SIZE);
   return (data ?? []).reverse();
@@ -149,7 +153,15 @@ export async function getInbox(meId: string): Promise<Conversation[]> {
   const conversations = new Map<string, Conversation>();
 
   for (const m of messages ?? []) {
-    const other = !staff(m.sender_id) ? m.sender_id : !staff(m.receiver_id) ? m.receiver_id : null;
+    const other = !staff(m.sender_id)
+      ? m.sender_id
+      : !staff(m.receiver_id)
+        ? m.receiver_id
+        : m.sender_id === meId
+          ? m.receiver_id
+          : m.receiver_id === meId
+            ? m.sender_id
+            : null;
     if (!other || other === meId) continue;
     let c = conversations.get(other);
     if (!c) {

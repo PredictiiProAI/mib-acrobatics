@@ -15,9 +15,9 @@ export default async function ThreadPage({ params }: PageProps<"/dashboard/messa
   const supabase = await createClient();
   const { data: users } = await supabase.rpc("admin_list_users");
   const member = users?.find((u) => u.id === userId);
-  if (!member || isStaff(member.role) || member.id === me.id) notFound();
+  if (!member || member.id === me.id) notFound();
 
-  const messages = await getThread(member.id);
+  const messages = await getThread(member.id, isStaff(member.role) ? me.id : undefined);
   const name = member.full_name || member.email;
 
   return (

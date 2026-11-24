@@ -35,11 +35,15 @@ async function nativeToken(): Promise<string> {
   });
 }
 
+const NO_WEB_PUSH = "Browserul acesta nu suportă notificări push. Pe iPhone (iOS 16.4+), deschide site-ul în Safari, apasă Partajează → „Adaugă pe ecranul principal”, apoi pornește notificările din aplicația de pe ecran.";
+
 async function webToken(): Promise<string> {
-  const [{ getApps, initializeApp }, { getMessaging, getToken, isSupported }] = await Promise.all([import("firebase/app"), import("firebase/messaging")]);
-  if (!(await isSupported()) || !("Notification" in window)) throw new Error("Browserul acesta nu suportă notificări push. Pe iPhone, adaugă întâi site-ul pe ecranul principal.");
+  if (!("Notification" in window) || !("serviceWorker" in navigator) || !("PushManager" in window)) throw new Error(NO_WEB_PUSH);
+  // Ask before any other await: iOS Safari only shows the prompt while the tap's user activation is still active.
   const permission = await Notification.requestPermission();
-  if (permission !== "granted") throw new Error("Ai refuzat notificările. Le poți porni din setările browserului pentru acest site.");
+  if (permission !== "granted") throw new Error("Ai refuzat notificările. Pe iPhone le poți porni din Setări → Notificări → AcroMIB; pe calculator, din setările browserului pentru acest site.");
+  const [{ getApps, initializeApp }, { getMessaging, getToken, isSupported }] = await Promise.all([import("firebase/app"), import("firebase/messaging")]);
+  if (!(await isSupported())) throw new Error(NO_WEB_PUSH);
   const app = getApps().find((a) => a.name === "mib-push") ?? initializeApp(FIREBASE_WEB_CONFIG, "mib-push");
   const registration = await navigator.serviceWorker.register("/firebase-messaging-sw.js");
   await navigator.serviceWorker.ready;

@@ -8,7 +8,7 @@ import { deletePost, setPostVisibility } from "@/lib/actions/posts";
 import type { FeedPost } from "@/lib/posts";
 import { timeAgo } from "@/lib/time";
 
-export function PostAdminCard({ post, isMine }: { post: FeedPost; isMine: boolean }) {
+export function PostAdminCard({ post, canEdit }: { post: FeedPost; canEdit: boolean }) {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [confirm, confirmDialog] = useConfirm();
@@ -52,11 +52,12 @@ export function PostAdminCard({ post, isMine }: { post: FeedPost; isMine: boolea
         </div>
         {error && <p className="text-xs text-red-300">{error}</p>}
         <div className="flex gap-2">
-          {isMine && (
+          {canEdit && (
             <button
               type="button"
               disabled={pending}
               onClick={() => run(() => setPostVisibility(post.id, !post.is_public))}
+              data-testid="toggle-visibility"
               className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-white/10 px-3 py-2 text-xs font-semibold text-white/80 hover:border-white/25 hover:text-white"
             >
               {post.is_public ? <EyeOff className="size-4" /> : <Eye className="size-4" />}

@@ -36,7 +36,7 @@ export default async function PostsPage({ searchParams }: PageProps<"/dashboard/
           <h1 className="mt-2 font-display text-3xl font-black sm:text-4xl">{staff ? "Toate postările" : "Postările mele"}</h1>
           <p className="mt-2 text-white/60">
             {staff
-              ? "Poți șterge orice postare. Vizibilitatea o schimbă doar autorul."
+              ? "Poți face orice postare publică sau privată (doar membri) ori o poți șterge."
               : "Gestionează ce ai publicat: vizibilitate publică sau doar pentru membri, ori ștergere."}
           </p>
         </div>
@@ -62,7 +62,7 @@ export default async function PostsPage({ searchParams }: PageProps<"/dashboard/
       ) : (
         <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {posts.map((post) => (
-            <PostAdminCard key={post.id} post={post} isMine={post.author_id === user.id} />
+            <PostAdminCard key={post.id} post={post} canEdit={staff || post.author_id === user.id} />
           ))}
         </ul>
       )}

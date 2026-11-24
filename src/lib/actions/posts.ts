@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { getSessionUser } from "@/lib/auth";
 import { mediaTypeFor } from "@/lib/media";
-import { canPublish } from "@/lib/roles";
+import { canPublish, isStaff } from "@/lib/roles";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { MEDIA_BUCKET } from "@/lib/supabase/env";
 import { createClient } from "@/lib/supabase/server";
 
@@ -73,7 +74,9 @@ export async function setPostVisibility(postId: string, isPublic: boolean): Prom
   const user = await getSessionUser();
   if (!user || !canPublish(user.role)) return { ok: false, error: "Nu ai dreptul să modifici postarea." };
 
-  const supabase = await createClient();
+  // Staff moderate any post's visibility; RLS only lets authors update their own, so staff use the service client.
+  const supabase = isStaff(user.role) ? createAdminClient() : await createClient();
+  if (!supabase) return { ok: false, error: "Lipsește SUPABASE_SERVICE_ROLE_KEY pe server (Vercel → Environment Variables)." };
   const { data, error } = await supabase.from("posts").update({ is_public: isPublic }).eq("id", postId).select("id");
   if (error || !data?.length) return { ok: false, error: "Poți modifica doar postările tale." };
   revalidateFeeds();

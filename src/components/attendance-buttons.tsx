@@ -5,7 +5,7 @@ import { useOptimistic, useState, useTransition } from "react";
 import { setAttendance } from "@/lib/actions/attendance";
 import { sessionDateLabel, type AttendanceStatus } from "@/lib/schedule";
 
-/** Member RSVP for the next occurrence of a class: two large tap targets plus the current answer. */
+/** Member RSVP for one occurrence of a class: two large tap targets plus the current answer. */
 export function AttendanceButtons({ scheduleId, date, status }: { scheduleId: string; date: string; status: AttendanceStatus | null }) {
   const [optimistic, setOptimistic] = useOptimistic(status);
   const [error, setError] = useState<string | null>(null);
@@ -15,7 +15,7 @@ export function AttendanceButtons({ scheduleId, date, status }: { scheduleId: st
     startTransition(async () => {
       setError(null);
       setOptimistic(next);
-      const res = await setAttendance(scheduleId, next);
+      const res = await setAttendance(scheduleId, next, date);
       if (!res.ok) setError(res.error);
     });
 

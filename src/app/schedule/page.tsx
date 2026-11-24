@@ -5,8 +5,8 @@ import { ScheduleDayList } from "@/components/schedule-day-list";
 import { ButtonLink } from "@/components/ui";
 import { requireUser } from "@/lib/auth";
 import { isStaff } from "@/lib/roles";
-import { getMyAttendance } from "@/lib/attendance.server";
-import { nextSessionDate, sortSchedule, todayIsoDay } from "@/lib/schedule";
+import { getMyAttendanceRange } from "@/lib/attendance.server";
+import { calendarRange, clubNow, firstSessionDate, sortSchedule } from "@/lib/schedule";
 import { getSchedule } from "@/lib/schedule.server";
 
 export const metadata: Metadata = { title: "Program" };
@@ -14,9 +14,10 @@ export const metadata: Metadata = { title: "Program" };
 export default async function SchedulePage() {
   const user = await requireUser("/schedule");
   const rows = await getSchedule();
-  const today = todayIsoDay();
+  const today = clubNow().date;
   const staff = isStaff(user.role);
-  const rsvp = { dates: Object.fromEntries(rows.map((r) => [r.id, nextSessionDate(r)])), mine: await getMyAttendance(user.id, rows) };
+  const { from, to } = calendarRange(today);
+  const mine = await getMyAttendanceRange(user.id, from, to);
 
   return (
     <div className="space-y-6">
@@ -26,9 +27,9 @@ export default async function SchedulePage() {
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-neon-orange">Antrenamente</p>
             <h1 className="mt-2 font-display text-2xl font-black sm:text-3xl md:text-4xl">
-              Program <span className="text-gradient">săptămânal</span>
+              Calendar <span className="text-gradient">antrenamente</span>
             </h1>
-            <p className="mt-2 max-w-xl text-sm text-white/60">{staff ? "Confirmă dacă vii la antrenamente. Vezi cine vine la fiecare ședință în Program & Grupe." : "Confirmă dacă vii la următoarele antrenamente, ca antrenorul să știe pe cine așteaptă."}</p>
+            <p className="mt-2 max-w-xl text-sm text-white/60">{staff ? "Alege o zi din calendar și confirmă dacă vii. Vezi cine vine la fiecare ședință în Program & Grupe." : "Alege o zi din calendar și confirmă dacă vii, ca antrenorul să știe pe cine așteaptă."}</p>
           </div>
           {staff ? (
             <ButtonLink href="/dashboard/schedule">
@@ -44,7 +45,7 @@ export default async function SchedulePage() {
 
       <PushToggle promptOnly />
 
-      <ScheduleDayList rows={sortSchedule(rows)} today={today} rsvp={rsvp} />
+      <ScheduleDayList rows={sortSchedule(rows)} today={today} initial={firstSessionDate(rows)} mine={mine} />
     </div>
   );
 }

@@ -74,7 +74,7 @@ export function clubNow(now = new Date()) {
   return { date: `${parts.year}-${parts.month}-${parts.day}`, day: todayIsoDay(now), time: `${parts.hour}:${parts.minute}` };
 }
 
-const addDays = (isoDate: string, days: number) => {
+export const addDays = (isoDate: string, days: number) => {
   const d = new Date(`${isoDate}T12:00:00Z`);
   d.setUTCDate(d.getUTCDate() + days);
   return d.toISOString().slice(0, 10);
@@ -86,6 +86,33 @@ export function nextSessionDate(row: Pick<ScheduleRow, "day_of_week" | "end_time
   let delta = (row.day_of_week - c.day + 7) % 7;
   if (delta === 0 && hhmm(row.end_time) <= c.time) delta = 7;
   return addDays(c.date, delta);
+}
+
+/** How far ahead members can answer (matches `is_upcoming_session` in 0023_attendance.sql). */
+export const RSVP_WINDOW_DAYS = 56;
+
+/** ISO weekday (1 = Luni) of a "YYYY-MM-DD" date. */
+export const isoWeekday = (isoDate: string) => new Date(`${isoDate}T12:00:00Z`).getUTCDay() || 7;
+
+export const attendanceKey = (scheduleId: string, date: string) => `${scheduleId}:${date}`;
+
+/** Dates the calendars load: from the 1st of the previous month to the end of the RSVP window. */
+export function calendarRange(today: string) {
+  const d = new Date(`${today.slice(0, 7)}-01T12:00:00Z`);
+  d.setUTCMonth(d.getUTCMonth() - 1);
+  return { from: d.toISOString().slice(0, 10), to: addDays(today, RSVP_WINDOW_DAYS) };
+}
+
+/** Whether a member can still answer for this class on this date (not ended, within the window). */
+export function canAnswer(row: Pick<ScheduleRow, "day_of_week" | "end_time">, date: string, now = new Date()) {
+  const c = clubNow(now);
+  if (isoWeekday(date) !== row.day_of_week || date < c.date || date > addDays(c.date, RSVP_WINDOW_DAYS)) return false;
+  return date !== c.date || hhmm(row.end_time) > c.time;
+}
+
+/** First date from today on with a class that has not ended yet; today when the program is empty. */
+export function firstSessionDate(rows: Pick<ScheduleRow, "day_of_week" | "end_time">[], now = new Date()) {
+  return rows.map((r) => nextSessionDate(r, now)).sort()[0] ?? clubNow(now).date;
 }
 
 /** "2026-11-19" -> "joi, 19 noiembrie" */

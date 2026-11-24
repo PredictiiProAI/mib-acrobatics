@@ -1,25 +1,50 @@
 import "server-only";
-import { nextSessionDate, type AttendancePerson, type AttendanceStatus, type ScheduleRow, type SessionRoster } from "./schedule";
+import { attendanceKey, nextSessionDate, type AttendancePerson, type AttendanceStatus, type ScheduleRow, type SessionRoster } from "./schedule";
 import { isSupabaseConfigured } from "./supabase/env";
 import { createClient } from "./supabase/server";
 
 const key = (scheduleId: string, date: string) => `${scheduleId}:${date}`;
 
-/** The signed-in member's answers for the next occurrence of each class, keyed by schedule id. */
-export async function getMyAttendance(userId: string, rows: ScheduleRow[]): Promise<Record<string, AttendanceStatus>> {
-  if (!isSupabaseConfigured || rows.length === 0) return {};
-  const next = new Map(rows.map((r) => [r.id, nextSessionDate(r)]));
+/** The signed-in member's answers between two dates, keyed by `attendanceKey(scheduleId, date)`. */
+export async function getMyAttendanceRange(userId: string, from: string, to: string): Promise<Record<string, AttendanceStatus>> {
+  if (!isSupabaseConfigured) return {};
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("session_attendance")
     .select("schedule_id, session_date, status")
     .eq("user_id", userId)
-    .in("schedule_id", [...next.keys()])
-    .in("session_date", [...new Set(next.values())]);
-  if (error) console.error("getMyAttendance", error.message);
-  const out: Record<string, AttendanceStatus> = {};
-  for (const a of data ?? []) if (next.get(a.schedule_id) === a.session_date) out[a.schedule_id] = a.status;
-  return out;
+    .gte("session_date", from)
+    .lte("session_date", to);
+  if (error) console.error("getMyAttendanceRange", error.message);
+  return Object.fromEntries((data ?? []).map((a) => [attendanceKey(a.schedule_id, a.session_date), a.status]));
+}
+
+/** Staff calendar: everyone who answered for any class between two dates, keyed by `attendanceKey`. */
+export async function getRostersRange(rows: ScheduleRow[], from: string, to: string): Promise<Record<string, SessionRoster>> {
+  const rosters: Record<string, SessionRoster> = {};
+  if (!isSupabaseConfigured || rows.length === 0) return rosters;
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("session_attendance")
+    .select("schedule_id, session_date, status, updated_at, user:users!session_attendance_user_id_fkey(id, full_name, display_name, avatar_url)")
+    .in("schedule_id", rows.map((r) => r.id))
+    .gte("session_date", from)
+    .lte("session_date", to)
+    .order("updated_at", { ascending: true });
+  if (error) console.error("getRostersRange", error.message);
+  for (const a of data ?? []) {
+    if (!a.user) continue;
+    const k = attendanceKey(a.schedule_id, a.session_date);
+    rosters[k] ??= { scheduleId: a.schedule_id, date: a.session_date, people: [] };
+    rosters[k].people.push({
+      userId: a.user.id,
+      name: a.user.display_name || a.user.full_name || "Membru",
+      avatarUrl: a.user.avatar_url,
+      status: a.status,
+      updatedAt: a.updated_at,
+    });
+  }
+  return rosters;
 }
 
 /** Staff view: everyone who answered for the next occurrence of each class (RLS lets only staff read others). */

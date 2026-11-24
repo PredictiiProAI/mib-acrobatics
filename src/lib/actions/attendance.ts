@@ -2,14 +2,14 @@
 
 import { revalidatePath } from "next/cache";
 import { getSessionUser } from "@/lib/auth";
-import { nextSessionDate } from "@/lib/schedule";
+import { canAnswer, nextSessionDate } from "@/lib/schedule";
 import { createClient } from "@/lib/supabase/server";
 import type { ActionResult } from "./posts";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-/** Records the member's answer for the next occurrence of a weekly class. */
-export async function setAttendance(scheduleId: string, status: "attending" | "absent"): Promise<ActionResult> {
+/** Records the member's answer for one occurrence of a weekly class (the next one when no date is given). */
+export async function setAttendance(scheduleId: string, status: "attending" | "absent", date?: string): Promise<ActionResult> {
   const me = await getSessionUser();
   if (!me) return { ok: false, error: "Intră în cont ca să confirmi prezența." };
   if (typeof scheduleId !== "string" || !UUID.test(scheduleId) || (status !== "attending" && status !== "absent")) return { ok: false, error: "Cerere invalidă." };
@@ -17,7 +17,9 @@ export async function setAttendance(scheduleId: string, status: "attending" | "a
   const supabase = await createClient();
   const { data: row } = await supabase.from("schedule").select("day_of_week, end_time").eq("id", scheduleId).maybeSingle();
   if (!row) return { ok: false, error: "Antrenamentul nu mai există în program." };
-  const session_date = nextSessionDate(row);
+  if (date !== undefined && (typeof date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(date) || !canAnswer(row, date)))
+    return { ok: false, error: "Poți răspunde doar pentru antrenamentele din următoarele 8 săptămâni." };
+  const session_date = date ?? nextSessionDate(row);
 
   const { data: existing } = await supabase
     .from("session_attendance")

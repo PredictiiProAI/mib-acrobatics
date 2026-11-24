@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { ExternalLink } from "lucide-react";
 import { ButtonLink } from "@/components/ui";
 import { requireRole } from "@/lib/auth";
-import { getAttendanceRosters } from "@/lib/attendance.server";
+import { getAttendanceRosters, getRostersRange } from "@/lib/attendance.server";
+import { calendarRange, clubNow, firstSessionDate } from "@/lib/schedule";
 import { STAFF_ROLES } from "@/lib/roles";
 import { getSchedule } from "@/lib/schedule.server";
 import { ScheduleManager } from "./schedule-manager";
@@ -12,7 +13,10 @@ export const metadata: Metadata = { title: "Program & Grupe" };
 export default async function DashboardSchedulePage() {
   await requireRole(STAFF_ROLES, "/dashboard/schedule");
   const rows = await getSchedule();
-  const rosters = await getAttendanceRosters(rows);
+  const today = clubNow().date;
+  const { from, to } = calendarRange(today);
+  const [rosters, rangeRosters] = await Promise.all([getAttendanceRosters(rows), getRostersRange(rows, from, to)]);
+  const calendar = { rosters: rangeRosters, today, initial: firstSessionDate(rows), minMonth: from.slice(0, 7) };
   return (
     <div className="space-y-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
@@ -27,7 +31,7 @@ export default async function DashboardSchedulePage() {
           <ExternalLink className="size-4" /> Vezi ca membru
         </ButtonLink>
       </div>
-      <ScheduleManager rows={rows} rosters={rosters} />
+      <ScheduleManager rows={rows} rosters={rosters} calendar={calendar} />
     </div>
   );
 }

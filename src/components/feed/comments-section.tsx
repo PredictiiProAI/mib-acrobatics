@@ -33,7 +33,7 @@ const SELECTS = [
   "id, content, created_at, user_id, author:users!comments_user_id_fkey(full_name, display_name, avatar_url, role), reactions:comment_reactions(user_id, reaction)",
   "id, content, created_at, user_id, author:users!comments_user_id_fkey(full_name, role)",
 ];
-const fullDate = new Intl.DateTimeFormat("ro-RO", { dateStyle: "long", timeStyle: "short" });
+const fullDate = new Intl.DateTimeFormat("ro-RO", { dateStyle: "long", timeStyle: "short", timeZone: "Europe/Bucharest" });
 
 type Client = ReturnType<typeof createClient>;
 

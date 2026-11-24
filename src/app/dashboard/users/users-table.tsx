@@ -341,6 +341,7 @@ const dateFmt = new Intl.DateTimeFormat("ro-RO", {
   day: "numeric",
   month: "short",
   year: "numeric",
+  timeZone: "Europe/Bucharest",
 });
 const dateTimeFmt = new Intl.DateTimeFormat("ro-RO", {
   day: "numeric",
@@ -348,6 +349,7 @@ const dateTimeFmt = new Intl.DateTimeFormat("ro-RO", {
   year: "numeric",
   hour: "2-digit",
   minute: "2-digit",
+  timeZone: "Europe/Bucharest",
 });
 const field =
   "w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-[15px] outline-none placeholder:text-white/30 focus:border-neon-orange/70";

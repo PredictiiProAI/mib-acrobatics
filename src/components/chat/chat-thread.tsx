@@ -12,16 +12,17 @@ const DM_BUCKET = "dm_media";
 
 type Message = Database["public"]["Tables"]["direct_messages"]["Row"] & { pending?: boolean };
 
-const timeFmt = new Intl.DateTimeFormat("ro-RO", { hour: "2-digit", minute: "2-digit" });
-const dayFmt = new Intl.DateTimeFormat("ro-RO", { weekday: "long", day: "numeric", month: "long" });
+const TZ = "Europe/Bucharest";
+const timeFmt = new Intl.DateTimeFormat("ro-RO", { hour: "2-digit", minute: "2-digit", timeZone: TZ });
+const dayFmt = new Intl.DateTimeFormat("ro-RO", { weekday: "long", day: "numeric", month: "long", timeZone: TZ });
+const dayKeyFmt = new Intl.DateTimeFormat("en-CA", { timeZone: TZ });
+const dayKey = (d: Date | string | number) => dayKeyFmt.format(new Date(d));
 
 function dayLabel(iso: string) {
-  const d = new Date(iso);
-  const today = new Date();
-  const yesterday = new Date(Date.now() - 86400000);
-  if (d.toDateString() === today.toDateString()) return "Azi";
-  if (d.toDateString() === yesterday.toDateString()) return "Ieri";
-  return dayFmt.format(d);
+  const key = dayKey(iso);
+  if (key === dayKey(Date.now())) return "Azi";
+  if (key === dayKey(Date.now() - 86400000)) return "Ieri";
+  return dayFmt.format(new Date(iso));
 }
 
 /** Private bucket: each attachment is shown through a short-lived signed URL (or the local preview while sending). */
@@ -258,7 +259,7 @@ export function ChatThread({
         {messages.map((m, i) => {
           const out = isOutgoing(m);
           const prev = messages[i - 1];
-          const newDay = !prev || new Date(prev.created_at).toDateString() !== new Date(m.created_at).toDateString();
+          const newDay = !prev || dayKey(prev.created_at) !== dayKey(m.created_at);
           const groupStart = newDay || !prev || isOutgoing(prev) !== out;
           return (
             <Fragment key={m.id}>

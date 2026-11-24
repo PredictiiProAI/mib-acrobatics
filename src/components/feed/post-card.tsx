@@ -19,7 +19,7 @@ import { CommentsSection } from "./comments-section";
 import { ReactionSummary, ReactionTrigger } from "./reactions";
 import type { Viewer } from "./types";
 
-const fullDate = new Intl.DateTimeFormat("ro-RO", { dateStyle: "long", timeStyle: "short" });
+const fullDate = new Intl.DateTimeFormat("ro-RO", { dateStyle: "long", timeStyle: "short", timeZone: "Europe/Bucharest" });
 
 export function PostCard({ post, viewer, priority, onDeleted }: { post: FeedPost; viewer: Viewer; priority?: boolean; onDeleted: (id: string) => void }) {
   const [mine, setMine] = useState<ReactionKey[]>(() =>

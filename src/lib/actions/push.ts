@@ -46,7 +46,7 @@ export async function notifyDirectMessage(messageId: string): Promise<void> {
   if (!msg || msg.sender_id !== me.id || Date.now() - new Date(msg.created_at).getTime() > BURST_MS) return;
 
   const since = new Date(new Date(msg.created_at).getTime() - BURST_MS).toISOString();
-  const [{ count: recent }, { data: receiver }, { data: sender }, { data: coaches }] = await Promise.all([
+  const [{ count: recent }, { data: receiver }, { data: sender }] = await Promise.all([
     admin
       .from("direct_messages")
       .select("id", { count: "exact", head: true })
@@ -56,15 +56,11 @@ export async function notifyDirectMessage(messageId: string): Promise<void> {
       .gte("created_at", since)
       .lt("created_at", msg.created_at),
     admin.from("users").select("role").eq("id", msg.receiver_id).maybeSingle(),
-    admin.from("users").select("full_name, display_name, role").eq("id", msg.sender_id).maybeSingle(),
-    admin.from("users").select("id, role, shown_as_coach").in("role", ["admin", "superadmin"]),
+    admin.from("users").select("full_name, display_name").eq("id", msg.sender_id).maybeSingle(),
   ]);
   if (recent) return;
 
-  // A member writing to the coach reaches every Antrenor (role admin or Super Admin shown as coach), not just one account.
-  const coachIds = (coaches ?? []).filter((c) => c.role === "admin" || c.shown_as_coach).map((c) => c.id);
-  const toCoaches = !isStaff(sender?.role) && coachIds.includes(msg.receiver_id);
-  let targets = toCoaches ? coachIds : [msg.receiver_id];
+  let targets = [msg.receiver_id];
   const { data: settings, error: settingError } = await admin.from("user_settings").select("user_id, notify_messages").in("user_id", targets);
   if (!settingError) targets = targets.filter((id) => settings?.find((s) => s.user_id === id)?.notify_messages !== false);
   if (!targets.length) return;

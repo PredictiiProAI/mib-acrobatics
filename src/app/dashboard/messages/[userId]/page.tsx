@@ -4,7 +4,7 @@ import { ChatThread } from "@/components/chat/chat-thread";
 import { ThreadShell } from "@/components/chat/thread-shell";
 import { requireRole } from "@/lib/auth";
 import { getThread, THREAD_PAGE_SIZE } from "@/lib/messages";
-import { isStaff, ROLE_LABEL, STAFF_ROLES } from "@/lib/roles";
+import { ROLE_LABEL, STAFF_ROLES } from "@/lib/roles";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Conversație" };
@@ -17,7 +17,7 @@ export default async function ThreadPage({ params }: PageProps<"/dashboard/messa
   const member = users?.find((u) => u.id === userId);
   if (!member || member.id === me.id) notFound();
 
-  const messages = await getThread(member.id, isStaff(member.role) ? me.id : undefined);
+  const messages = await getThread(member.id, me.id);
   const name = member.full_name || member.email;
 
   return (
@@ -36,6 +36,7 @@ export default async function ThreadPage({ params }: PageProps<"/dashboard/messa
         viewerId={me.id}
         threadUserId={member.id}
         recipientId={member.id}
+        counterpartIds={[member.id]}
         initialMessages={messages}
         pageSize={THREAD_PAGE_SIZE}
         peerName={member.full_name || "acest membru"}

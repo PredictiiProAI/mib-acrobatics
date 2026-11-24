@@ -4,14 +4,14 @@ import { InboxList } from "@/components/chat/inbox-list";
 import { NewMessage } from "@/components/chat/new-message";
 import { requireUser } from "@/lib/auth";
 import { enforceRequestedDocuments } from "@/lib/documents-gate";
-import { getCoach, getMemberDirectory, getMemberInbox } from "@/lib/messages";
+import { getMemberDirectory, getMemberInbox } from "@/lib/messages";
 import { isStaff } from "@/lib/roles";
 
 export default async function MessagesLayout({ children }: LayoutProps<"/messages">) {
   const user = await requireUser("/messages");
   await enforceRequestedDocuments(user, "/messages");
   if (isStaff(user.role)) redirect("/dashboard/messages");
-  const [conversations, members, coach] = await Promise.all([getMemberInbox(user.id), getMemberDirectory(user.id), getCoach()]);
+  const [conversations, members] = await Promise.all([getMemberInbox(user.id), getMemberDirectory(user.id)]);
   return (
     <>
       <AppHeader user={user} />
@@ -21,7 +21,7 @@ export default async function MessagesLayout({ children }: LayoutProps<"/message
             conversations={conversations}
             basePath="/messages"
             emptyText="Nicio conversație încă. Apasă „Mesaj nou” ca să scrii antrenorului sau unui coleg."
-            action={<NewMessage members={members} coachName={coach ? coach.full_name || "Antrenor" : null} />}
+            action={<NewMessage members={members} />}
           />
           {children}
         </div>

@@ -23,7 +23,7 @@ export const THREAD_PAGE_SIZE = 100;
 export const COACH_THREAD = "antrenor";
 /** Route slug of a member's conversation with the club administrators (feedback / „Contactează administratorul”). */
 export const ADMIN_THREAD = "admin";
-export type DirectoryMember = { id: string; name: string; accountType: string | null };
+export type DirectoryMember = { id: string; name: string; label: string };
 
 export async function getStaffIds() {
   const supabase = await createClient();
@@ -62,45 +62,48 @@ export async function getPairThread(meId: string, otherIds: string[]) {
   return (data ?? []).reverse();
 }
 
-/** Members a member can start a private chat with (everyone except staff and themselves). */
+const isCoach = (u: { role: AppRole; shown_as_coach?: boolean | null }) => u.role === "admin" || !!u.shown_as_coach;
+
+/** Everyone a member can start a private chat with: coaches and administrators first, then the other members. */
 export async function getMemberDirectory(meId: string): Promise<DirectoryMember[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("users")
-    .select("id, full_name, display_name, account_type")
-    .in("role", ["user", "media"])
+    .select("id, full_name, display_name, account_type, role, shown_as_coach")
     .neq("id", meId)
     .order("full_name", { ascending: true });
-  return (data ?? []).map((u) => ({ id: u.id, name: u.full_name || u.display_name || "Membru", accountType: u.account_type ?? null }));
+  const rank = (u: { role: AppRole; shown_as_coach?: boolean | null }) => (isStaff(u.role) ? (isCoach(u) ? 0 : 1) : 2);
+  return (data ?? [])
+    .sort((a, b) => rank(a) - rank(b))
+    .map((u) => ({
+      id: u.id,
+      name: u.full_name || u.display_name || "Membru",
+      label: isStaff(u.role) ? (isCoach(u) ? "Antrenor" : "Administrator") : u.account_type ?? "Membru",
+    }));
 }
 
-/** Member inbox: the coach conversation plus every peer conversation, newest first. */
+/** Member inbox: one private conversation per person (member, coach or administrator), newest first. */
 export async function getMemberInbox(meId: string): Promise<Conversation[]> {
   const supabase = await createClient();
-  const [{ data: messages }, staffIds, coach, groups] = await Promise.all([
+  const [{ data: messages }] = await Promise.all([
     supabase
       .from("direct_messages")
       .select("*")
       .or(`sender_id.eq.${meId},receiver_id.eq.${meId}`)
       .order("created_at", { ascending: false })
       .limit(2000),
-    getStaffIds(),
-    getCoach(),
-    getStaffGroups(),
   ]);
-  const staff = new Set(staffIds);
-  const admins = new Set(groups.adminIds);
   const conversations = new Map<string, Conversation>();
   for (const m of messages ?? []) {
     const other = m.sender_id === meId ? m.receiver_id : m.sender_id;
-    const key = admins.has(other) ? ADMIN_THREAD : staff.has(other) ? COACH_THREAD : other;
+    const key = other;
     let c = conversations.get(key);
     if (!c) {
       c = {
         userId: key,
-        name: key === ADMIN_THREAD ? "Administrator MIB" : key === COACH_THREAD ? coach?.full_name || "Antrenor" : "Membru",
+        name: "Membru",
         email: "",
-        role: key === ADMIN_THREAD ? "superadmin" : key === COACH_THREAD ? "admin" : "user",
+        role: "user",
         lastMessage: previewOf(m),
         lastAt: m.created_at,
         lastFromUser: m.sender_id !== meId,
@@ -110,12 +113,14 @@ export async function getMemberInbox(meId: string): Promise<Conversation[]> {
     }
     if (m.receiver_id === meId && !m.read_at) c.unread++;
   }
-  const peerIds = [...conversations.keys()].filter((k) => k !== COACH_THREAD && k !== ADMIN_THREAD);
+  const peerIds = [...conversations.keys()];
   if (peerIds.length) {
-    const { data: peers } = await supabase.from("users").select("id, full_name, display_name").in("id", peerIds);
+    const { data: peers } = await supabase.from("users").select("id, full_name, display_name, role, shown_as_coach").in("id", peerIds);
     for (const p of peers ?? []) {
       const c = conversations.get(p.id);
-      if (c) c.name = p.full_name || p.display_name || "Membru";
+      if (!c) continue;
+      c.name = p.full_name || p.display_name || "Membru";
+      c.role = isStaff(p.role) ? (isCoach(p) ? "admin" : "superadmin") : "user";
     }
   }
   return [...conversations.values()];
@@ -158,7 +163,7 @@ export async function getThread(threadUserId: string, pairWith?: string) {
   return (data ?? []).reverse();
 }
 
-/** Staff inbox: one entry per member who has a conversation with the staff, newest first. */
+/** Staff inbox: one entry per person who has a private conversation with me, newest first. */
 export async function getInbox(meId: string): Promise<Conversation[]> {
   const supabase = await createClient();
   const [{ data: users }, { data: messages }] = await Promise.all([
@@ -170,19 +175,10 @@ export async function getInbox(meId: string): Promise<Conversation[]> {
       .limit(2000),
   ]);
   const byId = new Map((users ?? []).map((u) => [u.id, u]));
-  const staff = (id: string) => isStaff(byId.get(id)?.role);
   const conversations = new Map<string, Conversation>();
 
   for (const m of messages ?? []) {
-    const other = !staff(m.sender_id)
-      ? m.sender_id
-      : !staff(m.receiver_id)
-        ? m.receiver_id
-        : m.sender_id === meId
-          ? m.receiver_id
-          : m.receiver_id === meId
-            ? m.sender_id
-            : null;
+    const other = m.sender_id === meId ? m.receiver_id : m.receiver_id === meId ? m.sender_id : null;
     if (!other || other === meId) continue;
     let c = conversations.get(other);
     if (!c) {

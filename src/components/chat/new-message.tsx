@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import type { DirectoryMember } from "@/lib/messages";
 
 /** "Mesaj nou": searchable list of the coach and club members to start a private chat with. */
-export function NewMessage({ members, coachName }: { members: DirectoryMember[]; coachName: string | null }) {
+export function NewMessage({ members }: { members: DirectoryMember[] }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -19,8 +19,7 @@ export function NewMessage({ members, coachName }: { members: DirectoryMember[];
   }, [open]);
 
   const q = query.trim().toLowerCase();
-  const list = q ? members.filter((m) => m.name.toLowerCase().includes(q)) : members;
-  const showCoach = coachName && (!q || coachName.toLowerCase().includes(q) || "antrenor".includes(q));
+  const list = q ? members.filter((m) => m.name.toLowerCase().includes(q) || m.label.toLowerCase().includes(q)) : members;
 
   function start(slug: string) {
     setOpen(false);
@@ -69,35 +68,24 @@ export function NewMessage({ members, coachName }: { members: DirectoryMember[];
                   autoFocus
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Caută un membru…"
+                  placeholder="Caută după nume sau „antrenor”…"
                   className="w-full bg-transparent outline-none placeholder:text-white/30"
                 />
               </label>
             </div>
             <ul className="flex-1 overflow-y-auto" data-testid="member-directory">
-              {showCoach && (
-                <li>
-                  <button type="button" onClick={() => start("antrenor")} className={row}>
-                    <span className={avatar}>{coachName[0]?.toUpperCase()}</span>
-                    <span className="min-w-0">
-                      <span className="block truncate text-sm font-semibold">{coachName}</span>
-                      <span className="block text-[11px] uppercase text-neon-green">Antrenor</span>
-                    </span>
-                  </button>
-                </li>
-              )}
               {list.map((m) => (
                 <li key={m.id}>
                   <button type="button" onClick={() => start(m.id)} className={row}>
                     <span className={avatar}>{m.name[0]?.toUpperCase()}</span>
                     <span className="min-w-0">
                       <span className="block truncate text-sm font-semibold">{m.name}</span>
-                      <span className="block text-xs text-white/50">{m.accountType ?? "Membru"}</span>
+                      <span className={`block text-xs ${m.label === "Antrenor" || m.label === "Administrator" ? "uppercase text-neon-green" : "text-white/50"}`}>{m.label}</span>
                     </span>
                   </button>
                 </li>
               ))}
-              {!showCoach && list.length === 0 && <li className="p-6 text-center text-sm text-white/50">Niciun membru găsit.</li>}
+              {list.length === 0 && <li className="p-6 text-center text-sm text-white/50">Niciun membru găsit.</li>}
             </ul>
           </div>
         </div>

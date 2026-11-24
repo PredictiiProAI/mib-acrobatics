@@ -1,6 +1,7 @@
 "use client";
 
 import { Check, CheckCheck, Loader2, Paperclip, Send, X } from "lucide-react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { Fragment, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { Database } from "@/lib/supabase/database.types";
@@ -10,11 +11,22 @@ import { ACCEPT_ATTR, MAX_UPLOAD_BYTES, mediaTypeFor } from "@/lib/media";
 
 const DM_BUCKET = "dm_media";
 
-type Message = Database["public"]["Tables"]["direct_messages"]["Row"] & { pending?: boolean };
+type Message = Database["public"]["Tables"]["direct_messages"]["Row"] & {
+  pending?: boolean;
+};
 
 const TZ = "Europe/Bucharest";
-const timeFmt = new Intl.DateTimeFormat("ro-RO", { hour: "2-digit", minute: "2-digit", timeZone: TZ });
-const dayFmt = new Intl.DateTimeFormat("ro-RO", { weekday: "long", day: "numeric", month: "long", timeZone: TZ });
+const timeFmt = new Intl.DateTimeFormat("ro-RO", {
+  hour: "2-digit",
+  minute: "2-digit",
+  timeZone: TZ,
+});
+const dayFmt = new Intl.DateTimeFormat("ro-RO", {
+  weekday: "long",
+  day: "numeric",
+  month: "long",
+  timeZone: TZ,
+});
 const dayKeyFmt = new Intl.DateTimeFormat("en-CA", { timeZone: TZ });
 const dayKey = (d: Date | string | number) => dayKeyFmt.format(new Date(d));
 
@@ -26,29 +38,119 @@ function dayLabel(iso: string) {
 }
 
 /** Private bucket: each attachment is shown through a short-lived signed URL (or the local preview while sending). */
-function Attachment({ path, type, localUrl, onLoad }: { path: string; type: "image" | "video"; localUrl?: string; onLoad: () => void }) {
-  const [signed, setSigned] = useState<{ path: string; url: string | null } | null>(null);
+function Attachment({
+  path,
+  type,
+  localUrl,
+  onLoad,
+}: {
+  path: string;
+  type: "image" | "video";
+  localUrl?: string;
+  onLoad: () => void;
+}) {
+  const [signed, setSigned] = useState<{
+    path: string;
+    url: string | null;
+  } | null>(null);
+  const [open, setOpen] = useState(false);
+  const [broken, setBroken] = useState(false);
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
   useEffect(() => {
     if (localUrl) return;
     let live = true;
     createClient()
       .storage.from(DM_BUCKET)
       .createSignedUrl(path, 60 * 60)
-      .then(({ data }) => live && setSigned({ path, url: data?.signedUrl ?? null }));
+      .then(
+        ({ data }) => live && setSigned({ path, url: data?.signedUrl ?? null })
+      );
     return () => {
       live = false;
     };
   }, [path, localUrl]);
   const url = localUrl ?? (signed?.path === path ? signed.url : undefined);
-  if (url === undefined) return <div className="mb-1 grid h-40 w-56 max-w-full place-items-center rounded-xl bg-black/30"><Loader2 className="size-5 animate-spin opacity-60" /></div>;
-  if (url === null) return <p className="mb-1 text-xs opacity-70">Fișierul nu mai este disponibil.</p>;
+  if (url === undefined)
+    return (
+      <div className="mb-1 grid h-40 w-56 max-w-full place-items-center rounded-xl bg-black/30">
+        <Loader2 className="size-5 animate-spin opacity-60" />
+      </div>
+    );
+  if (url === null)
+    return (
+      <p className="mb-1 text-xs opacity-70">
+        Fișierul nu mai este disponibil.
+      </p>
+    );
+  if (broken)
+    return (
+      <p className="mb-1 text-xs opacity-70">
+        Fotografia nu poate fi afișată pe acest dispozitiv.
+      </p>
+    );
   return type === "video" ? (
-    <video src={url} controls playsInline preload="metadata" onLoadedMetadata={onLoad} className="mb-1 max-h-80 w-72 max-w-full rounded-xl bg-black" data-testid="msg-video" />
+    <video
+      src={url}
+      controls
+      playsInline
+      preload="metadata"
+      onLoadedMetadata={onLoad}
+      className="mb-1 max-h-80 w-72 max-w-full rounded-xl bg-black"
+      data-testid="msg-video"
+    />
   ) : (
-    <a href={url} target="_blank" rel="noopener" className="mb-1 block">
-      {/* eslint-disable-next-line @next/next/no-img-element -- signed URLs from a private bucket */}
-      <img src={url} alt="Fotografie" onLoad={onLoad} className="max-h-80 w-auto max-w-full rounded-xl object-contain" data-testid="msg-image" />
-    </a>
+    <>
+      {/* Opened in-app: navigating the Android WebView to the raw storage URL left users stuck on a bare image. */}
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="mb-1 block"
+        aria-label="Deschide fotografia"
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element -- signed URLs from a private bucket */}
+        <img
+          src={url}
+          alt="Fotografie"
+          onLoad={onLoad}
+          onError={() => setBroken(true)}
+          className="max-h-80 w-auto max-w-full rounded-xl object-contain"
+          data-testid="msg-image"
+        />
+      </button>
+      {open &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[110] flex items-center justify-center bg-black/95 p-4"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Fotografie"
+            onClick={() => setOpen(false)}
+            data-testid="msg-image-viewer"
+          >
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              className="absolute top-[max(1rem,env(safe-area-inset-top))] right-4 grid size-11 place-items-center rounded-full bg-white/10 text-white hover:bg-white/20"
+              aria-label="Închide"
+            >
+              <X className="size-6" />
+            </button>
+            {/* eslint-disable-next-line @next/next/no-img-element -- signed URLs from a private bucket */}
+            <img
+              src={url}
+              alt="Fotografie"
+              onClick={(e) => e.stopPropagation()}
+              className="max-h-full max-w-full object-contain"
+            />
+          </div>,
+          document.body
+        )}
+    </>
   );
 }
 
@@ -85,33 +187,51 @@ export function ChatThread({
   const [loadingOlder, setLoadingOlder] = useState(false);
   const [text, setText] = useState(initialText);
   const [error, setError] = useState<string | null>(null);
-  const [file, setFile] = useState<{ file: File; url: string; type: "image" | "video" } | null>(null);
+  const [file, setFile] = useState<{
+    file: File;
+    url: string;
+    type: "image" | "video";
+  } | null>(null);
   const [localUrls, setLocalUrls] = useState<Record<string, string>>({});
   const fileInput = useRef<HTMLInputElement>(null);
   const scroller = useRef<HTMLDivElement>(null);
   const stickToBottom = useRef(true);
   const staffView = !counterpartIds && viewerId !== threadUserId;
-  const isOutgoing = (m: Message) => (staffView ? m.sender_id !== threadUserId : m.sender_id === viewerId);
+  const isOutgoing = (m: Message) =>
+    staffView ? m.sender_id !== threadUserId : m.sender_id === viewerId;
   const counterpartKey = counterpartIds?.join(",") ?? "";
 
   useEffect(() => {
     const others = counterpartKey ? counterpartKey.split(",") : null;
     const inThread = (m: Message) =>
       others
-        ? (m.sender_id === viewerId && others.includes(m.receiver_id)) || (m.receiver_id === viewerId && others.includes(m.sender_id))
+        ? (m.sender_id === viewerId && others.includes(m.receiver_id)) ||
+          (m.receiver_id === viewerId && others.includes(m.sender_id))
         : m.sender_id === threadUserId || m.receiver_id === threadUserId;
     const channel = supabase
       .channel(`dm:${threadUserId}:${viewerId}:${counterpartKey}`)
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "direct_messages" }, (payload) => {
-        const m = payload.new as Message;
-        if (!inThread(m)) return;
-        stickToBottom.current = true;
-        setMessages((list) => (list.some((x) => x.id === m.id) ? list : [...list, m]));
-      })
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "direct_messages" }, (payload) => {
-        const m = payload.new as Message;
-        setMessages((list) => list.map((x) => (x.id === m.id ? { ...x, read_at: m.read_at } : x)));
-      })
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "direct_messages" },
+        (payload) => {
+          const m = payload.new as Message;
+          if (!inThread(m)) return;
+          stickToBottom.current = true;
+          setMessages((list) =>
+            list.some((x) => x.id === m.id) ? list : [...list, m]
+          );
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "direct_messages" },
+        (payload) => {
+          const m = payload.new as Message;
+          setMessages((list) =>
+            list.map((x) => (x.id === m.id ? { ...x, read_at: m.read_at } : x))
+          );
+        }
+      )
       .subscribe();
     return () => {
       supabase.removeChannel(channel);
@@ -120,7 +240,9 @@ export function ChatThread({
 
   // Mark incoming messages addressed to me as read while the thread is open.
   useEffect(() => {
-    const unread = messages.filter((m) => m.receiver_id === viewerId && !m.read_at && !m.pending).map((m) => m.id);
+    const unread = messages
+      .filter((m) => m.receiver_id === viewerId && !m.read_at && !m.pending)
+      .map((m) => m.id);
     if (!unread.length) return;
     const readAt = new Date().toISOString();
     supabase
@@ -129,7 +251,11 @@ export function ChatThread({
       .in("id", unread)
       .then(({ error }) => {
         if (error) return;
-        setMessages((list) => list.map((m) => (unread.includes(m.id) ? { ...m, read_at: readAt } : m)));
+        setMessages((list) =>
+          list.map((m) =>
+            unread.includes(m.id) ? { ...m, read_at: readAt } : m
+          )
+        );
         router.refresh();
       });
   }, [messages, viewerId, supabase, router]);
@@ -151,14 +277,17 @@ export function ChatThread({
       .or(
         counterpartKey
           ? `and(sender_id.eq.${viewerId},receiver_id.in.(${counterpartKey})),and(sender_id.in.(${counterpartKey}),receiver_id.eq.${viewerId})`
-          : `sender_id.eq.${threadUserId},receiver_id.eq.${threadUserId}`,
+          : `sender_id.eq.${threadUserId},receiver_id.eq.${threadUserId}`
       )
       .lt("created_at", first.created_at)
       .order("created_at", { ascending: false })
       .limit(pageSize);
     const older = (data ?? []).reverse();
     stickToBottom.current = false;
-    setMessages((list) => [...older.filter((o) => !list.some((x) => x.id === o.id)), ...list]);
+    setMessages((list) => [
+      ...older.filter((o) => !list.some((x) => x.id === o.id)),
+      ...list,
+    ]);
     setHasOlder(older.length === pageSize);
     setLoadingOlder(false);
     requestAnimationFrame(() => {
@@ -175,7 +304,10 @@ export function ChatThread({
   function pickFile(f: File | undefined) {
     if (!f) return;
     const type = mediaTypeFor(f.type);
-    if (!type) return setError("Poți trimite doar fotografii (JPG, PNG, WEBP, GIF, HEIC) sau video (MP4, MOV, WEBM).");
+    if (!type)
+      return setError(
+        "Poți trimite doar fotografii (JPG, PNG, WEBP, GIF, HEIC) sau video (MP4, MOV, WEBM)."
+      );
     if (f.size > MAX_UPLOAD_BYTES) return setError("Fișierul depășește 50 MB.");
     setError(null);
     setFile((old) => {
@@ -192,9 +324,18 @@ export function ChatThread({
     setFile(null);
     setError(null);
     const tempId = `tmp-${crypto.randomUUID()}`;
-    const ext = attachment?.file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 5) || "bin";
-    const attachment_path = attachment ? `${viewerId}/${recipientId}/${crypto.randomUUID()}.${ext}` : null;
-    if (attachment && attachment_path) setLocalUrls((m) => ({ ...m, [attachment_path]: attachment.url }));
+    const ext =
+      attachment?.file.name
+        .split(".")
+        .pop()
+        ?.toLowerCase()
+        .replace(/[^a-z0-9]/g, "")
+        .slice(0, 5) || "bin";
+    const attachment_path = attachment
+      ? `${viewerId}/${recipientId}/${crypto.randomUUID()}.${ext}`
+      : null;
+    if (attachment && attachment_path)
+      setLocalUrls((m) => ({ ...m, [attachment_path]: attachment.url }));
     stickToBottom.current = true;
     const optimistic: Message = {
       id: tempId,
@@ -215,22 +356,37 @@ export function ChatThread({
       setError(msg);
     };
     if (attachment && attachment_path) {
-      const { error: upError } = await supabase.storage.from(DM_BUCKET).upload(attachment_path, attachment.file, { contentType: attachment.file.type, upsert: false });
-      if (upError) return fail(`Fișierul nu a putut fi încărcat: ${upError.message}`);
+      const { error: upError } = await supabase.storage
+        .from(DM_BUCKET)
+        .upload(attachment_path, attachment.file, {
+          contentType: attachment.file.type,
+          upsert: false,
+        });
+      if (upError)
+        return fail(`Fișierul nu a putut fi încărcat: ${upError.message}`);
     }
     const { data, error } = await supabase
       .from("direct_messages")
-      .insert({ sender_id: viewerId, receiver_id: recipientId, content, attachment_path, attachment_type: attachment?.type ?? null })
+      .insert({
+        sender_id: viewerId,
+        receiver_id: recipientId,
+        content,
+        attachment_path,
+        attachment_type: attachment?.type ?? null,
+      })
       .select("*")
       .single();
     if (error || !data) {
-      if (attachment_path) await supabase.storage.from(DM_BUCKET).remove([attachment_path]);
+      if (attachment_path)
+        await supabase.storage.from(DM_BUCKET).remove([attachment_path]);
       return fail("Mesajul nu a putut fi trimis.");
     }
     void notifyDirectMessage(data.id).catch(() => {});
     setMessages((list) => {
       const withoutTemp = list.filter((m) => m.id !== tempId);
-      return withoutTemp.some((m) => m.id === data.id) ? withoutTemp : [...withoutTemp, data];
+      return withoutTemp.some((m) => m.id === data.id)
+        ? withoutTemp
+        : [...withoutTemp, data];
     });
     if (staffView) router.refresh();
   }
@@ -243,32 +399,51 @@ export function ChatThread({
         ref={scroller}
         onScroll={(e) => {
           const el = e.currentTarget;
-          stickToBottom.current = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+          stickToBottom.current =
+            el.scrollHeight - el.scrollTop - el.clientHeight < 80;
         }}
         className="flex-1 space-y-1.5 overflow-y-auto px-4 py-5"
         data-testid="chat-scroller"
       >
         {hasOlder && (
           <div className="flex justify-center pb-3">
-            <button type="button" onClick={loadOlder} className="rounded-full bg-white/5 px-4 py-1.5 text-xs text-white/60 hover:text-white">
-              {loadingOlder ? <Loader2 className="size-4 animate-spin" /> : "Încarcă mesajele mai vechi"}
+            <button
+              type="button"
+              onClick={loadOlder}
+              className="rounded-full bg-white/5 px-4 py-1.5 text-xs text-white/60 hover:text-white"
+            >
+              {loadingOlder ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                "Încarcă mesajele mai vechi"
+              )}
             </button>
           </div>
         )}
-        {messages.length === 0 && <p className="py-16 text-center text-sm text-white/50">{emptyHint}</p>}
+        {messages.length === 0 && (
+          <p className="py-16 text-center text-sm text-white/50">{emptyHint}</p>
+        )}
         {messages.map((m, i) => {
           const out = isOutgoing(m);
           const prev = messages[i - 1];
-          const newDay = !prev || dayKey(prev.created_at) !== dayKey(m.created_at);
+          const newDay =
+            !prev || dayKey(prev.created_at) !== dayKey(m.created_at);
           const groupStart = newDay || !prev || isOutgoing(prev) !== out;
           return (
             <Fragment key={m.id}>
               {newDay && (
-                <p className="py-3 text-center text-[11px] uppercase tracking-widest text-white/35" suppressHydrationWarning>
+                <p
+                  className="py-3 text-center text-[11px] uppercase tracking-widest text-white/35"
+                  suppressHydrationWarning
+                >
                   {dayLabel(m.created_at)}
                 </p>
               )}
-              <div className={`flex ${out ? "justify-end" : "justify-start"} ${groupStart ? "pt-2" : ""}`}>
+              <div
+                className={`flex ${out ? "justify-end" : "justify-start"} ${
+                  groupStart ? "pt-2" : ""
+                }`}
+              >
                 <div
                   data-testid={out ? "msg-out" : "msg-in"}
                   className={`max-w-[80%] rounded-2xl px-4 py-2 text-sm shadow-lg ${
@@ -277,11 +452,35 @@ export function ChatThread({
                       : "rounded-bl-md border border-white/10 bg-white/[0.06] text-white"
                   } ${m.pending ? "opacity-60" : ""}`}
                 >
-                  {m.attachment_path && m.attachment_type && <Attachment path={m.attachment_path} type={m.attachment_type} localUrl={localUrls[m.attachment_path]} onLoad={keepAtBottom} />}
-                  {m.content.trim() && <p className="whitespace-pre-wrap break-words">{m.content}</p>}
-                  <p className={`mt-0.5 flex items-center justify-end gap-1 text-[10px] ${out ? "text-onaccent/60" : "text-white/40"}`}>
-                    <span suppressHydrationWarning>{timeFmt.format(new Date(m.created_at))}</span>
-                    {out && m.id === lastOutgoing?.id && !m.pending && (m.read_at ? <CheckCheck className="size-3.5" aria-label="Văzut" /> : <Check className="size-3.5" aria-label="Trimis" />)}
+                  {m.attachment_path && m.attachment_type && (
+                    <Attachment
+                      path={m.attachment_path}
+                      type={m.attachment_type}
+                      localUrl={localUrls[m.attachment_path]}
+                      onLoad={keepAtBottom}
+                    />
+                  )}
+                  {m.content.trim() && (
+                    <p className="whitespace-pre-wrap break-words">
+                      {m.content}
+                    </p>
+                  )}
+                  <p
+                    className={`mt-0.5 flex items-center justify-end gap-1 text-[10px] ${
+                      out ? "text-onaccent/60" : "text-white/40"
+                    }`}
+                  >
+                    <span suppressHydrationWarning>
+                      {timeFmt.format(new Date(m.created_at))}
+                    </span>
+                    {out &&
+                      m.id === lastOutgoing?.id &&
+                      !m.pending &&
+                      (m.read_at ? (
+                        <CheckCheck className="size-3.5" aria-label="Văzut" />
+                      ) : (
+                        <Check className="size-3.5" aria-label="Trimis" />
+                      ))}
                   </p>
                 </div>
               </div>
@@ -292,14 +491,28 @@ export function ChatThread({
 
       {error && <p className="px-4 pb-1 text-xs text-red-300">{error}</p>}
       {file && (
-        <div className="flex items-center gap-3 border-t border-white/5 px-3 pt-3" data-testid="attachment-preview">
+        <div
+          className="flex items-center gap-3 border-t border-white/5 px-3 pt-3"
+          data-testid="attachment-preview"
+        >
           {file.type === "video" ? (
-            <video src={file.url} muted playsInline className="size-16 rounded-lg bg-black object-cover" />
+            <video
+              src={file.url}
+              muted
+              playsInline
+              className="size-16 rounded-lg bg-black object-cover"
+            />
           ) : (
             // eslint-disable-next-line @next/next/no-img-element -- local blob preview
-            <img src={file.url} alt="" className="size-16 rounded-lg object-cover" />
+            <img
+              src={file.url}
+              alt=""
+              className="size-16 rounded-lg object-cover"
+            />
           )}
-          <p className="min-w-0 flex-1 truncate text-xs text-white/60">{file.file.name}</p>
+          <p className="min-w-0 flex-1 truncate text-xs text-white/60">
+            {file.file.name}
+          </p>
           <button
             type="button"
             onClick={() => {

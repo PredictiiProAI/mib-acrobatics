@@ -31,7 +31,7 @@ export function AttendanceCalendar({
     <section>
       <h2 className="font-display text-lg font-extrabold">Calendar prezență</h2>
       <p className="mt-1 text-sm text-white/50">Alege o zi, apoi apasă pe un antrenament ca să vezi cine a confirmat și cine nu poate ajunge. Cifra verde arată câți au confirmat.</p>
-      <div className="mt-4 grid gap-6 lg:grid-cols-[minmax(0,26rem)_1fr] lg:items-start">
+      <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,24rem)_1fr] lg:items-start">
         <MonthCalendar
           month={month}
           onMonth={setMonth}

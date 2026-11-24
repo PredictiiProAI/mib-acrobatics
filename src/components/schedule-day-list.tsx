@@ -27,7 +27,7 @@ export function ScheduleDayList({ rows, today, initial, mine }: { rows: Schedule
   const past = selected < today;
 
   return (
-    <section aria-label="Calendar antrenamente" className="grid gap-6 lg:grid-cols-[minmax(0,26rem)_1fr] lg:items-start">
+    <section aria-label="Calendar antrenamente" className="grid gap-4 lg:grid-cols-[minmax(0,24rem)_1fr] lg:items-start">
       <MonthCalendar
         month={month}
         onMonth={setMonth}
